@@ -35,3 +35,17 @@ Mobile Application for KMUTT Activities and Clubs
 ```bash
   uvicorn src.main:app --reload
 ```
+
+## Stop backend server
+
+1. Stop server
+
+```bash
+  ctrl + c
+```
+
+2. Deactivate a Virtual Environment
+
+```bash
+  deactivate
+```
