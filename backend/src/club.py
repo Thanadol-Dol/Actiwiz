@@ -20,7 +20,7 @@ async def read_root():
 @clubRouter.get("/{club_name}", response_model=List[SearchClub])
 async def club_search(club_name: str, neo4j: Neo4j = Depends(get_neo4j)):
     # Implement your Neo4j query to retrieve data based on the club_name
-    query = f"MATCH (clubNode:Club) WHERE clubNode.ClubName CONTAINS '{club_name}' OR clubNode.ClubNameEng CONTAINS '{club_name}' RETURN clubNode.ClubName,clubNode.ClubNameEng"
+    query = f"MATCH (clubNode:Club) WHERE clubNode.ClubName CONTAINS '{club_name}' OR clubNode.ClubNameEng CONTAINS '{club_name}' RETURN clubNode.ClubName,clubNode.ClubNameEng, clubNode.ClubID"
     try:
         results = neo4j.query(query, fetch_all=True)
         search_result = []
@@ -28,7 +28,8 @@ async def club_search(club_name: str, neo4j: Neo4j = Depends(get_neo4j)):
             search_result.append(
                 {
                     "club_name": result["clubNode.ClubName"],
-                    "club_name_eng": result["clubNode.ClubNameEng"]
+                    "club_name_eng": result["clubNode.ClubNameEng"],
+                    "club_id": result["clubNode.ClubID"]
                 }
             )
         return JSONResponse(content=search_result)
