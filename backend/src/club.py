@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
+from .dependencies import do_something
 from .models.club_model import SearchClub
 from .database import Neo4j, get_neo4j
 
 clubRouter = APIRouter(
     prefix="/clubs",
     tags=["clubs"],
+    dependencies=[Depends(do_something)],
     responses={404: {"description": "Not found"}}
 )
 
