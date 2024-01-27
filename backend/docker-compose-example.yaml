@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  backend:
+    build: .
+    command: sh -c "uvicorn app.main:app --reload --port=80 --host=0.0.0.0"
+    image: nad0l/actiwiz
+    environment:
+      - NEO4J_URI=neo4j+s://example.io
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=neo4j_password
+    ports:
+      - 80:80
