@@ -1,9 +1,10 @@
+import os
 from neo4j import GraphDatabase
 
 # Neo4j configuration
-uri = "your_neo4j_uri"
-user = "your_neo4j_username"
-password = "your_neo4j_password"
+uri = os.environ.get('NEO4J_URI')
+user = os.environ.get('NEO4J_USERNAME')
+password = os.environ.get('NEO4J_PASSWORD')
 
 class Neo4j:
     def __init__(self):

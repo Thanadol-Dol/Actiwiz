@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from .dependencies import do_something
@@ -13,7 +14,7 @@ clubRouter = APIRouter(
 
 @clubRouter.get("/")
 async def read_root():
-    return {"message": "This is all clubs"}
+    return {"message": "Hello World!"}
 
 #Recommend clubs
 
