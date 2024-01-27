@@ -237,3 +237,6 @@ buck-out/
 # Expo
 .expo/
 web-build/
+
+#docker
+docker-compose.yaml
