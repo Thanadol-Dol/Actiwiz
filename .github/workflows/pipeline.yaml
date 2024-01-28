@@ -25,7 +25,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
     - name: Build Docker Image
-      if: success('login')
+      if: success()
       uses: docker/compose-action@v2
       with:
         compose-file: docker-compose.example.yaml
