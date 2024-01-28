@@ -27,3 +27,7 @@ jobs:
     - name: Build Docker Image
       if: success()
       run: docker compose -f docker-compose.example.yaml build
+
+    - name: Push Docker Image
+      if: success()
+      run: docker compose -f docker-compose.example.yaml push
