@@ -1,12 +1,9 @@
 # main.py
-import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from neo4j import GraphDatabase
 from .user import userRouter
 from .activity import activityRouter
 from .club import clubRouter
-from .database import Neo4j, get_neo4j
 
 app = FastAPI()
 
