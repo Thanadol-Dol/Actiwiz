@@ -36,4 +36,4 @@ jobs:
             host: ${{ secrets.ECS_HOST }}
             user: ${{ secrets.ECS_USERNAME }}
             pass: ${{ secrets.ECS_PASSWORD }}
-            run: docker compose down
+            run: sudo docker compose down
