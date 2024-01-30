@@ -30,8 +30,5 @@ jobs:
     - name: Push Docker Image
       run: docker compose -f docker-compose.example.yaml push
 
-    - name: Install sshpass
-      run: sudo yum install -y sshpass
-
     - name: Docker Compose Down
       run: sshpass -p ${{ secrets.ECS_PASSWORD }} ssh ${{ secrets.ECS_USERNAME }}@${{ secrets.ECS_HOST }} 'sudo docker-compose down'
