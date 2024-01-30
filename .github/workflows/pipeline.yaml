@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Backend-Workflow
 
 on:
     push:
@@ -25,9 +25,13 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         
     - name: Build Docker Image
-      if: success()
       run: docker compose -f docker-compose.example.yaml build
 
     - name: Push Docker Image
-      if: success()
       run: docker compose -f docker-compose.example.yaml push
+
+    - name: Install sshpass
+      run: sudo yum install -y sshpass
+
+    - name: Docker Compose Down
+      run: sshpass -p ${{ secrets.ECS_PASSWORD }} ssh ${{ secrets.ECS_USERNAME }}@${{ secrets.ECS_HOST }} 'sudo docker-compose down'
