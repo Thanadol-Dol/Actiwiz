@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Backend-Workflow
 
 on:
     push:
@@ -25,9 +25,15 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         
     - name: Build Docker Image
-      if: success()
       run: docker compose -f docker-compose.example.yaml build
 
     - name: Push Docker Image
-      if: success()
       run: docker compose -f docker-compose.example.yaml push
+    
+    - name: Update Server
+      uses: matheusvanzan/sshpass-action@v2
+      with:
+        host: ${{ secrets.ECS_HOST }}
+        user: ${{ secrets.ECS_USERNAME }}
+        pass: ${{ secrets.ECS_PASSWORD }}
+        run: ls ; pwd
