@@ -29,7 +29,7 @@ jobs:
 
     - name: Push Docker Image
       run: docker compose -f docker-compose.example.yaml push
-
+    
     - name: Docker Compose Down
       uses: matheusvanzan/sshpass-action@v2
       with:
@@ -37,4 +37,4 @@ jobs:
         user: ${{ secrets.ECS_USERNAME }}
         pass: ${{ secrets.ECS_PASSWORD }}
         run: |
-          "ls"
+          ls
