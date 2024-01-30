@@ -14,7 +14,7 @@ clubRouter = APIRouter(
 
 @clubRouter.get("/")
 async def read_root():
-    return {"message": "Hello World!"}
+    return {"message": "This is all clubs"}
 
 #Recommend clubs
 
