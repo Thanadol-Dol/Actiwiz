@@ -31,4 +31,10 @@ jobs:
       run: docker compose -f docker-compose.example.yaml push
 
     - name: Docker Compose Down
-      run: sshpass -p ${{ secrets.ECS_PASSWORD }} ssh ${{ secrets.ECS_USERNAME }}@${{ secrets.ECS_HOST }} 'sudo docker-compose down'
+      uses: matheusvanzan/sshpass-action@v2
+      with:
+            host: ${{ secrets.ECS_HOST }}
+            user: ${{ secrets.ECS_USERNAME }}
+            pass: ${{ secrets.ECS_PASSWORD }}
+            run: |
+                docker-compose down
