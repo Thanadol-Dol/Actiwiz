@@ -1,15 +1,14 @@
 name: Backend-Workflow
 
 on:
-    push:
-      branches: ["main"]
-      paths: ["backend/**"]
     pull_request:
       branches: ["main"]
       paths: ["backend/**"]
+      types: [closed]
 
 jobs:
   backend-job:
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     defaults:
       run:
