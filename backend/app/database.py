@@ -13,7 +13,7 @@ class Neo4j:
     def close(self):
         self._driver.close()
 
-    def query(self, query, parameters=None, fetch_all=False):
+    async def query(self, query, parameters=None, fetch_all=False):
         with self._driver.session() as session:
             result = session.run(query, parameters)
             return result.data() if fetch_all else result.single().data()
