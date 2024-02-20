@@ -1,7 +1,3 @@
-# Actiwiz
-
-Mobile Application for KMUTT Activities and Clubs
-
 ## Run backend server
 
 1. Downloading or cloning this repository to use on your local machine.
