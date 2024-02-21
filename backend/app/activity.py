@@ -25,7 +25,7 @@ async def query_detail_fields(neo4j: Neo4j = Depends(get_neo4j)):
     return fields
 
 #Search for activities
-@activityRouter.get("/{activity_name}", response_model=Union[List[ActivityDetail], str])
+@activityRouter.get("/{activity_name}")
 async def activity_search(
     activity_name: str = Path(...,description= "The name of the activity"), 
     fields: str = Query("ActivityName,Description",description="The fields to be returned"),
@@ -39,13 +39,15 @@ async def activity_search(
         all_fields = list(results[0]['activityNode'].keys())
         fields = fields.split(',')
         fields = ["activityNode."+ field for field in fields if field in all_fields]
+        if("activityNode.ActivityName" not in fields):
+            fields.append("activityNode.ActivityName")
         activity_query = f"""MATCH (activityNode:Activity) WHERE activityNode.ActivityName 
         CONTAINS $activity_name OR activityNode.ActivityNameEng CONTAINS $activity_name RETURN {', '.join(fields)}"""
         results = await neo4j.query(activity_query, activity_params, fetch_all=True)
         search_results = []
         for result in results:
             result_data = {
-                'activity_id': result['activityNode.ActivityID'] if 'activityNode.ActivityNameEng' in result else None,
+                'activity_id': result['activityNode.ActivityID'] if 'activityNode.ActivityID' in result else None,
                 'activity_name': result['activityNode.ActivityName'],
                 'activity_name_eng': result['activityNode.ActivityNameEng'] if 'activityNode.ActivityNameEng' in result else None,
                 'description': result['activityNode.Description'] if 'activityNode.Description' in result else None,
@@ -53,8 +55,8 @@ async def activity_search(
                 'day_total': result['activityNode.DayTotal'] if 'activityNode.DayTotal' in result else None,
                 'semester': result['activityNode.Semester'] if 'activityNode.Semester' in result else None,
                 'organizer': result['activityNode.Organizer'] if 'activityNode.Organizer' in result else None,
-                'open_date': result['activityNode.OpenDate'] if 'activityNode.OpenDate' in result else None,
-                'close_date': result['activityNode.CloseDate'] if 'activityNode.CloseDate' in result else None,
+                'open_date': result['activityNode.OpenDate'].to_native() if 'activityNode.OpenDate' in result else None,
+                'close_date': result['activityNode.CloseDate'].to_native() if 'activityNode.CloseDate' in result else None,
                 'academic_year': result['activityNode.AcademicYear'] if 'activityNode.AcademicYear' in result else None
             }
             search_results.append(ActivityDetail(**result_data))
