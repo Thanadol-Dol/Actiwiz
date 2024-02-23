@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class ActivityDetail(BaseModel):
-    activity_id: Optional[int]
+    activity_id: Optional[str]
     activity_name: str
     activity_name_eng: Optional[str]
     description: Optional[str]

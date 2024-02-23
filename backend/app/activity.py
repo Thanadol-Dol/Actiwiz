@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Path, Query, HTTPException
 from typing import List, Union
-from .dependencies import do_something
 from .database import Neo4j, get_neo4j
 from .models.activity_model import ActivityDetail
+import pytz
 
 activityRouter = APIRouter(
     prefix="/activities",
@@ -55,8 +55,8 @@ async def activity_search(
                 'day_total': result['activityNode.DayTotal'] if 'activityNode.DayTotal' in result else None,
                 'semester': result['activityNode.Semester'] if 'activityNode.Semester' in result else None,
                 'organizer': result['activityNode.Organizer'] if 'activityNode.Organizer' in result else None,
-                'open_date': result['activityNode.OpenDate'].to_native() if 'activityNode.OpenDate' in result else None,
-                'close_date': result['activityNode.CloseDate'].to_native() if 'activityNode.CloseDate' in result else None,
+                'open_date': result['activityNode.OpenDate'].to_native().astimezone(pytz.timezone('Asia/Bangkok')) if 'activityNode.OpenDate' in result else None,
+                'close_date': result['activityNode.CloseDate'].to_native().astimezone(pytz.timezone('Asia/Bangkok')) if 'activityNode.CloseDate' in result else None,
                 'academic_year': result['activityNode.AcademicYear'] if 'activityNode.AcademicYear' in result else None
             }
             search_results.append(ActivityDetail(**result_data))
