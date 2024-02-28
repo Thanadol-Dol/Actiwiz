@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, View, Text, Pressable, Modal } from "react-native";
-import IOSAlphbeticKeyboardEngli from "./IOSAlphbeticKeyboardEngli";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import PasswordSection from "../components/PasswordSection";
@@ -83,14 +82,12 @@ const LoginPage = () => {
       <Modal animationType="fade" transparent visible={rectangle2Visible}>
         <View style={styles.rectangle2Overlay}>
           <Pressable style={styles.rectangle2Bg} onPress={closeRectangle2} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle2} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle4Visible}>
         <View style={styles.rectangle4Overlay}>
           <Pressable style={styles.rectangle4Bg} onPress={closeRectangle4} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle4} />
         </View>
       </Modal>
     </>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Pressable, Linking, Text } from "react-native";
+import { StyleSheet, View, Pressable, Linking, Text, ImageStyle } from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -55,7 +55,7 @@ const JoinPage = () => {
         <View style={[styles.groupChild, styles.groupChildLayout]} />
         <Text style={[styles.joined, styles.joinedClr]}>Joined</Text>
         <Image
-          style={styles.checkRingRoundIcon}
+          style={styles.checkRingRoundIcon as ImageStyle}
           contentFit="cover"
           source={require("../assets/check-ring-round.png")}
         />
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.ubuntuRegular,
   },
   httpsformsgleao8xrnosgm6d1: {
-    textDecoration: "underline",
+    textDecorationLine: "underline",
   },
   descriptionBangmodContainer: {
     top: 462,

@@ -3,7 +3,6 @@ import { Image } from "expo-image";
 import { StyleSheet, View, Pressable, Text, Modal } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
-import IOSAlphbeticKeyboardEngli from "../components/IOSAlphbeticKeyboardEngli";
 import EditProfilePopup from "../components/EditProfilePopup";
 import DetailContainer from "../components/DetailContainer";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
@@ -142,21 +141,18 @@ const EditProfile = () => {
       <Modal animationType="fade" transparent visible={rectangle1Visible}>
         <View style={styles.rectangle1Overlay}>
           <Pressable style={styles.rectangle1Bg} onPress={closeRectangle1} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle1} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle2Visible}>
         <View style={styles.rectangle2Overlay}>
           <Pressable style={styles.rectangle2Bg} onPress={closeRectangle2} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle2} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle3Visible}>
         <View style={styles.rectangle3Overlay}>
           <Pressable style={styles.rectangle3Bg} onPress={closeRectangle3} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle3} />
         </View>
       </Modal>
 
@@ -177,7 +173,6 @@ const EditProfile = () => {
       <Modal animationType="fade" transparent visible={rectangle5Visible}>
         <View style={styles.rectangle5Overlay}>
           <Pressable style={styles.rectangle5Bg} onPress={closeRectangle5} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle5} />
         </View>
       </Modal>
     </>

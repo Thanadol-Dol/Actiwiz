@@ -3,7 +3,6 @@ import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import UserFunctionText from "./components/UserFunctionText";
-import Rectangle from "./screens/Rectangle";
 import LoginPage from "./screens/LoginPage";
 import RegisterPage from "./screens/RegisterPage";
 import FeedPage from "./screens/FeedPage";
@@ -23,9 +22,7 @@ import CautionJoinClubCancel from "./components/CautionJoinClubCancel";
 import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
 import CautionJoinClub from "./components/CautionJoinClub";
 import EditProfilePopup from "./components/EditProfilePopup";
-import IOSAlphbeticKeyboardEngli from "./components/IOSAlphbeticKeyboardEngli";
 import CircleBar from "./components/CircleBar";
-import NavBar from "./components/NavBar";
 import CircleBar1 from "./components/CircleBar1";
 import AtomsFormFieldIconRi from "./components/AtomsFormFieldIconRi";
 import AtomsButtonsLabelsWh from "./components/AtomsButtonsLabelsWh";
@@ -63,11 +60,6 @@ const App = () => {
       <NavigationContainer>
         {hideSplashScreen ? (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen
-              name="Rectangle"
-              component={Rectangle}
-              options={{ headerShown: false }}
-            />
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
