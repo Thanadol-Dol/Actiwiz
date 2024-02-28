@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { StyleSheet, View, Pressable, Text, Modal } from "react-native";
 import { Image } from "expo-image";
-import IOSAlphbeticKeyboardEngli from "../components/IOSAlphbeticKeyboardEngli";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import AtomsFormFieldIconRi from "../components/AtomsFormFieldIconRi";
@@ -223,7 +222,6 @@ const FeedPage = () => {
             style={styles.atomsFormFieldDefaultBg}
             onPress={closeAtomsFormFieldDefault}
           />
-          <IOSAlphbeticKeyboardEngli onClose={closeAtomsFormFieldDefault} />
         </View>
       </Modal>
     </>

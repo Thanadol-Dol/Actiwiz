@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, Modal } from "react-native";
-import IOSAlphbeticKeyboardEngli from "./IOSAlphbeticKeyboardEngli";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import EmailSection from "../components/EmailSection";
@@ -106,21 +105,18 @@ const RegisterPage = () => {
       <Modal animationType="fade" transparent visible={rectangleVisible}>
         <View style={styles.rectangleOverlay}>
           <Pressable style={styles.rectangleBg} onPress={closeRectangle} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle1Visible}>
         <View style={styles.rectangle1Overlay}>
           <Pressable style={styles.rectangle1Bg} onPress={closeRectangle1} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle1} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle3Visible}>
         <View style={styles.rectangle3Overlay}>
           <Pressable style={styles.rectangle3Bg} onPress={closeRectangle3} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle3} />
         </View>
       </Modal>
     </>
