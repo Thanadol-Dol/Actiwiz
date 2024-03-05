@@ -45,8 +45,8 @@ const FeedPage = () => {
         <Text style={styles.event}>Event :</Text>
         <AtomsFormFieldIconRi
           atomsFormFieldIconRiPosition="absolute"
-          atomsFormFieldIconRiWidth={341}
-          atomsFormFieldIconRiHeight={37}
+          atomsFormFieldIconRiWidth={350}
+          atomsFormFieldIconRiHeight={35}
           atomsFormFieldIconRiLeft={24}
           atomsFormFieldIconRiTop={94}
           onAtomsFormFieldDefaultPress={openAtomsFormFieldDefault}
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     width: 162,
     left: "50%",
     top: "50%",
-    marginLeft: -195,
+    marginLeft: -170,
   },
   nov30: {
     top: 73,

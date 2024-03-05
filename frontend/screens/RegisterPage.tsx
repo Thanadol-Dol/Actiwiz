@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     color: Color.colorBlack,
   },
   logIn1: {
-    textDecoration: "underline",
+    textDecorationLine: "underline",
     color: Color.colorDarkorange_200,
   },
   logIn: {

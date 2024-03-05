@@ -1,12 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Text,
-  Linking,
-  Modal,
-} from "react-native";
+import {StyleSheet, View, Pressable, Text, Linking, Modal} from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -30,7 +23,7 @@ const DetailPage = () => {
       <View style={[styles.detailPage, styles.iconLayout]}>
         <View style={[styles.detailPageChild, styles.image4IconPosition]} />
         <Image
-          style={[styles.image4Icon, styles.image4IconPosition]}
+          //style={[styles.image4Icon, styles.image4IconPosition]}
           contentFit="cover"
           source={require("../assets/image-41.png")}
         />
@@ -39,7 +32,7 @@ const DetailPage = () => {
           onPress={() => navigation.navigate("FeedPage")}
         >
           <Image
-            style={[styles.icon, styles.iconLayout]}
+            //style={[styles.icon, styles.iconLayout]}
             contentFit="cover"
             source={require("../assets/arrow-back-ios1.png")}
           />
@@ -181,7 +174,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.ubuntuRegular,
   },
   httpsformsgleao8xrnosgm6d1: {
-    textDecoration: "underline",
+    textDecorationLine: "underline",
   },
   descriptionBangmodContainer: {
     top: 462,
