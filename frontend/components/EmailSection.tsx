@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { StyleSheet, View, Pressable, Text } from "react-native";
+import { StyleSheet, View, Pressable, TextInput, Text } from "react-native";
 import { Image } from "expo-image";
 import { Color, FontFamily, FontSize } from "../GlobalStyles";
 
@@ -39,9 +39,8 @@ const EmailSection = ({
       <Text style={[styles.emailAddress, styles.emailAddressTypo]}>
         Email address
       </Text>
-      <Text style={[styles.alexemailcom, styles.emailAddressTypo]}>
-        alex@email.com
-      </Text>
+      <TextInput style={[styles.alexemailcom, styles.emailAddressTypo]} placeholder="xxx@mail.kmutt.ac.th">
+      </TextInput>
     </View>
   );
 };
@@ -78,7 +77,7 @@ const styles = StyleSheet.create({
     top: 46,
     left: 12,
     fontSize: FontSize.size_mini_1,
-    width: 133,
+    width: "80%",
   },
   rectangleParent: {
     top: 284,

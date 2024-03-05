@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { StyleSheet, View, Pressable, Text } from "react-native";
 import { Image } from "expo-image";
 import { Color, FontFamily, FontSize } from "../GlobalStyles";
+import { TextInput } from "react-native-gesture-handler";
 
 export type PasswordSectionType = {
   passwordLabel?: string;

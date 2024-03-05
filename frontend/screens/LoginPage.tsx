@@ -49,12 +49,12 @@ const LoginPage = () => {
         <Image
           style={[styles.loginPageChild, styles.loginPosition]}
           contentFit="cover"
-          source={require("../assets/rectangle-38.png")}
+          source={require("../assets/ActiwizPic.png")}
         />
         <Image
           style={[styles.loginPageItem, styles.loginPosition]}
           contentFit="cover"
-          source={require("../assets/rectangle-39.png")}
+          source={require("../assets/ActiwizPic2.png")}
         />
         <View style={styles.lineParent}>
           <View style={[styles.groupItem, styles.groupLayout]} />
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   groupChildLayout: {
-    borderRadius: 8,
+    borderRadius: 15,
     left: 0,
     top: 0,
     height: 50,
@@ -116,14 +116,12 @@ const styles = StyleSheet.create({
   loginTypo: {
     textAlign: "center",
     fontFamily: FontFamily.poppinsSemiBold,
-    fontWeight: "600",
+    fontWeight: "700",
     fontSize: FontSize.size_base_2,
     position: "absolute",
   },
   loginPosition: {
-    width: 390,
-    borderTopRightRadius: Border.br_3xs,
-    borderTopLeftRadius: Border.br_3xs,
+    width: "100%",
     left: 0,
     position: "absolute",
   },
@@ -188,20 +186,23 @@ const styles = StyleSheet.create({
     width: 102,
   },
   rectangleParent: {
+    width: "100%",
     top: 690,
   },
   loginIntoYour: {
     top: 219,
-    left: 99,
+    left: 120,
     color: Color.colorDimgray,
   },
   loginPageChild: {
     height: 155,
+    width: "100%",
     top: 0,
   },
   loginPageItem: {
     top: 21,
     height: 167,
+    width: "100%",
   },
   groupItem: {
     left: 0,
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
   forgotPassword: {
     top: 487,
     left: 137,
-    textDecoration: "underline",
+    textDecorationLine: "underline",
     color: "#1e2772",
     width: 127,
   },
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   },
   login: {
     top: 14,
-    left: 135,
+    left: 120,
     color: Color.iOSFFFFFF,
     width: 106,
   },
@@ -255,7 +256,6 @@ const styles = StyleSheet.create({
     top: 539,
   },
   loginPage: {
-    borderRadius: Border.br_3xs,
     backgroundColor: Color.iOSFFFFFF,
     borderColor: Color.colorBlack,
     flex: 1,
