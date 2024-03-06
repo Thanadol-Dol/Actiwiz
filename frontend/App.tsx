@@ -23,7 +23,6 @@ import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
 import CautionJoinClub from "./components/CautionJoinClub";
 import EditProfilePopup from "./components/EditProfilePopup";
 import CircleBar from "./components/CircleBar";
-import CircleBar1 from "./components/CircleBar1";
 import AtomsFormFieldIconRi from "./components/AtomsFormFieldIconRi";
 import AtomsButtonsLabelsWh from "./components/AtomsButtonsLabelsWh";
 import AtomsButtonsResources1 from "./components/AtomsButtonsResources1";

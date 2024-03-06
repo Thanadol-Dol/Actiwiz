@@ -47,7 +47,6 @@ const AtomsFormFieldIconRi = ({
       style={[styles.atomsFormFieldIconRi, atomsFormFieldIconRiStyle]}
       contentFit="cover"
       source={require("../assets/atoms--form--field--icon-right.png")}
-      onPress={onAtomsFormFieldDefaultPress}
     />
   );
 };
