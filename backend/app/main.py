@@ -16,10 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to Actiwiz API"}
-
 app.include_router(userRouter)
 app.include_router(activityRouter)
 app.include_router(clubRouter)
