@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { StyleSheet, View, Pressable, Text, Modal } from "react-native";
+import { StyleSheet, View, Pressable, Text, Modal, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -63,7 +63,7 @@ const FeedPage = () => {
           <Image
             style={[styles.icon1, styles.iconLayout]}
             contentFit="cover"
-            source={require("../assets/2109c95fb49443379433da37b8f9bc7a-2.png")}
+            source={require("../assets/NongNhaoSmall.png")}
           />
         </Pressable>
         <View style={styles.event1}>
@@ -230,7 +230,7 @@ const FeedPage = () => {
 
 const styles = StyleSheet.create({
   childLayout: {
-    width: 390,
+    width: "100%",
     left: 0,
   },
   notificationPosition: {
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     top: 574,
     height: 165,
     backgroundColor: Color.iOSFFFFFF,
-    width: 390,
+    width: "100%",
     left: 0,
     position: "absolute",
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     top: 599,
     height: 140,
     left: 0,
-    width: 390,
+    width: "390",
     position: "absolute",
   },
   notification: {
@@ -416,22 +416,22 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   event1: {
-    marginTop: -435,
+    marginTop: -300,
     height: 200,
     left: "50%",
     top: "50%",
-    marginLeft: -195,
-    width: 390,
+    marginLeft: -206,
+    width: "100%",
     position: "absolute",
   },
   event2Child: {
     top: 0,
-    width: 390,
+    width: "100%",
     left: 0,
     backgroundColor: Color.iOSFFFFFF,
   },
   image3Icon: {
-    marginTop: -99,
+    marginTop: -100,
     width: 162,
     left: "50%",
     top: "50%",
