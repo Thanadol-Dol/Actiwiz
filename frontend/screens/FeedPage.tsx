@@ -8,6 +8,7 @@ import DetailContainer from "../components/DetailContainer";
 import CompetitionSection from "../components/CompetitionSection";
 import EventDetailContainer from "../components/EventDetailContainer";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
+import { Searchbar } from 'react-native-paper';
 
 const FeedPage = () => {
   const [atomsFormFieldDefaultVisible, setAtomsFormFieldDefaultVisible] =
@@ -22,14 +23,22 @@ const FeedPage = () => {
     setAtomsFormFieldDefaultVisible(false);
   }, []);
 
+  const [searchQuery, setSearchQuery] = React.useState('');
+  
   return (
-    <>
+    <ScrollView>
       <View style={styles.feedPage}>
         <View style={[styles.feedPageChild, styles.childLayout]} />
+        <Searchbar
+          placeholder="Search"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.Sbar}
+        />
         <Image
           style={[styles.feedPageItem, styles.childLayout]}
           contentFit="cover"
-          source={require("../assets/frame-1.png")}
+          source={require("../assets/frame-1.png")} //แก้ให้เป็นcomponent
         />
         <Pressable
           style={[styles.notification, styles.notificationPosition]}
@@ -41,23 +50,16 @@ const FeedPage = () => {
             source={require("../assets/notification.png")}
           />
         </Pressable>
-        <Text style={styles.clubThatU}>club that u may be interested in:</Text>
+        <Text style={styles.TabSuggestClub}>club that u may be interested in:</Text>
         <Text style={styles.event}>Event :</Text>
-        <AtomsFormFieldIconRi
-          atomsFormFieldIconRiPosition="absolute"
-          atomsFormFieldIconRiWidth={350}
-          atomsFormFieldIconRiHeight={35}
-          atomsFormFieldIconRiLeft={24}
-          atomsFormFieldIconRiTop={94}
-          onAtomsFormFieldDefaultPress={openAtomsFormFieldDefault}
-        />
+
         <Image
           style={[styles.feedPageInner, styles.notificationPosition]}
           contentFit="cover"
           source={require("../assets/ellipse-88.png")}
         />
         <Pressable
-          style={styles.c95fB49443379433Da37b8f9bc}
+          style={styles.profilePics}
           onPress={() => navigation.navigate("EditProfile")}
         >
           <Image
@@ -67,9 +69,9 @@ const FeedPage = () => {
           />
         </Pressable>
         <View style={styles.event1}>
-          <View style={[styles.event1Child, styles.image2IconPosition]} />
+          <View style={[styles.event1Child, styles.WhiteFrame]} />
           <Image
-            style={[styles.clockLightIcon, styles.iconPosition2]}
+            style={[styles.clockLightIcon, styles.IconLocation]}
             contentFit="cover"
             source={require("../assets/clock-light.png")}
           />
@@ -77,39 +79,29 @@ const FeedPage = () => {
             every tues, thus
           </Text>
           <Image
-            style={[styles.pinAltDuotoneLineIcon, styles.iconPosition2]}
+            style={[styles.pinAltDuotoneLineIcon, styles.IconLocation]}
             contentFit="cover"
             source={require("../assets/pin-alt-duotone-line.png")}
           />
           <Text style={[styles.kfc, styles.kfcTypo]}>KFC</Text>
           <Text
             style={[styles.text, styles.textTypo]}
-          >{`ยูยิตสูและบราซิลเลี่ยนยูยิตสู : 
-เย็นวันนี้ซ้อมกันจ้า`}</Text>
+          >{`ยูยิตสูและบราซิลเลี่ยนยูยิตสู : เย็นวันนี้ซ้อมกันจ้า`}</Text>
           <DetailContainer
             detailText="Detail"
-            propTop="50%"
-            propLeft="50%"
-            propMarginTop={58.4}
-            propMarginLeft={57}
+            propTop={155}
+            propLeft={265}
             propWidth={100}
             propHeight={30}
-            propBorderStyle="unset"
-            propBorderColor="unset"
             propHeight1="100%"
             propWidth1="100%"
-            propRight="0%"
-            propBottom="0%"
-            propBackgroundColor="unset"
-            propBackgroundColor1="#000"
+            propBackgroundColor1="#d8d8d8"
             propBorderRadius1={4}
-            propBackgroundColor2="rgba(253, 116, 1, 0)"
             propMarginTop1={-6.5}
             propRight1={16}
             propMarginTop2={-6.5}
             propLeft1="21.62%"
             propFontSize={12}
-            propColor="#fff"
             propFontFamily="Ubuntu-Regular"
             onButtonPress={() => navigation.navigate("DetailPage")}
           />
@@ -143,27 +135,18 @@ const FeedPage = () => {
           <DetailContainer
             detailText="Detail"
             propTop={155}
-            propLeft={248}
-            propMarginTop="unset"
-            propMarginLeft="unset"
+            propLeft={265}
             propWidth={100}
             propHeight={30}
-            propBorderStyle="unset"
-            propBorderColor="unset"
             propHeight1="100%"
             propWidth1="100%"
-            propRight="0%"
-            propBottom="0%"
-            propBackgroundColor="unset"
             propBackgroundColor1="#d8d8d8"
             propBorderRadius1={4}
-            propBackgroundColor2="#000"
             propMarginTop1={-6.5}
             propRight1={16}
             propMarginTop2={-6.5}
             propLeft1="21.62%"
             propFontSize={12}
-            propColor="#fff"
             propFontFamily="Ubuntu-Regular"
             onButtonPress={() => navigation.navigate("DetailPage")}
           />
@@ -224,10 +207,9 @@ const FeedPage = () => {
           />
         </View>
       </Modal>
-    </>
+    </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   childLayout: {
     width: "100%",
@@ -241,12 +223,14 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
   },
-  image2IconPosition: {
+  WhiteFrame: {
     marginTop: -100,
+    left : 195,
     height: 200,
+    width: "100%",
     position: "absolute",
   },
-  iconPosition2: {
+  IconLocation: {
     height: 21,
     width: 22,
     marginLeft: 4,
@@ -342,7 +326,7 @@ const styles = StyleSheet.create({
     width: 39,
     height: 39,
   },
-  clubThatU: {
+  TabSuggestClub: {
     top: 577,
     left: 10,
     width: 353,
@@ -350,7 +334,6 @@ const styles = StyleSheet.create({
     textAlign: "left",
     color: Color.colorBlack,
     fontFamily: FontFamily.ubuntuRegular,
-    textTransform: "uppercase",
     fontSize: FontSize.size_xl,
     position: "absolute",
   },
@@ -375,7 +358,7 @@ const styles = StyleSheet.create({
   icon1: {
     borderRadius: Border.br_341xl,
   },
-  c95fB49443379433Da37b8f9bc: {
+  profilePics: {
     left: 18,
     top: 42,
     width: 36,
@@ -412,11 +395,12 @@ const styles = StyleSheet.create({
   },
   image2Icon: {
     marginTop: -100,
+    left: -20,
     height: 200,
     position: "absolute",
   },
   event1: {
-    marginTop: -300,
+    marginTop: -450,
     height: 200,
     left: "50%",
     top: "50%",
@@ -457,7 +441,7 @@ const styles = StyleSheet.create({
   },
   event2: {
     top: 372,
-    width: 390,
+    width: "100%",
     left: 0,
   },
   rectangleView: {
@@ -500,6 +484,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1206,
     width: "100%",
+  },
+  Sbar: {
+    top: 90,
+    width: "90%",
+    left: "2%",
+    height: 40,
+    position: "relative",
   },
 });
 
