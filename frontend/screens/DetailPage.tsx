@@ -23,7 +23,7 @@ const DetailPage = () => {
       <View style={[styles.detailPage, styles.iconLayout]}>
         <View style={[styles.detailPageChild, styles.image4IconPosition]} />
         <Image
-          //style={[styles.image4Icon, styles.image4IconPosition]}
+          style={[styles.image4Icon, styles.image4IconPosition]}
           contentFit="cover"
           source={require("../assets/image-41.png")}
         />
@@ -32,7 +32,7 @@ const DetailPage = () => {
           onPress={() => navigation.navigate("FeedPage")}
         >
           <Image
-            //style={[styles.icon, styles.iconLayout]}
+            style={[styles.icon, styles.iconLayout]}
             contentFit="cover"
             source={require("../assets/arrow-back-ios1.png")}
           />
@@ -87,11 +87,9 @@ const DetailPage = () => {
 const styles = StyleSheet.create({
   iconLayout: {
     overflow: "hidden",
-    width: "100%",
   },
   image4IconPosition: {
-    width: 390,
-    left: 0,
+    width: "100%",
     position: "absolute",
   },
   groupChildLayout: {
@@ -102,8 +100,7 @@ const styles = StyleSheet.create({
   detailPageChild: {
     backgroundColor: Color.colorDarkorange_100,
     height: 383,
-    top: 0,
-    width: 390,
+    width: "100%",
   },
   image4Icon: {
     top: 64,
@@ -129,8 +126,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    left: 0,
-    top: 0,
   },
   groupChild: {
     borderRadius: 8,
@@ -190,7 +185,8 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_3xs,
     backgroundColor: Color.iOSFFFFFF,
     flex: 1,
-    height: 844,
+    height: "100%",
+    width: "100%",
   },
 });
 
