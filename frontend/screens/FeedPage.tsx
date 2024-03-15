@@ -28,15 +28,15 @@ const FeedPage = () => {
   return (
     <ScrollView>
       <View style={styles.feedPage}>
-        <View style={[styles.feedPageChild, styles.childLayout]} />
+        <View style={[styles.WhiteBoxIG, styles.WhiteBoxLayout]} />
         <Searchbar
           placeholder="Search"
           onChangeText={setSearchQuery}
           value={searchQuery}
-          style={styles.Sbar}
+          style={styles.Searchbar}
         />
         <Image
-          style={[styles.feedPageItem, styles.childLayout]}
+          style={[styles.feedPageItem, styles.WhiteBoxLayout]}
           contentFit="cover"
           source={require("../assets/frame-1.png")} //แก้ให้เป็นcomponent
         />
@@ -75,7 +75,7 @@ const FeedPage = () => {
             contentFit="cover"
             source={require("../assets/clock-light.png")}
           />
-          <Text style={[styles.everyTuesThus, styles.kfcTypo]}>
+          <Text style={[styles.TextTime, styles.kfcTypo]}>
             every tues, thus
           </Text>
           <Image
@@ -118,7 +118,7 @@ const FeedPage = () => {
             contentFit="cover"
             source={require("../assets/image-3.png")}
           />
-          <Text style={[styles.nov30, styles.nov30Typo]}>
+          <Text style={[styles.TimeText, styles.Place]}>
             30 Nov - 30 Dec 23
           </Text>
           <Image
@@ -126,7 +126,7 @@ const FeedPage = () => {
             contentFit="cover"
             source={require("../assets/pin-alt-duotone-line1.png")}
           />
-          <Text style={[styles.n16LearningExchange, styles.nov30Typo]}>
+          <Text style={[styles.n16LearningExchange, styles.Place]}>
             N16 Learning exchange
           </Text>
           <Text style={[styles.innovationForKmutt, styles.textTypo]}>
@@ -159,40 +159,29 @@ const FeedPage = () => {
         <CompetitionSection />
         <DetailContainer
           detailText="Detail"
-          propTop={919}
-          propLeft={248}
-          propMarginTop="unset"
-          propMarginLeft="unset"
-          propBorderRadius={10}
+          propTop={900}
+          propLeft={265}
           propWidth={100}
           propHeight={30}
-          propBorderStyle="unset"
-          propBorderColor="unset"
           propHeight1="100%"
           propWidth1="100%"
-          propRight="0%"
-          propBottom="0%"
-          propBackgroundColor="unset"
           propBackgroundColor1="#d8d8d8"
           propBorderRadius1={4}
-          propBackgroundColor2="#000"
           propMarginTop1={-6.5}
           propRight1={16}
           propMarginTop2={-6.5}
           propLeft1="21.62%"
           propFontSize={12}
-          propColor="#fff"
           propFontFamily="Ubuntu-Regular"
           onButtonPress={() => navigation.navigate("DetailPage")}
         />
         <EventDetailContainer />
-        <View style={[styles.rectangleView, styles.childLayout]} />
-        <View style={styles.feedPageChild1} />
-        <View style={[styles.feedPageChild2, styles.feedChildLayout]} />
-        <View style={[styles.feedPageChild3, styles.feedChildLayout]} />
-        <View style={[styles.feedPageChild4, styles.feedChildLayout]} />
-        <View style={[styles.feedPageChild5, styles.feedChildLayout]} />
-        <View style={[styles.feedPageChild6, styles.feedChildLayout]} />
+        <View style={[styles.WhiteBoxLayout]} />
+        <View style={[styles.SpaceBar1, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar2, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar3, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar4, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar5, styles.SpaceBetweenEvent]} />
       </View>
 
       <Modal
@@ -211,9 +200,8 @@ const FeedPage = () => {
   );
 };
 const styles = StyleSheet.create({
-  childLayout: {
+  WhiteBoxLayout: {
     width: "100%",
-    left: 0,
   },
   notificationPosition: {
     top: 40,
@@ -262,15 +250,13 @@ const styles = StyleSheet.create({
   },
   iconPosition1: {
     width: 162,
-    left: "50%",
     top: "50%",
-    marginLeft: -195,
   },
   event2Layout: {
     height: 198,
     position: "absolute",
   },
-  nov30Typo: {
+  Place: {
     left: 232,
     height: 13,
     fontFamily: FontFamily.unnaRegular,
@@ -286,10 +272,10 @@ const styles = StyleSheet.create({
     width: 22,
     position: "absolute",
   },
-  feedChildLayout: {
+  SpaceBetweenEvent: {
     backgroundColor: Color.colorSandybrown,
     height: 4,
-    width: 390,
+    width: "100%",
     left: 0,
     position: "absolute",
   },
@@ -303,11 +289,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    left: 0,
-    top: 0,
   },
-  feedPageChild: {
-    top: 574,
+  WhiteBoxIG: {
+    top: 556,
     height: 165,
     backgroundColor: Color.iOSFFFFFF,
     width: "100%",
@@ -315,7 +299,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   feedPageItem: {
-    top: 599,
+    top: 580,
     height: 140,
     left: 0,
     width: "390",
@@ -327,7 +311,7 @@ const styles = StyleSheet.create({
     height: 39,
   },
   TabSuggestClub: {
-    top: 577,
+    top: 560,
     left: 10,
     width: 353,
     height: 29,
@@ -376,7 +360,7 @@ const styles = StyleSheet.create({
   clockLightIcon: {
     marginTop: -27.6,
   },
-  everyTuesThus: {
+  TextTime: {
     marginTop: -23.1,
     width: 97,
   },
@@ -395,7 +379,6 @@ const styles = StyleSheet.create({
   },
   image2Icon: {
     marginTop: -100,
-    left: -20,
     height: 200,
     position: "absolute",
   },
@@ -417,11 +400,9 @@ const styles = StyleSheet.create({
   image3Icon: {
     marginTop: -100,
     width: 162,
-    left: "50%",
     top: "50%",
-    marginLeft: -170,
   },
-  nov30: {
+  TimeText: {
     top: 73,
     width: 97,
   },
@@ -440,42 +421,27 @@ const styles = StyleSheet.create({
     top: 68,
   },
   event2: {
-    top: 372,
+    top: 358,
     width: "100%",
     left: 0,
   },
-  rectangleView: {
-    top: 1189,
-    borderBottomRightRadius: Border.br_3xs,
-    borderBottomLeftRadius: Border.br_3xs,
-    height: 17,
-    backgroundColor: Color.iOSFFFFFF,
-    width: 390,
-    left: 0,
-    position: "absolute",
+  SpaceBar1: {
+    top: 353,
+    width: "100%",
   },
-  feedPageChild1: {
-    top: 143,
-    backgroundColor: "#f3c28f",
-    height: 4,
-    display: "none",
-    width: 390,
-    left: 0,
-    position: "absolute",
+  SpaceBar2: {
+    top: 555,
+    width: "100%",
   },
-  feedPageChild2: {
-    top: 368,
+  SpaceBar3: {
+    top: 722,
+    width: "100%",
   },
-  feedPageChild3: {
-    top: 570,
+  SpaceBar4: {
+    top: 945,
+    width: "100%",
   },
-  feedPageChild4: {
-    top: 739,
-  },
-  feedPageChild5: {
-    top: 1184,
-  },
-  feedPageChild6: {
+  SpaceBar5: {
     top: 963,
   },
   feedPage: {
@@ -485,7 +451,7 @@ const styles = StyleSheet.create({
     height: 1206,
     width: "100%",
   },
-  Sbar: {
+  Searchbar: {
     top: 90,
     width: "90%",
     left: "2%",

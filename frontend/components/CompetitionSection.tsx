@@ -12,7 +12,7 @@ const CompetitionSection = () => {
         contentFit="cover"
         source={require("../assets/clock-light2.png")}
       />
-      <Text style={[styles.everyTuesThus, styles.kfcTypo]}>
+      <Text style={[styles.TimeText, styles.kfcTypo]}>
         every tues, thus
       </Text>
       <Image
@@ -57,32 +57,30 @@ const styles = StyleSheet.create({
   },
   groupItemPosition: {
     width: 162,
-    left: 0,
     position: "absolute",
   },
   groupChild: {
     backgroundColor: Color.iOSFFFFFF,
-    width: 390,
-    left: 0,
+    width: "100%",
     position: "absolute",
     top: 0,
   },
   clockLightIcon: {
-    top: 76,
+    top: 69,
   },
-  everyTuesThus: {
-    top: 81,
+  TimeText: {
+    top: 75,
     width: 97,
   },
   pinAltDuotoneLineIcon: {
-    top: 103,
+    top: 98,
   },
   kfc: {
-    top: 108,
+    top: 102,
     width: 144,
   },
   basketball3x3: {
-    top: 26,
+    top: 23,
     left: 205,
     fontSize: FontSize.size_xs,
     fontFamily: FontFamily.ubuntuRegular,
@@ -103,10 +101,9 @@ const styles = StyleSheet.create({
     height: 161,
   },
   rectangleParent: {
-    top: 743,
+    top: 726,
     height: 220,
-    width: 390,
-    left: 0,
+    width: "100%",
     position: "absolute",
   },
 });
