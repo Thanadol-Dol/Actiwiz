@@ -1,3 +1,5 @@
 fastapi
 neo4j
 uvicorn
+fastapi_microsoft_identity
+msal
