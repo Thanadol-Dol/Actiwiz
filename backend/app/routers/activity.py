@@ -1,38 +1,59 @@
-from fastapi import APIRouter, Depends, Path, Query, HTTPException
+from fastapi import APIRouter, Depends, Path, Query, HTTPException, Request
 from typing import List, Union
-from .database import Neo4j, get_neo4j
-from .models.activity_model import ActivityDetail
+from ..utils.database import Neo4j, get_neo4j
+from ..models.activity_model import ActivityDetail
+from fastapi_microsoft_identity import initialize, requires_auth, AuthError, validate_scope
+import os
 import pytz
 
 activityRouter = APIRouter(
     prefix="/activities",
     tags=["activities"]
 )
+initialize(
+    tenant_id_=os.environ.get('AZURE_AD_TENANT_ID'), 
+    client_id_=os.environ.get('AZURE_AD_CLIENT_ID')
+)
+
+scopes = "data.read"
 
 #Recommend activities
 
 #Fields of an activity card
 @activityRouter.get("/card/fields", response_model=List[str])
-async def query_card_fields():
-    fields = ["ActivityName", "ActivityNameEng", "HourTotal", "OpenDate", "CloseDate", "AcademicYear"]
-    return fields
+@requires_auth
+async def query_card_fields(request: Request):
+    try:
+        validate_scope(scopes,request)
+        fields = ["ActivityName", "ActivityNameEng", "HourTotal", "OpenDate", "CloseDate", "AcademicYear"]
+        return fields
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 #Fields of an activity detail
 @activityRouter.get("/detail/fields", response_model=Union[List[str], str])
-async def query_detail_fields(neo4j: Neo4j = Depends(get_neo4j)):
-    fields = ["ActivityID","ActivityName","ActivityNameENG","AcademicYear","Semester","Description",
+@requires_auth
+async def query_detail_fields(request: Request):
+    try:
+        validate_scope(scopes,request)
+        fields = ["ActivityID","ActivityName","ActivityNameENG","AcademicYear","Semester","Description",
               "DayTotal","HourTotal","OpenDate","CloseDate","Organizer"]
-    return fields
+        return fields
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 #Search for activities
 @activityRouter.get("/{activity_name}")
+@requires_auth
 async def activity_search(
+    request: Request,
     activity_name: str = Path(...,description= "The name of the activity"), 
     fields: str = Query("ActivityName,Description",description="The fields to be returned"),
     neo4j: Neo4j = Depends(get_neo4j)
 ):
     # Implement your Neo4j query to retrieve data based on the activity_name
     try:
+        validate_scope(scopes,request)
         fields_query = "MATCH (activityNode:Activity) RETURN activityNode LIMIT 1"
         activity_params = {"activity_name": activity_name}
         results = await neo4j.query(fields_query, fetch_all=True)
@@ -63,6 +84,8 @@ async def activity_search(
         if len(search_results) == 0:
             raise HTTPException(status_code=404, detail="No activity found.")
         return search_results
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

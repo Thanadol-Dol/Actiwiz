@@ -1,9 +1,9 @@
 # main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .user import userRouter
-from .activity import activityRouter
-from .club import clubRouter
+from .routers.user import userRouter
+from .routers.activity import activityRouter
+from .routers.club import clubRouter
 
 app = FastAPI()
 

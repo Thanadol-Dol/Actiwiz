@@ -9,5 +9,11 @@ services:
       - NEO4J_URI=neo4j+s://example.io
       - NEO4J_USERNAME=neo4j
       - NEO4J_PASSWORD=neo4j_password
+      - AZURE_AD_AUTHORITY=https://login.microsoftonline.com/{tenant_id}
+      - AZURE_AD_CLIENT_ID=client_id
+      - AZURE_AD_CREDENTIAL=credential
+      - AZURE_AD_REDIRECT_URI=http://example.io/callback
+      - AZURE_AD_SCOPES=api://{client_id}/data.read
+      - AZURE_AD_TENANT_ID=tenant_id
     ports:
       - 80:80

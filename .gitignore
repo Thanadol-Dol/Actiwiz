@@ -240,3 +240,5 @@ web-build/
 
 #docker
 docker-compose.yaml
+
+.vscode
