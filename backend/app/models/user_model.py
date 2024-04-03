@@ -1,19 +1,11 @@
 from pydantic import BaseModel
-from enum import Enum
-
-class AcademicDegree(str, Enum):
-    bachelor = "Bachelor"
-    master = "Master"
-    doctor = "Doctor"
+from typing import Optional
 
 class UserDetail(BaseModel):
-    student_id: int
+    user_id: int
     student_name: str
-    password: str
+    academic_degree: str
+    academic_year: int
     academic_email: str
-    academic_degree: AcademicDegree
-    year: int
-
-class UserLogin(BaseModel):
-    academic_email: str
-    password: str
+    faculty: str
+    department: str

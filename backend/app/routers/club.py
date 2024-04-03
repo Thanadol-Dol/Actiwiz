@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, Query
 from typing import List, Union
 from ..models.club_model import ClubDetail
 from ..utils.database import Neo4j, get_neo4j
@@ -14,11 +14,10 @@ initialize(
     client_id_=os.environ.get('AZURE_AD_CLIENT_ID')
 )
 
-scopes = "data.read"
+token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
 #Recommend clubs
 
-#Search for clubs
 @clubRouter.get("/{club_name}", response_model=Union[List[ClubDetail], str])
 @requires_auth
 async def club_search(
@@ -28,7 +27,7 @@ async def club_search(
 ):
     # Implement your Neo4j query to retrieve data based on the club_name
     try:
-        validate_scope(scopes,request)
+        validate_scope(token_scp,request)
         query = f"""MATCH (clubNode:Club) WHERE clubNode.ClubName 
         CONTAINS $club_name OR clubNode.ClubNameEng CONTAINS $club_name RETURN clubNode"""
         params = {"club_name": club_name}
@@ -50,8 +49,42 @@ async def club_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-#Select a club
+@clubRouter.post("/join/{club_id}")
+@requires_auth
+async def join_club(
+    request: Request,
+    club_id: str = Path(...,description="The ID of the club to join"),
+    user_id: int = Query(...,description="The ID of the user joining the club"),
+    neo4j: Neo4j = Depends(get_neo4j)
+):
+    try:
+        validate_scope(token_scp,request)
+        query = f"""MATCH (userNode:User), (clubNode:Club) WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id
+        CREATE (userNode)-[:JOINED]->(clubNode)"""
+        params = {"user_id": user_id, "club_id": club_id}
+        await neo4j.run(query, params)
+        return {"message": "User joined the club successfully."}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-#Join a club
-
-#Leave a club
+@clubRouter.delete("/leave/{club_id}")
+@requires_auth
+async def leave_club(
+    request: Request,
+    club_id: str = Path(...,description="The ID of the club to leave"),
+    user_id: int = Query(...,description="The ID of the user leaving the club"),
+    neo4j: Neo4j = Depends(get_neo4j)
+):
+    try:
+        validate_scope(token_scp,request)
+        query = f"""MATCH (userNode:User)-[r:JOINED]->(clubNode:Club) 
+        WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id DELETE r"""
+        params = {"user_id": user_id, "club_id": club_id}
+        await neo4j.run(query, params)
+        return {"message": "User left the club successfully."}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
