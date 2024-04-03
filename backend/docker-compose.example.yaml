@@ -15,5 +15,7 @@ services:
       - AZURE_AD_REDIRECT_URI=http://example.io/callback
       - AZURE_AD_SCOPES=api://{client_id}/data.read
       - AZURE_AD_TENANT_ID=tenant_id
+      - AZURE_AD_ACCESS_TOKEN_SCP=data.read
+      - GRAPH_SCOPE=User.Read
     ports:
-      - 80:80
+      - 8000:8000
