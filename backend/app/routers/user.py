@@ -59,29 +59,35 @@ async def auth_callback(request: Request, code: str):
 
 @userRouter.get("/auth/refresh/api_token")
 async def refresh_graph_token(request: Request):
-    result = auth_app.acquire_token_by_refresh_token(
+    try:
+        result = auth_app.acquire_token_by_refresh_token(
         request.headers.get('Refresh_Token'),
         scopes=api_scopes,
-    )
-    if "error" in result:
-        raise HTTPException(status_code=400, detail=result["error_description"])
+        )
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error_description"])
 
-    api_token = result["access_token"]
-    refresh_token = result["refresh_token"]
-    return {"api_token": api_token, "refresh_token": refresh_token}
+        api_token = result["access_token"]
+        refresh_token = result["refresh_token"]
+        return {"api_token": api_token, "refresh_token": refresh_token}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @userRouter.get("/auth/refresh/graph_token")
 async def refresh_api_token(request: Request):
-    result = auth_app.acquire_token_by_refresh_token(
+    try:
+        result = auth_app.acquire_token_by_refresh_token(
         request.headers.get('Refresh_Token'),
         scopes=graph_scopes,
-    )
-    if "error" in result:
-        raise HTTPException(status_code=400, detail=result["error_description"])
-
-    graph_token = result["access_token"]
-    refresh_token = result["refresh_token"]
-    return {"graph_token": graph_token, "refresh_token": refresh_token}
+        )
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error_description"])
+        
+        graph_token = result["access_token"]
+        refresh_token = result["refresh_token"]
+        return {"graph_token": graph_token, "refresh_token": refresh_token}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @userRouter.get("/login")
 @requires_auth
