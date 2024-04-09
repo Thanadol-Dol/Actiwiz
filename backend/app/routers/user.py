@@ -24,14 +24,13 @@ initialize(
 
 api_scopes = []
 api_scopes.append(os.environ.get('AZURE_AD_SCOPES'))
-graph_scopes = []
-graph_scopes.append(os.environ.get('GRAPH_SCOPE'))
+graph_scopes = ["User.Read","User.ReadBasic.All"]
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
 @userRouter.get("/auth/url")
 async def user_login(request: Request):
     auth_url = auth_app.get_authorization_request_url(
-        scopes=api_scopes,
+        scopes=api_scopes + graph_scopes,
         redirect_uri=os.environ.get('AZURE_AD_REDIRECT_URI'),
     )
     return {"auth_url": auth_url}
