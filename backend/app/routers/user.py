@@ -61,8 +61,8 @@ async def auth_callback(request: Request, code: str):
 async def refresh_graph_token(request: Request):
     try:
         result = auth_app.acquire_token_by_refresh_token(
-        request.headers.get('Refresh_Token'),
-        scopes=api_scopes,
+            request.headers.get('Refresh_Token'),
+            scopes=api_scopes,
         )
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error_description"])
@@ -187,3 +187,7 @@ async def get_user(
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@userRouter.get("/test/header_test")
+async def header_test(request: Request):
+    return {"headers": request.headers}
