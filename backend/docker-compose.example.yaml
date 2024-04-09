@@ -3,7 +3,7 @@ version: '3'
 services:
   backend:
     build: .
-    command: sh -c "uvicorn app.main:app --port=80 --host=0.0.0.0"
+    command: sh -c "uvicorn app.main:app --port=8000 --host=0.0.0.0"
     image: nad0l/actiwiz
     environment:
       - NEO4J_URI=neo4j+s://example.io
@@ -16,6 +16,5 @@ services:
       - AZURE_AD_SCOPES=api://{client_id}/data.read
       - AZURE_AD_TENANT_ID=tenant_id
       - AZURE_AD_ACCESS_TOKEN_SCP=data.read
-      - GRAPH_SCOPE=User.Read
     ports:
       - 8000:8000
