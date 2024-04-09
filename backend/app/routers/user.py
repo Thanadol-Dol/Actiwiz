@@ -61,7 +61,7 @@ async def auth_callback(request: Request, code: str):
 async def refresh_graph_token(request: Request):
     try:
         result = auth_app.acquire_token_by_refresh_token(
-            request.headers.get('Refresh_Token'),
+            request.headers.get('Refresh'),
             scopes=api_scopes,
         )
         if "error" in result:
@@ -77,7 +77,7 @@ async def refresh_graph_token(request: Request):
 async def refresh_api_token(request: Request):
     try:
         result = auth_app.acquire_token_by_refresh_token(
-        request.headers.get('Refresh_Token'),
+        request.headers.get('Refresh'),
         scopes=graph_scopes,
         )
         if "error" in result:
@@ -98,7 +98,7 @@ async def user_login(
     try:
         validate_scope(token_scp,request)
         graph_headers = {
-            "Authorization": f"Bearer {request.headers.get('Graph_Authorization')}",
+            "Authorization": f"Bearer {request.headers.get('Graph')}",
             "Content-Type": "application/json"   
         }
         response = requests.get('https://graph.microsoft.com/v1.0/me?$select=displayName,mail', headers = graph_headers)
@@ -187,7 +187,3 @@ async def get_user(
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-@userRouter.get("/test/header_test")
-async def header_test(request: Request):
-    return {"headers": request.headers}
