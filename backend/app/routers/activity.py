@@ -10,10 +10,6 @@ activityRouter = APIRouter(
     prefix="/activities",
     tags=["activities"]
 )
-initialize(
-    tenant_id_=os.environ.get('AZURE_AD_TENANT_ID'), 
-    client_id_=os.environ.get('AZURE_AD_CLIENT_ID')
-)
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
@@ -38,7 +34,7 @@ async def recommend_activities(
             result_data = {
                 'activity_id': result_node['ActivityID'],
                 'activity_name': result_node['ActivityName'],
-                'activity_name_eng': result_node['ActivityNameEng'] if 'ActivityNameEng' in result_node else None,
+                'activity_name_eng': result_node.get('ActivityNameENG', None),
                 'description': result_node['Description'],
                 'hour_total': result_node['HourTotal'],
                 'day_total': result_node['DayTotal'],
@@ -61,26 +57,37 @@ async def recommend_activities(
 @requires_auth
 async def activities_search(
     request: Request,
-    activity_name: str = Path(...,description= "The name of the activity"), 
+    activity_name: str = Path(...,description= "The name of the activity"),
+    page_number: int = Query(1, description="Page number, starting from 1"),
+    results_size: int = Query(10, description="Number of items per page"),
     neo4j: Neo4j = Depends(get_neo4j)
 ):
-    # Implement your Neo4j query to retrieve data based on the activity_name
     try:
         # Validate the scope of the request
         validate_scope(token_scp,request)
 
-        # Query to search for activities
-        activity_params = {"activity_name": activity_name}    
-        activity_query = f"""MATCH (activityNode:Activity) WHERE activityNode.ActivityName 
-        CONTAINS $activity_name OR activityNode.ActivityNameEng CONTAINS $activity_name RETURN activityNode"""
+        # Calculate SKIP and LIMIT values for pagination
+        skip = (page_number - 1) * results_size
+        limit = results_size
+
+        # Query to search for activities with pagination
+        activity_params = {"activity_name": activity_name, "skip": skip, "limit": limit}
+        activity_query = (
+            f"""MATCH (activityNode:Activity) WHERE activityNode.ActivityName 
+            CONTAINS $activity_name OR activityNode.ActivityNameENG CONTAINS $activity_name 
+            RETURN activityNode SKIP $skip LIMIT $limit"""
+        )
         results = await neo4j.query(activity_query, activity_params, fetch_all=True)
+        if results is None:
+            raise HTTPException(status_code=404, detail="No activity found.")
+        
         search_results = []
         for result in results:
             result_node = result['activityNode']
             result_data = {
                 'activity_id': result_node['ActivityID'],
                 'activity_name': result_node['ActivityName'],
-                'activity_name_eng': result_node['ActivityNameEng'] if 'ActivityNameEng' in result_node else None,
+                'activity_name_eng': result_node.get('ActivityNameENG', None),
                 'description': result_node['Description'],
                 'hour_total': result_node['HourTotal'],
                 'day_total': result_node['DayTotal'],
@@ -91,8 +98,6 @@ async def activities_search(
                 'academic_year': result_node['AcademicYear']
             }
             search_results.append(ActivityDetail(**result_data))
-        if len(search_results) == 0:
-            raise HTTPException(status_code=404, detail="No activity found.")
         return search_results
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))

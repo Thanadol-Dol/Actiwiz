@@ -17,11 +17,6 @@ auth_app = ConfidentialClientApplication(
     authority=os.environ.get('AZURE_AD_AUTHORITY'),
 )
 
-initialize(
-    tenant_id_=os.environ.get('AZURE_AD_TENANT_ID'), 
-    client_id_=os.environ.get('AZURE_AD_CLIENT_ID')
-)
-
 api_scopes = []
 api_scopes.append(os.environ.get('AZURE_AD_SCOPES'))
 graph_scopes = ["User.Read","User.ReadBasic.All"]
@@ -77,8 +72,8 @@ async def refresh_graph_token(request: Request):
 async def refresh_api_token(request: Request):
     try:
         result = auth_app.acquire_token_by_refresh_token(
-        request.headers.get('Refresh'),
-        scopes=graph_scopes,
+            request.headers.get('Refresh'),
+            scopes=graph_scopes,
         )
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error_description"])
