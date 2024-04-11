@@ -9,10 +9,6 @@ clubRouter = APIRouter(
     prefix="/clubs",
     tags=["clubs"],
 )
-initialize(
-    tenant_id_=os.environ.get('AZURE_AD_TENANT_ID'), 
-    client_id_=os.environ.get('AZURE_AD_CLIENT_ID')
-)
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
@@ -22,27 +18,38 @@ token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 @requires_auth
 async def club_search(
     request: Request,
-    club_name: str = Path(...,description="The name of the club"), 
+    club_name: str = Path(...,description="The name of the club"),
+    page_number: int = Query(1, description="Page number, starting from 1"),
+    results_size: int = Query(10, description="Number of items per page"),
     neo4j: Neo4j = Depends(get_neo4j)
 ):
     # Implement your Neo4j query to retrieve data based on the club_name
     try:
+        # Validate the scope of the request
         validate_scope(token_scp,request)
+
+        # Calculate SKIP and LIMIT values for pagination
+        skip = (page_number - 1) * results_size
+        limit = results_size
+
+        # Query to search for clubs with pagination
+        params = {"club_name": club_name, "skip": skip, "limit": limit}
         query = f"""MATCH (clubNode:Club) WHERE clubNode.ClubName 
-        CONTAINS $club_name OR clubNode.ClubNameEng CONTAINS $club_name RETURN clubNode"""
-        params = {"club_name": club_name}
+        CONTAINS $club_name OR clubNode.ClubNameEng CONTAINS $club_name 
+        RETURN clubNode SKIP $skip LIMIT $limit"""
         results = await neo4j.query(query, params, fetch_all=True)
+        if results is None:
+            raise HTTPException(status_code=404, detail="No club found.")
+        
         search_results = []
         for result in results:
             result_node = result['clubNode']
             result_data = {
                 'club_name': result_node['ClubName'],
-                'club_name_eng': result_node['ClubNameEng'] if 'ClubNameEng' in result_node else None,
+                'club_name_eng': result_node.get('ClubNameEng', None),
                 'club_id': result_node['ClubID']
             }
             search_results.append(ClubDetail(**result_data))
-        if(len(search_results) == 0):
-            raise HTTPException(status_code=404, detail="No club found.")
         return search_results
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
