@@ -242,3 +242,7 @@ web-build/
 docker-compose.yaml
 
 .vscode
+
+activities_by_principle
+
+clubs_by_name

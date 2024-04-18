@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, 
 from typing import List, Union
 from ..models.club_model import ClubDetail
 from ..utils.database import Neo4j, get_neo4j
-from fastapi_microsoft_identity import initialize, requires_auth, AuthError, validate_scope
+from ..utils.club_util import extract_club_data, get_total_clubs_by_name, get_total_recommend_clubs, get_total_clubs_class
+from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
+from ..utils.model_util import predict_class
 
 clubRouter = APIRouter(
     prefix="/clubs",
@@ -12,9 +14,91 @@ clubRouter = APIRouter(
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
-#Recommend clubs
+@clubRouter.post("/predict/user/{user_id}")
+@requires_auth
+async def recommend_clubs(
+    request: Request,
+    user_id: int = Path(...,description="The ID of the user to retrieve"),
+    neo4j: Neo4j = Depends(get_neo4j)
+):
+    try:
+        # Validate the scope of the request
+        validate_scope(token_scp,request)
 
-@clubRouter.get("/{club_name}", response_model=Union[List[ClubDetail], str])
+        sorted_classes = await predict_class('clubs_by_name', user_id)
+
+        # # Delete previous recommendations
+        delete_query = f"""MATCH (userNode:User)-[r:INTEREST_IN]->(clubClassNode:Bert_Name) 
+        WHERE userNode.UserID = $user_id DELETE r"""
+        delete_params = {"user_id": user_id}
+        await neo4j.query(delete_query, delete_params)
+
+        # # Predict clubs recommendation based on the predicted group
+        predict_query = f"""MATCH (userNode:User), (clubClassNode:Bert_Name)
+        WHERE userNode.UserID = $user_id AND clubClassNode.clusterNo = $club_class
+        CREATE (userNode)-[r:INTEREST_IN]->(clubClassNode)
+        SET r.Priority = $index"""
+        predict_params = {"user_id": user_id}
+        for index, club_class in enumerate(sorted_classes,start=1):
+            predict_params["club_class"] = club_class
+            predict_params["index"] = index
+            await neo4j.query(predict_query, predict_params)
+
+        return {"message": "Update clubs recommendation successfully."}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@clubRouter.get("/recommend/user/{user_id}")
+@requires_auth
+async def recommend_clubs(
+    request: Request,
+    user_id: int = Path(...,description="The ID of the user to retrieve"),
+    page_number: int = Query(1, description="Page number, starting from 1"),
+    results_size: int = Query(10, description="Number of items per page"),
+    priority: int = Query(1, description="Priority of the recommendation"),
+    neo4j: Neo4j = Depends(get_neo4j)
+):
+    try:
+        # Validate the scope of the request
+        validate_scope(token_scp,request)
+
+        # Calculate SKIP and LIMIT values for pagination
+        skip = (page_number - 1) * results_size
+        
+        # Get total classes
+        total_classes = await get_total_clubs_class()
+        if total_classes == 0:
+            raise HTTPException(status_code=404, detail="No class found.")
+        if total_classes < priority:
+            raise HTTPException(status_code=404, detail="Priority out of range.")
+
+        # Get total clubs
+        total_clubs = await get_total_recommend_clubs(user_id,priority)
+        if total_clubs == 0:
+            raise HTTPException(status_code=404, detail="No club found.")
+        if total_clubs < skip:
+            raise HTTPException(status_code=404, detail="Page number out of range.")
+
+        # Query to recommend clubs with pagination
+        recommend_query = f"""MATCH (clubNode:Club)-[:DESCRIPT_BY_CLUP_ACTIVITY_NAME_AS]->(clubClassNode:Bert_Name)
+        <-[interest:INTEREST_IN]-(userNode:User)
+        WHERE userNode.UserID = $user_id AND interest.Priority = $priority
+        RETURN clubNode SKIP $skip LIMIT $limit"""
+        recommend_params = {"user_id": user_id, "priority": priority, "skip": skip, "limit": results_size}
+        results = await neo4j.query(recommend_query, recommend_params, fetch_all=True)
+        clubs_data = extract_club_data(results)
+        
+        has_next_page = True if total_clubs > skip + results_size else False
+        has_next_class = True if total_classes > priority + 1 else False
+        return {"clubs": clubs_data, "has_next_page": has_next_page, "has_next_class": has_next_class}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@clubRouter.get("/{club_name}")
 @requires_auth
 async def club_search(
     request: Request,
@@ -30,27 +114,23 @@ async def club_search(
 
         # Calculate SKIP and LIMIT values for pagination
         skip = (page_number - 1) * results_size
-        limit = results_size
+
+        # Get total clubs
+        total_clubs = await get_total_clubs_by_name(club_name)
+        if total_clubs == 0:
+            raise HTTPException(status_code=404, detail="No club found.")
+        if total_clubs < skip:
+            raise HTTPException(status_code=404, detail="Page number out of range.")
 
         # Query to search for clubs with pagination
-        params = {"club_name": club_name, "skip": skip, "limit": limit}
-        query = f"""MATCH (clubNode:Club) WHERE clubNode.ClubName 
+        club_params = {"club_name": club_name, "skip": skip, "limit": results_size}
+        club_query = f"""MATCH (clubNode:Club) WHERE clubNode.ClubName 
         CONTAINS $club_name OR clubNode.ClubNameEng CONTAINS $club_name 
         RETURN clubNode SKIP $skip LIMIT $limit"""
-        results = await neo4j.query(query, params, fetch_all=True)
-        if results is None:
-            raise HTTPException(status_code=404, detail="No club found.")
-        
-        search_results = []
-        for result in results:
-            result_node = result['clubNode']
-            result_data = {
-                'club_name': result_node['ClubName'],
-                'club_name_eng': result_node.get('ClubNameEng', None),
-                'club_id': result_node['ClubID']
-            }
-            search_results.append(ClubDetail(**result_data))
-        return search_results
+        results = await neo4j.query(club_query, club_params, fetch_all=True)
+        club_data = extract_club_data(results)
+        has_next_page = True if total_clubs > skip + results_size else False
+        return {"clubs": club_data, "has_next_page": has_next_page}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:

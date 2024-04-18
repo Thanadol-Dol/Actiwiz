@@ -2,9 +2,9 @@ from fastapi import APIRouter, Request, HTTPException, Depends, Path
 from ..models.user_model import UserDetail
 from msal import ConfidentialClientApplication
 from ..utils.database import Neo4j, get_neo4j
-from fastapi_microsoft_identity import initialize, requires_auth, AuthError, validate_scope
+from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os, requests
-import json
+from ..utils.user_util import extract_user_data, get_user_next_id
 
 userRouter = APIRouter(
     prefix="/users",
@@ -125,17 +125,10 @@ async def create_user(
     try:
         validate_scope(token_scp,request)
         
-        user_max_id = await neo4j.user_max_id()
-        user_detail = {
-            "UserID": user_max_id,
-            "StudentName": user.student_name, 
-            "AcademicEmail": user.academic_email,
-            "AcademicDegree": user.academic_degree,
-            "AcademicYear": user.academic_year,
-            "Faculty": user.faculty,
-            "Department": user.department
-        }
-        user_params = {"user_params": user_detail}
+        user_next_id = await get_user_next_id()
+        new_user = user.model_dump()
+        new_user['UserID'] = user_next_id
+        user_params = {"user_params": new_user}
         user_query = f"""CREATE (userNode:User $user_params)"""
         await neo4j.run(user_query, user_params)
         
@@ -167,17 +160,8 @@ async def get_user(
         user_params = {"user_id": user_id}
         user_query = f"""MATCH (userNode:User) WHERE userNode.UserID = $user_id RETURN userNode"""
         result = await neo4j.query(user_query, user_params)
-        user_node = result['userNode']
-        user_data = {
-            'user_id': user_node['UserID'],
-            'student_name': user_node['StudentName'],
-            'academic_degree': user_node['AcademicDegree'],
-            'academic_year': user_node['AcademicYear'],
-            'academic_email': user_node['AcademicEmail'],
-            'faculty': user_node['Faculty'],
-            'department': user_node['Department']
-        }
-        return UserDetail(**user_data)
+        user_data = extract_user_data(result)
+        return user_data
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
