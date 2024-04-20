@@ -2,9 +2,7 @@ const Stack = createNativeStackNavigator();
 import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import UserFunctionText from "./components/UserFunctionText";
 import LoginPage from "./screens/LoginPage";
-import RegisterPage from "./screens/RegisterPage";
 import FeedPage from "./screens/FeedPage";
 import DetailPage from "./screens/DetailPage";
 import NotificationPage from "./screens/NotificationPage";
@@ -15,23 +13,10 @@ import EvaluatePage from "./screens/EvaluatePage";
 import ToSinfoPage from "./screens/ToSinfoPage";
 import ClubPage from "./screens/ClubPage";
 import JoinClubPage from "./screens/JoinClubPage";
-import ComponentText from "./components/ComponentText";
 import CautionJoinEvent from "./components/CautionJoinEvent";
 import CautionJoinClubCancel from "./components/CautionJoinClubCancel";
 import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
 import CautionJoinClub from "./components/CautionJoinClub";
-import EditProfilePopup from "./components/EditProfilePopup";
-import CircleBar from "./components/CircleBar";
-import AtomsFormFieldIconRi from "./components/AtomsFormFieldIconRi";
-import AtomsButtonsLabelsWh from "./components/AtomsButtonsLabelsWh";
-import AtomsButtonsResources1 from "./components/AtomsButtonsResources1";
-import AtomsButtonsResources2 from "./components/AtomsButtonsResources2";
-import AtomsMediaImage from "./components/AtomsMediaImage";
-import DarkModeYesFirstItemActi from "./components/DarkModeYesFirstItemActi";
-import TypeDefaultDarkModeYes from "./components/TypeDefaultDarkModeYes";
-import TypeDefaultModeDarkModeY from "./components/TypeDefaultModeDarkModeY";
-import DarkModeYes from "./components/DarkModeYes";
-import AtomsIconsSystemCheck from "./components/AtomsIconsSystemCheck";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
@@ -60,11 +45,6 @@ const App = () => {
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="RegisterPage"
-              component={RegisterPage}
               options={{ headerShown: false }}
             />
             <Stack.Screen
