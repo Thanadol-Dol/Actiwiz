@@ -5,7 +5,6 @@ from ..utils.database import Neo4j, get_neo4j
 from ..utils.club_util import extract_club_data, get_total_clubs_by_name, get_total_recommend_clubs, get_total_clubs_class
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
-from ..utils.model_util import predict_class
 
 clubRouter = APIRouter(
     prefix="/clubs",
@@ -13,42 +12,6 @@ clubRouter = APIRouter(
 )
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
-
-@clubRouter.post("/predict/user/{user_id}")
-@requires_auth
-async def recommend_clubs(
-    request: Request,
-    user_id: int = Path(...,description="The ID of the user to retrieve"),
-    neo4j: Neo4j = Depends(get_neo4j)
-):
-    try:
-        # Validate the scope of the request
-        validate_scope(token_scp,request)
-
-        sorted_classes = await predict_class('clubs_by_name', user_id)
-
-        # # Delete previous recommendations
-        delete_query = f"""MATCH (userNode:User)-[r:INTEREST_IN]->(clubClassNode:Bert_Name) 
-        WHERE userNode.UserID = $user_id DELETE r"""
-        delete_params = {"user_id": user_id}
-        await neo4j.query(delete_query, delete_params)
-
-        # # Predict clubs recommendation based on the predicted group
-        predict_query = f"""MATCH (userNode:User), (clubClassNode:Bert_Name)
-        WHERE userNode.UserID = $user_id AND clubClassNode.clusterNo = $club_class
-        CREATE (userNode)-[r:INTEREST_IN]->(clubClassNode)
-        SET r.Priority = $index"""
-        predict_params = {"user_id": user_id}
-        for index, club_class in enumerate(sorted_classes,start=1):
-            predict_params["club_class"] = club_class
-            predict_params["index"] = index
-            await neo4j.query(predict_query, predict_params)
-
-        return {"message": "Update clubs recommendation successfully."}
-    except AuthError as e:
-        raise HTTPException(status_code=401, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @clubRouter.get("/recommend/user/{user_id}")
 @requires_auth

@@ -5,7 +5,6 @@ from ..models.activity_model import ActivityDetail
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
 from ..utils.activity_util import extract_activity_data, get_total_activities_by_name, get_total_recommend_activities, get_total_activities_class
-from ..utils.model_util import predict_class
 
 activityRouter = APIRouter(
     prefix="/activities",
@@ -13,42 +12,6 @@ activityRouter = APIRouter(
 )
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
-
-@activityRouter.post("/predict/user/{user_id}")
-@requires_auth
-async def recommend_activities(
-    request: Request,
-    user_id: int = Path(...,description="The ID of the user to retrieve"),
-    neo4j: Neo4j = Depends(get_neo4j)
-):
-    try:
-        # Validate the scope of the request
-        validate_scope(token_scp,request)
-
-        sorted_classes = await predict_class('activities_by_principle', user_id)
-
-        # Delete previous recommendations
-        delete_query = f"""MATCH (userNode:User)-[r:INTEREST_IN]->(activityClassNode:No_Group_Principle_Cluster) 
-        WHERE userNode.UserID = $user_id DELETE r"""
-        delete_params = {"user_id": user_id}
-        await neo4j.query(delete_query, delete_params)
-
-        # Predict activities recommendation based on the predicted group
-        predict_query = f"""MATCH (userNode:User), (activityClassNode:No_Group_Principle_Cluster)
-        WHERE userNode.UserID = $user_id AND activityClassNode.clusterNo = $activity_class
-        CREATE (userNode)-[r:INTEREST_IN]->(activityClassNode)
-        SET r.Priority = $index"""
-        predict_params = {"user_id": user_id}
-        for index, activity_class in enumerate(sorted_classes,start=1):
-            predict_params["activity_class"] = activity_class
-            predict_params["index"] = index
-            await neo4j.query(predict_query, predict_params)
-
-        return {"message": "Update activities recommendation successfully."}
-    except AuthError as e:
-        raise HTTPException(status_code=401, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     
 @activityRouter.get("/recommend/user/{user_id}")
 @requires_auth
@@ -151,26 +114,6 @@ async def join_activity(
         params = {"user_id": user_id, "activity_id": activity_id}
         await neo4j.run(query, params)
         return {"message": "User joined the activity successfully."}
-    except AuthError as e:
-        raise HTTPException(status_code=401, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@activityRouter.get("/{user_id}/recommend/total")
-@requires_auth
-async def recommend_activities(
-    request: Request,
-    user_id: int = Path(...,description="The ID of the user to retrieve"),
-    priority: int = Query(1, description="Priority of the recommendation"),
-    neo4j: Neo4j = Depends(get_neo4j)
-):
-    try:
-        # Validate the scope of the request
-        validate_scope(token_scp,request)
-
-        total_activities = await get_total_recommend_activities(user_id, priority)
-        total_activities_class = await get_total_activities_class()
-        return {"total_activities": total_activities, "total_activities_class": total_activities_class}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
