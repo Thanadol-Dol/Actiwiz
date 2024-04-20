@@ -5,9 +5,6 @@ services:
     build: .
     command: sh -c "uvicorn app.main:app --port=8000 --host=0.0.0.0"
     image: nad0l/actiwiz
-    volumes:
-      - ./activities_by_principle:/app/activities_by_principle
-      - ./clubs_by_name:/app/clubs_by_name
     environment:
       - NEO4J_URI=neo4j+s://example.io
       - NEO4J_USERNAME=neo4j
