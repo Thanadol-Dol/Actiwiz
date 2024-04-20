@@ -3,7 +3,6 @@ import { Image } from "expo-image";
 import { StyleSheet, View, Pressable, Text, Modal } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
-import IOSAlphbeticKeyboardEngli from "../components/IOSAlphbeticKeyboardEngli";
 import EditProfilePopup from "../components/EditProfilePopup";
 import DetailContainer from "../components/DetailContainer";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
@@ -13,8 +12,8 @@ const EditProfile = () => {
   const [rectangle2Visible, setRectangle2Visible] = useState(false);
   const [rectangle3Visible, setRectangle3Visible] = useState(false);
   const [
-    c95FB49443379433DA37B8F9BCImageVisible,
-    setC95FB49443379433DA37B8F9BCImageVisible,
+    WinterImageVisible,
+    setWinterImageVisible,
   ] = useState(false);
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const [rectangle5Visible, setRectangle5Visible] = useState(false);
@@ -43,19 +42,19 @@ const EditProfile = () => {
     setRectangle3Visible(false);
   }, []);
 
-  const openC95FB49443379433DA37B8F9BCImage = useCallback(() => {
-    setC95FB49443379433DA37B8F9BCImageVisible(true);
+  const openWinterImage = useCallback(() => {
+    setWinterImageVisible(true);
   }, []);
 
-  const closeC95FB49443379433DA37B8F9BCImage = useCallback(() => {
-    setC95FB49443379433DA37B8F9BCImageVisible(false);
+  const closeWinterImage = useCallback(() => {
+    setWinterImageVisible(false);
   }, []);
 
-  const openRectangle5 = useCallback(() => {
+  const openRectangle4 = useCallback(() => {
     setRectangle5Visible(true);
   }, []);
 
-  const closeRectangle5 = useCallback(() => {
+  const closeRectangle4 = useCallback(() => {
     setRectangle5Visible(false);
   }, []);
 
@@ -81,31 +80,24 @@ const EditProfile = () => {
           onPress={openRectangle3}
         />
         <Pressable
-          style={styles.c95fB49443379433Da37b8f9bc}
-          onPress={openC95FB49443379433DA37B8F9BCImage}
+          style={styles.Winter}
+          onPress={openWinterImage}
         >
           <Image
             style={[styles.icon, styles.iconLayout]}
             contentFit="cover"
-            source={require("../assets/2109c95fb49443379433da37b8f9bc7a-21.png")}
+            source={require("../assets/ProfileWinter.png")}
           />
         </Pressable>
         <DetailContainer
-          detailText="Log out"
+          detailText="Log Out"
           propTop={650}
           propLeft={137}
-          propMarginTop="unset"
-          propMarginLeft="unset"
           propWidth={120}
           propHeight={40}
-          propBorderStyle="unset"
-          propBorderColor="unset"
           propElevation={4}
           propHeight1="100%"
           propWidth1="100%"
-          propRight="0%"
-          propBottom="0%"
-          propBackgroundColor="unset"
           propBackgroundColor1="#d8d8d8"
           propBorderRadius1={23}
           propBackgroundColor2="#be2828"
@@ -119,10 +111,10 @@ const EditProfile = () => {
           onButtonPress={() => navigation.navigate("LoginPage")}
         />
         <Text style={[styles.name, styles.nameTypo]}>Name</Text>
-        <Text style={[styles.name, styles.nameTypo]}>Name</Text>
-        <Text style={[styles.year, styles.nameTypo]}>Year</Text>
-        <Text style={[styles.academicId, styles.nameTypo]}>Academic ID</Text>
         <Text style={[styles.studentId, styles.nameTypo]}>Student ID</Text>
+        <Text style={[styles.year, styles.nameTypo]}>Year</Text>
+        <Text style={[styles.academicId, styles.nameTypo]}>Department Of</Text>
+
         <Pressable
           style={styles.arrowBackIos}
           onPress={() => navigation.navigate("FeedPage")}
@@ -135,49 +127,45 @@ const EditProfile = () => {
         </Pressable>
         <Pressable
           style={[styles.editProfileChild2, styles.editChildLayout]}
-          onPress={openRectangle5}
+          onPress={openRectangle4}
         />
       </View>
 
       <Modal animationType="fade" transparent visible={rectangle1Visible}>
         <View style={styles.rectangle1Overlay}>
           <Pressable style={styles.rectangle1Bg} onPress={closeRectangle1} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle1} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle2Visible}>
         <View style={styles.rectangle2Overlay}>
           <Pressable style={styles.rectangle2Bg} onPress={closeRectangle2} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle2} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle3Visible}>
         <View style={styles.rectangle3Overlay}>
           <Pressable style={styles.rectangle3Bg} onPress={closeRectangle3} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle3} />
         </View>
       </Modal>
 
       <Modal
         animationType="fade"
         transparent
-        visible={c95FB49443379433DA37B8F9BCImageVisible}
+        visible={WinterImageVisible}
       >
-        <View style={styles.c95FB49443379433DA37B8F9BCImageOverlay}>
+        <View style={styles.WinterImageOverlay}>
           <Pressable
-            style={styles.c95FB49443379433DA37B8F9BCImageBg}
-            onPress={closeC95FB49443379433DA37B8F9BCImage}
+            style={styles.WinterImageBg}
+            onPress={closeWinterImage}
           />
-          <EditProfilePopup onClose={closeC95FB49443379433DA37B8F9BCImage} />
+          <EditProfilePopup onClose={closeWinterImage} />
         </View>
       </Modal>
 
       <Modal animationType="fade" transparent visible={rectangle5Visible}>
         <View style={styles.rectangle5Overlay}>
-          <Pressable style={styles.rectangle5Bg} onPress={closeRectangle5} />
-          <IOSAlphbeticKeyboardEngli onClose={closeRectangle5} />
+          <Pressable style={styles.rectangle5Bg} onPress={closeRectangle4} />
         </View>
       </Modal>
     </>
@@ -272,13 +260,13 @@ const styles = StyleSheet.create({
   editProfileChild1: {
     top: 416,
   },
-  c95FB49443379433DA37B8F9BCImageOverlay: {
+  WinterImageOverlay: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(113, 113, 113, 0.3)",
   },
-  c95FB49443379433DA37B8F9BCImageBg: {
+  WinterImageBg: {
     position: "absolute",
     width: "100%",
     height: "100%",
@@ -288,7 +276,7 @@ const styles = StyleSheet.create({
   icon: {
     borderRadius: Border.br_341xl,
   },
-  c95fB49443379433Da37b8f9bc: {
+  Winter: {
     left: 133,
     top: 105,
     width: 124,

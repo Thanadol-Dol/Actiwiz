@@ -3,7 +3,6 @@ import { StyleSheet, View, Pressable, Text, Modal, ScrollView } from "react-nati
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
-import AtomsFormFieldIconRi from "../components/AtomsFormFieldIconRi";
 import DetailContainer from "../components/DetailContainer";
 import CompetitionSection from "../components/CompetitionSection";
 import EventDetailContainer from "../components/EventDetailContainer";
@@ -28,17 +27,12 @@ const FeedPage = () => {
   return (
     <ScrollView>
       <View style={styles.feedPage}>
-        <View style={[styles.WhiteBoxIG, styles.WhiteBoxLayout]} />
+      <View style={[styles.WhiteBoxIG, styles.WhiteBoxLayout]} />
         <Searchbar
           placeholder="Search"
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.Searchbar}
-        />
-        <Image
-          style={[styles.feedPageItem, styles.WhiteBoxLayout]}
-          contentFit="cover"
-          source={require("../assets/frame-1.png")} //แก้ให้เป็นcomponent
         />
         <Pressable
           style={[styles.notification, styles.notificationPosition]}
@@ -50,7 +44,6 @@ const FeedPage = () => {
             source={require("../assets/notification.png")}
           />
         </Pressable>
-        <Text style={styles.TabSuggestClub}>club that u may be interested in:</Text>
         <Text style={styles.event}>Event :</Text>
 
         <Image
@@ -133,7 +126,7 @@ const FeedPage = () => {
             โครงการประกวดนวัตกรรม Innovation For Kmutt...
           </Text>
           <DetailContainer
-            detailText="Detail"
+            detailText="DETAIL"
             propTop={155}
             propLeft={265}
             propWidth={100}
@@ -175,6 +168,8 @@ const FeedPage = () => {
           propFontFamily="Ubuntu-Regular"
           onButtonPress={() => navigation.navigate("DetailPage")}
         />
+
+
         <EventDetailContainer />
         <View style={[styles.WhiteBoxLayout]} />
         <View style={[styles.SpaceBar1, styles.SpaceBetweenEvent]} />
