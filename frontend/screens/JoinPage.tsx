@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Pressable, Linking, Text } from "react-native";
+import { StyleSheet, View, Pressable, Linking, Text, ImageStyle } from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -16,14 +16,12 @@ const JoinPage = () => {
         onPress={() => navigation.navigate("FeedPage")}
       >
         <Image
-          style={[styles.icon, styles.iconLayout]}
-          contentFit="cover"
+          style={[styles.icon, styles.iconLayout] as ImageStyle} // Change the type of the style prop to ImageStyle
           source={require("../assets/arrow-back-ios1.png")}
         />
       </Pressable>
       <Image
-        style={[styles.image4Icon, styles.image4IconPosition]}
-        contentFit="cover"
+        style={[styles.image4Icon, styles.image4IconPosition] as ImageStyle} // Change the type of the style prop to ImageStyle
         source={require("../assets/image-41.png")}
       />
       <Text style={[styles.descriptionBangmodContainer, styles.joinedClr]}>
@@ -55,8 +53,7 @@ const JoinPage = () => {
         <View style={[styles.groupChild, styles.groupChildLayout]} />
         <Text style={[styles.joined, styles.joinedClr]}>Joined</Text>
         <Image
-          style={styles.checkRingRoundIcon}
-          contentFit="cover"
+          style={styles.checkRingRoundIcon as ImageStyle}
           source={require("../assets/check-ring-round.png")}
         />
       </View>
@@ -113,7 +110,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.ubuntuRegular,
   },
   httpsformsgleao8xrnosgm6d1: {
-    textDecoration: "underline",
+    textDecorationLine: "underline",
   },
   descriptionBangmodContainer: {
     top: 462,

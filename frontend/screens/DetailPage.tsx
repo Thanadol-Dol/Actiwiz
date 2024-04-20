@@ -1,12 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Text,
-  Linking,
-  Modal,
-} from "react-native";
+import {StyleSheet, View, Pressable, Text, Linking, Modal} from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -94,11 +87,9 @@ const DetailPage = () => {
 const styles = StyleSheet.create({
   iconLayout: {
     overflow: "hidden",
-    width: "100%",
   },
   image4IconPosition: {
-    width: 390,
-    left: 0,
+    width: "100%",
     position: "absolute",
   },
   groupChildLayout: {
@@ -109,8 +100,7 @@ const styles = StyleSheet.create({
   detailPageChild: {
     backgroundColor: Color.colorDarkorange_100,
     height: 383,
-    top: 0,
-    width: 390,
+    width: "100%",
   },
   image4Icon: {
     top: 64,
@@ -136,8 +126,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    left: 0,
-    top: 0,
   },
   groupChild: {
     borderRadius: 8,
@@ -181,7 +169,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.ubuntuRegular,
   },
   httpsformsgleao8xrnosgm6d1: {
-    textDecoration: "underline",
+    textDecorationLine: "underline",
   },
   descriptionBangmodContainer: {
     top: 462,
@@ -197,7 +185,8 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_3xs,
     backgroundColor: Color.iOSFFFFFF,
     flex: 1,
-    height: 844,
+    height: "100%",
+    width: "100%",
   },
 });
 

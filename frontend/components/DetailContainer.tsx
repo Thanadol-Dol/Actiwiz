@@ -4,7 +4,7 @@ import AtomsButtonsResources1 from "./AtomsButtonsResources1";
 import AtomsButtonsLabelsWh from "./AtomsButtonsLabelsWh";
 
 export type DetailContainerType = {
-  detailText?: string;
+  detailText ?: string;
 
   /** Style props */
   propTop?: number | string;
@@ -100,45 +100,10 @@ const DetailContainer = ({
     propElevation,
   ]);
 
-  const atomsButtonsResourcesStyle = useMemo(() => {
-    return {
-      ...getStyleValue("height", propHeight1),
-      ...getStyleValue("width", propWidth1),
-      ...getStyleValue("right", propRight),
-      ...getStyleValue("bottom", propBottom),
-      ...getStyleValue("backgroundColor", propBackgroundColor),
-    };
-  }, [propHeight1, propWidth1, propRight, propBottom, propBackgroundColor]);
 
-  const maskStyle = useMemo(() => {
-    return {
-      ...getStyleValue("backgroundColor", propBackgroundColor1),
-      ...getStyleValue("borderRadius", propBorderRadius1),
-    };
-  }, [propBackgroundColor1, propBorderRadius1]);
 
-  const rectangleViewStyle = useMemo(() => {
-    return {
-      ...getStyleValue("backgroundColor", propBackgroundColor2),
-    };
-  }, [propBackgroundColor2]);
 
-  const atomsButtonsLabelsWhStyle = useMemo(() => {
-    return {
-      ...getStyleValue("marginTop", propMarginTop1),
-      ...getStyleValue("right", propRight1),
-    };
-  }, [propMarginTop1, propRight1]);
 
-  const textStyle = useMemo(() => {
-    return {
-      ...getStyleValue("marginTop", propMarginTop2),
-      ...getStyleValue("left", propLeft1),
-      ...getStyleValue("fontSize", propFontSize),
-      ...getStyleValue("color", propColor),
-      ...getStyleValue("fontFamily", propFontFamily),
-    };
-  }, [propMarginTop2, propLeft1, propFontSize, propColor, propFontFamily]);
 
   return (
     <Pressable style={[styles.button, buttonStyle]} onPress={onButtonPress}>

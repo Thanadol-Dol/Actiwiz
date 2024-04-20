@@ -6,6 +6,7 @@ import { useNavigation, ParamListBase } from "@react-navigation/native";
 import EmailSection from "../components/EmailSection";
 import PasswordSection from "../components/PasswordSection";
 import { FontFamily, FontSize, Border, Color } from "../GlobalStyles";
+import { WebView } from 'react-native-webview';
 
 const RegisterPage = () => {
   const [rectangleVisible, setRectangleVisible] = useState(false);
