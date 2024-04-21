@@ -134,6 +134,8 @@ async def create_user(
         
         department_relationship_query = f"""MATCH (userNode:User), (departmentNode:Department) 
         WHERE userNode.Department = departmentNode.DepartmentName 
+        AND userNode.Faculty = departmentNode.Faculty 
+        AND userNode.AcademicDegree = departmentNode.DegreeTH
         MERGE (userNode)-[:IN_DEPARTMENT_OF]->(departmentNode)"""
         await neo4j.run(department_relationship_query)
 
