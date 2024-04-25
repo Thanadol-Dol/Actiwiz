@@ -19,7 +19,6 @@ import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
 import CautionJoinClub from "./components/CautionJoinClub";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View, Text, Pressable, TouchableOpacity } from "react-native";
 
 const App = () => {
   const [hideSplashScreen, setHideSplashScreen] = React.useState(true);

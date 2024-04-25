@@ -1,6 +1,6 @@
-import React, {  useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, View, Text, Pressable, ActivityIndicator} from "react-native";
+import { StyleSheet, View, Text, Pressable} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color } from "../GlobalStyles";
 import { WebView } from 'react-native-webview';
@@ -11,11 +11,30 @@ import FeedPage from "./FeedPage";
 const LoginPage = () => {
   const navigation = useNavigation();
   const [webviewVisible, setWebviewVisible] = useState(false);
-  const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/login';
-  const [accessToken, setAccessToken] = useState<string>('');
-  const [refreshToken, setRefreshToken] = useState<string>('');
-  const [graphToken, setGraphToken] = useState<string>('');
+  const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [graphToken, setGraphToken] = useState<string | null>(null);
+  const [loginUrl, setLoginUrl] = useState<string>('');
   
+  useEffect(() => {
+    const fetchLoginUrl = async () => {
+      try {
+        const response = await axios.get(webviewSource);
+        const { data } = response;
+        if (data && data.auth_url) {
+          setLoginUrl(data.auth_url);
+        } else {
+          console.error('Error: Invalid response from server');
+        }
+      } catch (error) {
+        console.error('Error fetching login URL:', error);
+      }
+    };
+
+    fetchLoginUrl();
+  }, []);
+
   const navigateToNextScreen = () => {
     navigation.navigate('FeedPage' as never);
   };
@@ -32,71 +51,104 @@ const LoginPage = () => {
     }
   };
 
+  const storeTokens = async (accessToken: string | null, refreshToken: string | null, graphToken: string | null) => {
+    try {
+      AsyncStorage.setItem('accessToken', accessToken || '');
+      AsyncStorage.setItem('refreshToken', refreshToken || '');
+      AsyncStorage.setItem('graphToken', graphToken || '');
+    } catch (error) {
+      console.error('Error storing tokens:', error);
+    }
+  }
+
   const handleWebViewNavigation = async (event: { url: any; }) => {
     const { url } = event;
 
     if (url.includes('access_token')) {
-      const accessToken = url.match(/access_token=([^&]*)/)[1];
-      const refreshToken = url.match(/refresh_token=([^&]*)/)[1];
+      const newAccessToken = url.match(/access_token=([^&]*)/)[1];
+      const newRefreshToken = url.match(/refresh_token=([^&]*)/)[1];
       setWebviewVisible(false);
 
       try {
-        // Store tokens in AsyncStorage
-        await storeTokens(accessToken, refreshToken, graphToken);
+        // Store tokens in state
+        setAccessToken(newAccessToken);
+        setRefreshToken(newRefreshToken);
+        setGraphToken(graphToken || '');
 
         // Send API token, refresh token, and graph token in request header
         const tokens = await getTokens();
+        const { accessToken, refreshToken, graphToken: newGraphToken } = tokens;
+
+         // Send tokens to the backend API for validation
+        const loginResponse = await axios.post('https://actiwizcpe.galapfa.ro/users/login', {
+          api_token: accessToken,
+          graph_token: graphToken,
+        });
+
+        // Check the login response and act accordingly
+        if (loginResponse.data.login_success) {
+          console.log("User logged in successfully");
+          navigateToNextScreen();
+        } else {
+          console.error("User not logged in");
+        }
 
         const response = await axios.post('https://actiwizcpe.galapfa.ro/users/create', {
-          user_id: 0, // System backend will handle this
-          student_name: "String", // Example value, replace with user input or data from login API
+          user_id: 0,
+          student_name: "String",
           academic_degree: "String",
           academic_year: 0,
-          academic_email: "String", // Example value, replace with data from login API
+          academic_email: "String",
           faculty: "String",
           department: "String",
         }, {
           headers: {
             'Authorization': `Bearer ${accessToken}`, // Bearer token from login
             'Refresh': refreshToken, // Refresh token from login
-            'Graph': graphToken, // Graph token from refresh
+            'Graph': newGraphToken, // Graph token from refresh
           },
         });
 
         if (response.data.message === "User created successfully") {
-          console.log("User created successfully");
+          console.log("User created successfully");        
+          // Navigate to the desired screen after successful login
+          navigation.navigate('FeedPage' as never);
+        }else {
+          console.error("Tokens are not valid");
         }
-        // Navigate to the desired screen after successful login
-        navigateToNextScreen();
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
     }
   };
 
   const refreshApiToken = async (refreshToken: string): Promise<any> => {
-    try {
-      const response = await axios.post('https://actiwizcpe.galapfa.ro/users/auth/refresh/api_token', {
-        refresh_token: refreshToken,
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error refreshing API token:', error);
-      throw error;
-    }
-  };
+  try {
+    const response = await axios.post('https://actiwizcpe.galapfa.ro/users/auth/refresh/api_token', null, {
+      headers: {
+        'Authorization': `Bearer ${refreshToken}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing API token:', error);
+    throw error;
+  }
+};
 
-  const refreshGraphToken = async (refreshToken: string): Promise<any> => {
-    try {
-      const response = await axios.post('https://actiwizcpe.galapfa.ro/users/auth/refresh/graph_token', {
-        refresh_token: refreshToken,
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error refreshing Graph token:', error);
-      throw error;
-    }
-  };
+const refreshGraphToken = async (refreshToken: string): Promise<any> => {
+  try {
+    const response = await axios.post('https://actiwizcpe.galapfa.ro/users/auth/refresh/graph_token', null, {
+      headers: {
+        'Authorization': `Bearer ${refreshToken}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing Graph token:', error);
+    throw error;
+  }
+};
 
 return (
     <>
@@ -118,15 +170,19 @@ return (
           <View style={[styles.rectangleView, styles.groupChildLayout]} />
           <Text style={[styles.login, styles.loginTypo]}>Login</Text>
         </Pressable>
-        {webviewVisible && (
+        {webviewVisible && loginUrl && (
           <WebView
-            source={{ uri: webviewSource }}
-            style={{ flex: 1, marginTop: 20 }} // Adjust styling as needed
+            source={{ uri: loginUrl }}
+            style={{ flex: 1, marginTop: 30 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            onError={(error) => console.error('WebView error:', error)}
             onLoadStart={() => console.log('WebView loading started')}
             onLoadEnd={() => console.log('WebView loading ended')}
             onNavigationStateChange={handleWebViewNavigation}
-          />
-        )}
+        />
+      )}
       </View>
     </>
   );
@@ -205,4 +261,3 @@ export default LoginPage;
 function storeTokens(accessToken: string | null, refreshToken: string | null, graphToken: string | null) {
   throw new Error("Function not implemented.");
 }
-
