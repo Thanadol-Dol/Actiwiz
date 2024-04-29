@@ -12,9 +12,6 @@ const LoginPage = () => {
   const navigation = useNavigation();
   const [webviewVisible, setWebviewVisible] = useState(false);
   const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [graphToken, setGraphToken] = useState<string | null>(null);
   const [loginUrl, setLoginUrl] = useState<string>('');
   
   useEffect(() => {
@@ -39,47 +36,27 @@ const LoginPage = () => {
     navigation.navigate('FeedPage' as never);
   };
 
-  const getTokens = async () => {
-    try {
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
-      const graphToken = await AsyncStorage.getItem('graphToken');
-      return { accessToken, refreshToken, graphToken };
-    } catch (error) {
-      console.error('Error getting tokens:', error);
-      return { accessToken: null, refreshToken: null, graphToken: null };
-    }
-  };
-
-  const storeTokens = async (accessToken: string | null, refreshToken: string | null, graphToken: string | null) => {
-    try {
-      AsyncStorage.setItem('accessToken', accessToken || '');
-      AsyncStorage.setItem('refreshToken', refreshToken || '');
-      AsyncStorage.setItem('graphToken', graphToken || '');
-    } catch (error) {
-      console.error('Error storing tokens:', error);
-    }
-  }
-
   const handleWebViewNavigation = async (event: { url: any; }) => {
     const { url } = event;
 
-    if (url.includes('access_token')) {
-      const newAccessToken = url.match(/access_token=([^&]*)/)[1];
+    if (url.includes("api_token")) {
+      const newAPIToken = url.match(/api_token=([^&]*)/)[1];
       const newRefreshToken = url.match(/refresh_token=([^&]*)/)[1];
-      setWebviewVisible(false);
+      const newGraphToken = url.match(/graph_token=([^&]*)/)[1];
 
       try {
         // Store tokens in state
-        setAccessToken(newAccessToken);
-        setRefreshToken(newRefreshToken);
-        setGraphToken(graphToken || '');
+        await AsyncStorage.setItem("apiToken", newAPIToken);
+        console.log("API token stored");
+        await AsyncStorage.setItem("refreshToken", newRefreshToken);
+        console.log("Refresh token stored");
+        await AsyncStorage.setItem("graphToken", newGraphToken);
+        console.log("Graph token stored");
 
         // Send API token, refresh token, and graph token in request header
         const tokens = await getTokens();
-        const { accessToken, refreshToken, graphToken: newGraphToken } = tokens;
+        const { accessToken, refreshToken, graphToken } = tokens;
 
-         // Send tokens to the backend API for validation
         const loginResponse = await axios.post('https://actiwizcpe.galapfa.ro/users/login', {
           api_token: accessToken,
           graph_token: graphToken,
@@ -119,8 +96,21 @@ const LoginPage = () => {
         } catch (error) {
           console.error('Error fetching data:', error);
         }
-    }
+    
   };
+};
+
+const getTokens = async () => {
+  try {
+    const accessToken = await AsyncStorage.getItem("accessToken");
+    const refreshToken = await AsyncStorage.getItem("refreshToken");
+    const graphToken = await AsyncStorage.getItem("graphToken");
+    return { accessToken, refreshToken, graphToken };
+  } catch (error) {
+    console.error("Error getting tokens:", error);
+    return { accessToken: null, refreshToken: null, graphToken: null };
+  }
+};
 
   const refreshApiToken = async (refreshToken: string): Promise<any> => {
   try {
