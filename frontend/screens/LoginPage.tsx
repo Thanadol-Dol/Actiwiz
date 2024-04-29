@@ -13,6 +13,10 @@ const LoginPage = () => {
   const [webviewVisible, setWebviewVisible] = useState(false);
   const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
   const [loginUrl, setLoginUrl] = useState<string>('');
+  const [api_token, setAPIToken] = useState<string | null>(null);
+  const [graph_token, setGraphToken] = useState<string | null>(null);
+  const [refresh_token, setRefreshToken] = useState<string | null>(null);
+  
   
   useEffect(() => {
     const fetchLoginUrl = async () => {
@@ -46,12 +50,12 @@ const LoginPage = () => {
 
       try {
         // Store tokens in state
-        await AsyncStorage.setItem("apiToken", newAPIToken);
-        console.log("API token stored");
-        await AsyncStorage.setItem("refreshToken", newRefreshToken);
-        console.log("Refresh token stored");
-        await AsyncStorage.setItem("graphToken", newGraphToken);
-        console.log("Graph token stored");
+        setAPIToken(newAPIToken);
+        console.log("API Token: ", newAPIToken);
+        setRefreshToken(newRefreshToken);
+        console.log("Refresh Token: ", newRefreshToken);
+        setGraphToken(newGraphToken);
+        console.log("Graph Token: ", newGraphToken);
 
         // Send API token, refresh token, and graph token in request header
         const tokens = await getTokens();
