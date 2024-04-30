@@ -7,6 +7,7 @@ import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FeedPage from "./FeedPage";
+import RequestDataUser from "./RequestDataUser";
 
 const LoginPage = () => {
   const navigation = useNavigation();
@@ -35,8 +36,57 @@ const LoginPage = () => {
     fetchLoginUrl();
   }, []);
 
-  const navigateToNextScreen = () => {
+  useEffect(() => {
+    const fetchTokens = async () => {
+      try {
+        const tokens = await getTokens();
+        console.log("Tokens:", tokens); // ตรวจสอบ tokens ที่ได้จาก getTokens()
+  
+        const { accessToken, refreshToken, graphToken } = tokens;
+        if (!accessToken || !refreshToken || !graphToken) {
+          console.error("Tokens are missing");
+          return;
+        }
+  
+        // ต่อไปทำงานเช่นเดิม
+        const { data } = await axios.get('https://actiwizcpe.galapfa.ro/users/login', {
+          headers: {
+            'api_token': accessToken,
+            'graph_token': graphToken
+          }
+        });
+  
+        // ตรวจสอบ response และทำงานต่อไป
+      } catch (error) {
+        console.error('Error fetching tokens:', error);
+      }
+    };
+  
+    fetchTokens();
+  }, []);
+
+  const navigateToNextScreen = (RequestDataUser: () => JSX.Element) => {
     navigation.navigate('FeedPage' as never);
+  };
+
+  const storeTokens = async (
+    accessToken: string | null,
+    refreshToken: string | null,
+    graphToken: string | null
+  ) => {
+    try {
+      if (accessToken && refreshToken && graphToken) {
+        await AsyncStorage.setItem("accessToken", accessToken);
+        await AsyncStorage.setItem("refreshToken", refreshToken);
+        await AsyncStorage.setItem("graphToken", graphToken);
+      } else {
+        console.error(
+          "Invalid tokens: accessToken, refreshToken, or graphToken is null"
+        );
+      }
+    } catch (error) {
+      console.error("Error storing tokens:", error);
+    }
   };
 
   const handleWebViewNavigation = async (event: { url: any; }) => {
@@ -44,8 +94,13 @@ const LoginPage = () => {
 
     try {
       const tokens = await getTokens();
-      let { accessToken, refreshToken, graphToken } = tokens;
+      if (!tokens.accessToken || !tokens.refreshToken || !tokens.graphToken) {
+        console.error("Tokens are missing");
+        return;
+      }
 
+      const { accessToken, refreshToken, graphToken } = tokens;
+      
       const loginResponse = await axios.get('https://actiwizcpe.galapfa.ro/users/login',
         {
           headers: {
@@ -55,10 +110,15 @@ const LoginPage = () => {
         }
       );
 
+      if (!loginResponse || !loginResponse.data) {
+        console.error("Error in login response");
+        return;
+      }
+
       // Check the login response and act accordingly
       if (loginResponse.data.login_success) {
         console.log("User logged in successfully");
-        navigateToNextScreen();
+        navigateToNextScreen(FeedPage)
       } else {
         console.error("User not logged in");
       }
@@ -66,11 +126,11 @@ const LoginPage = () => {
     // Check if accessToken is expired and refresh it
     if (loginResponse.data.access_token_expired && refreshToken) {
       const refreshedTokens = await refreshApiToken(refreshToken);
-      if (refreshedTokens) {
-        accessToken = refreshedTokens.accessToken;
-        refreshToken = refreshedTokens.refreshToken;
-        setAPIToken(accessToken);
-        setRefreshToken(refreshToken);
+      if (refreshedTokens && refreshedTokens.accessToken && refreshedTokens.refreshToken) {
+        const newAccessToken = refreshedTokens.accessToken;
+        const newRefreshToken = refreshedTokens.refreshToken;
+        setAPIToken(newAccessToken);
+        setRefreshToken(newRefreshToken);
       } else {
         console.error("Failed to refresh tokens");
       }
@@ -97,9 +157,10 @@ const LoginPage = () => {
         if (response.data.message === "User created successfully") {
           console.log("User created successfully");        
           // Navigate to the desired screen after successful login
-          navigation.navigate('FeedPage' as never);
-        }else {
+          navigateToNextScreen(FeedPage);
+        }else if (response.data.message === "User already exists") {
           console.error("Tokens are not valid");
+          navigateToNextScreen(RequestDataUser);
         }
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -112,7 +173,11 @@ const getTokens = async () => {
     const accessToken = await AsyncStorage.getItem("accessToken");
     const refreshToken = await AsyncStorage.getItem("refreshToken");
     const graphToken = await AsyncStorage.getItem("graphToken");
-    return { accessToken, refreshToken, graphToken };
+    if (accessToken && refreshToken && graphToken) {
+      return { accessToken, refreshToken, graphToken };
+    } else {
+      throw new Error("Tokens not found in AsyncStorage");
+    }
   } catch (error) {
     console.error("Error getting tokens:", error);
     return { accessToken: null, refreshToken: null, graphToken: null };
