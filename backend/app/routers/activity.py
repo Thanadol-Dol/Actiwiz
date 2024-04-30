@@ -1,10 +1,23 @@
 from fastapi import APIRouter, Depends, Path, Query, HTTPException, Request
 from typing import List, Union
-from ..utils.database import Neo4j, get_neo4j
+from ..utils.database import Database, get_database
 from ..models.activity_model import ActivityDetail
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
-from ..utils.activity_util import extract_activity_data, get_total_activities_by_name, get_total_recommend_activities, get_total_activities_class
+from ..utils.activity_util import (
+    extract_activity_data, 
+    get_total_activities_by_name, 
+    get_total_recommend_activities, 
+    get_total_activities_class
+)
+from exponent_server_sdk import (
+    DeviceNotRegisteredError,
+    PushClient,
+    PushMessage,
+    PushServerError,
+    PushTicketError,
+)
+from fastapi_utilities import repeat_every, repeat_at
 
 activityRouter = APIRouter(
     prefix="/activities",
@@ -12,6 +25,7 @@ activityRouter = APIRouter(
 )
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
+cron_expression = os.environ.get('CRON_EXPRESSION')
     
 @activityRouter.get("/recommend/user/{user_id}")
 @requires_auth
@@ -21,7 +35,7 @@ async def recommend_activities(
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(10, description="Number of items per page"),
     priority: int = Query(1, description="Priority of the recommendation"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         # Validate the scope of the request
@@ -50,7 +64,7 @@ async def recommend_activities(
         WHERE userNode.UserID = $user_id AND interest.Priority = $priority
         RETURN activityNode ORDER BY activityNode.OpenDate DESC SKIP $skip LIMIT $limit"""
         recommend_params = {"user_id": user_id, "priority": priority, "skip": skip, "limit": results_size}
-        results = await neo4j.query(recommend_query, recommend_params, fetch_all=True)
+        results = await database.query(recommend_query, recommend_params, fetch_all=True)
         activities_data = extract_activity_data(results)
         
         has_next_page = True if total_activities > skip + results_size else False
@@ -68,11 +82,14 @@ async def activities_search(
     activity_name: str = Path(...,description= "The name of the activity"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(10, description="Number of items per page"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         # Validate the scope of the request
         validate_scope(token_scp,request)
+
+        print(cron_expression)
+        print(type(cron_expression))
 
         # Calculate SKIP and LIMIT values for pagination
         skip = (page_number - 1) * results_size
@@ -89,7 +106,7 @@ async def activities_search(
         activity_query = f"""MATCH (activityNode:Activity) WHERE activityNode.ActivityName 
         CONTAINS $activity_name OR activityNode.ActivityNameENG CONTAINS $activity_name 
         RETURN activityNode SKIP $skip LIMIT $limit"""
-        results = await neo4j.query(activity_query, activity_params, fetch_all=True)
+        results = await database.query(activity_query, activity_params, fetch_all=True)
         activity_data = extract_activity_data(results)
         has_next_page = True if total_activities > skip + results_size else False
         return {"activities": activity_data, "has_next_page": has_next_page}
@@ -104,23 +121,61 @@ async def join_activity(
     request: Request,
     activity_id: int = Path(...,description="The ID of the activity to join"),
     user_id: int = Query(...,description="The ID of the user joining the activity"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         validate_scope(token_scp,request)
+        
         query = f"""MATCH (userNode:User), (activityNode:Activity) 
         WHERE userNode.UserID = $user_id AND activityNode.ActivityID = $activity_id
-        CREATE (userNode)-[:JOINED]->(activityNode)"""
+        MERGE (userNode)-[:PARTICIPATE_IN]->(activityNode)"""
         params = {"user_id": user_id, "activity_id": activity_id}
-        await neo4j.run(query, params)
+        await database.run(query, params)
         return {"message": "User joined the activity successfully."}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-#Activity evaluation
+# #Activity evaluation notification
+# @activityRouter.on_event("startup")
+# @repeat_at(cron=cron_expression)
+# async def activity_evaluation_notification():
+#     try:
+#         database: Database = get_database()
+#         query = f"""MATCH (tokenNode:Token)<-[:HAVE_TOKENS]-(userNode:User)-[:EVALUATE_AVAILABLE]->(activityNode:Activity) 
+#         RETURN tokenNode.ExpoPushToken, activityNode.ActivityName"""
+#         results = await database.query(query, fetch_all=True)
+#         for result in results:
+#             PushClient().publish(
+#                 PushMessage(
+#                     to=result.get('tokenNode.ExpoPushToken'),
+#                     title="กิจกรรมที่คุณเคยเข้าร่วมพร้อมให้ประเมินแล้ว",
+#                     body=result.get('activityNode.ActivityName')
+#                 )
+#             )
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
-#New activity notification
-
-#Club event notification
+# #New activity notification
+# @activityRouter.on_event("startup")
+# @repeat_at(cron=cron_expression)
+# async def new_activity_notification():
+#     try:
+#         print("New activity notification triggered")
+#         database: Database = get_database()
+#         query = f"""MATCH (activityNode:Activity)-[:SHOULD_NOTIFY_THIS]->(userNode:User)-[:HAVE_TOKENS]->(tokenNode:Token)
+#         RETURN tokenNode.ExpoPushToken, activityNode.ActivityName"""
+#         results = await database.query(query, fetch_all=True)
+#         for result in results:
+#             PushClient().publish(
+#                 PushMessage(
+#                     to=result.get('tokenNode.ExpoPushToken'),
+#                     title="กิจกรรมใหม่ที่คุณอาจสนใจ",
+#                     body=result.get('activityNode.ActivityName')
+#                 )
+#             )
+#     except AuthError as e:
+#         raise HTTPException(status_code=401, detail=str(e))
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))

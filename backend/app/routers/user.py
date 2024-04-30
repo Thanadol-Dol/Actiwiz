@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException, Depends, Path
 from ..models.user_model import UserDetail
 from msal import ConfidentialClientApplication
-from ..utils.database import Neo4j, get_neo4j
+from ..utils.database import Database, get_database
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os, requests
 from ..utils.user_util import extract_user_data, get_user_next_id
@@ -88,7 +88,7 @@ async def refresh_api_token(request: Request):
 @requires_auth
 async def user_login(
     request: Request,
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         validate_scope(token_scp,request)
@@ -106,10 +106,29 @@ async def user_login(
         user_params = {"student_name": student_name, "academic_email": academic_email} 
         user_query = f"""MATCH (userNode:User) WHERE userNode.StudentName CONTAINS $student_name AND 
         userNode.AcademicEmail CONTAINS $academic_email RETURN userNode.UserID AS user_id"""
-        result = await neo4j.query(user_query, user_params)
+        result = await database.query(user_query, user_params)
         if result is None:
             return {"login_success": False, "student_name": student_name, "academic_email": academic_email , "message": "User not found in the database"}
         return {"login_success": True, "user_id": result['user_id'], "message": "User logged in successfully"}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@userRouter.get("/logout/{user_id}")
+@requires_auth
+async def user_logout(
+    request: Request,
+    user_id: int = Path(...,description="The ID of the user to retrieve"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
+
+        query = f"""MATCH (tokenNode:Token) WHERE tokenNode.UserID = $user_id DETACH DELETE tokenNode"""
+        params = {"user_id": user_id}
+        await database.run(query, params)
+        return {"message": "User logged out successfully"}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
@@ -120,7 +139,7 @@ async def user_login(
 async def create_user(
     request: Request,
     user: UserDetail,
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         validate_scope(token_scp,request)
@@ -129,22 +148,50 @@ async def create_user(
         new_user = user.model_dump()
         new_user['UserID'] = user_next_id
         user_params = {"user_params": new_user}
-        user_query = f"""CREATE (userNode:User $user_params)"""
-        await neo4j.run(user_query, user_params)
+        user_query = f"""MERGE (userNode:User $user_params)"""
+        await database.run(user_query, user_params)
         
         department_relationship_query = f"""MATCH (userNode:User), (departmentNode:Department) 
         WHERE userNode.Department = departmentNode.DepartmentName 
         AND userNode.Faculty = departmentNode.Faculty 
         AND userNode.AcademicDegree = departmentNode.DegreeTH
         MERGE (userNode)-[:IN_DEPARTMENT_OF]->(departmentNode)"""
-        await neo4j.run(department_relationship_query)
+        await database.run(department_relationship_query)
 
         faculty_relationship_query = f"""MATCH (userNode:User), (facultyNode:Faculty)
         WHERE userNode.Faculty = facultyNode.FacultyName
         MERGE (userNode)-[:IN_FACULTY_OF]->(facultyNode)"""
-        await neo4j.run(faculty_relationship_query)
+        await database.run(faculty_relationship_query)
 
         return {"message": "User created successfully"}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@userRouter.post("/register/tokens/{user_id}")
+@requires_auth
+async def register_tokens(
+    request: Request,
+    user_id: int = Path(...,description="The ID of the user to retrieve"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
+        
+        notification_token = request.headers.get('Notification')
+        token_params = {"user_id": user_id, "notification_token": notification_token}
+        search_query = f"""MATCH (tokenNode:Token) WHERE tokenNode.UserID = $user_id AND tokenNode.ExpoPushToken = $notification_token
+        RETURN tokenNode"""
+        result = await database.query(search_query, token_params)
+        if result is not None:
+            return {"message": "Tokens already registered"}
+        
+        register_query = f"""MERGE (tokenNode:Token {{UserID: $user_id, ExpoPushToken: $notification_token}}) WITH tokenNode
+        MATCH (userNode:User) WHERE userNode.UserID = $user_id
+        MERGE (userNode)-[:HAVE_TOKENS]->(tokenNode)"""
+        await database.run(register_query, token_params)
+        return {"message": "Tokens registered successfully"}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
@@ -155,13 +202,13 @@ async def create_user(
 async def get_user(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         validate_scope(token_scp,request)
         user_params = {"user_id": user_id}
         user_query = f"""MATCH (userNode:User) WHERE userNode.UserID = $user_id RETURN userNode"""
-        result = await neo4j.query(user_query, user_params)
+        result = await database.query(user_query, user_params)
         user_data = extract_user_data(result)
         return user_data
     except AuthError as e:
