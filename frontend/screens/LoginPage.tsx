@@ -11,12 +11,11 @@ import FeedPage from "./FeedPage";
 const LoginPage = () => {
   const navigation = useNavigation();
   const [webviewVisible, setWebviewVisible] = useState(false);
-  const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
-  const [loginUrl, setLoginUrl] = useState<string>('');
-  const [api_token, setAPIToken] = useState<string | null>(null);
-  const [graph_token, setGraphToken] = useState<string | null>(null);
-  const [refresh_token, setRefreshToken] = useState<string | null>(null);
-  
+  const webviewSource = "https://actiwizcpe.galapfa.ro/users/auth/url";
+  const [loginUrl, setLoginUrl] = useState<string>("");
+  const [apiToken, setAPIToken] = useState<string | null>(null);
+  const [graphToken, setGraphToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchLoginUrl = async () => {
@@ -43,37 +42,42 @@ const LoginPage = () => {
   const handleWebViewNavigation = async (event: { url: any; }) => {
     const { url } = event;
 
-    if (url.includes("api_token")) {
-      const newAPIToken = url.match(/api_token=([^&]*)/)[1];
-      const newRefreshToken = url.match(/refresh_token=([^&]*)/)[1];
-      const newGraphToken = url.match(/graph_token=([^&]*)/)[1];
+    try {
+      const tokens = await getTokens();
+      let { accessToken, refreshToken, graphToken } = tokens;
 
-      try {
-        // Store tokens in state
-        setAPIToken(newAPIToken);
-        console.log("API Token: ", newAPIToken);
-        setRefreshToken(newRefreshToken);
-        console.log("Refresh Token: ", newRefreshToken);
-        setGraphToken(newGraphToken);
-        console.log("Graph Token: ", newGraphToken);
-
-        // Send API token, refresh token, and graph token in request header
-        const tokens = await getTokens();
-        const { accessToken, refreshToken, graphToken } = tokens;
-
-        const loginResponse = await axios.post('https://actiwizcpe.galapfa.ro/users/login', {
-          api_token: accessToken,
-          graph_token: graphToken,
-        });
-
-        // Check the login response and act accordingly
-        if (loginResponse.data.login_success) {
-          console.log("User logged in successfully");
-          navigateToNextScreen();
-        } else {
-          console.error("User not logged in");
+      const loginResponse = await axios.get('https://actiwizcpe.galapfa.ro/users/login',
+        {
+          headers: {
+            'api_token': accessToken,
+            'graph_token': graphToken
+          }
         }
+      );
 
+      // Check the login response and act accordingly
+      if (loginResponse.data.login_success) {
+        console.log("User logged in successfully");
+        navigateToNextScreen();
+      } else {
+        console.error("User not logged in");
+      }
+
+    // Check if accessToken is expired and refresh it
+    if (loginResponse.data.access_token_expired && refreshToken) {
+      const refreshedTokens = await refreshApiToken(refreshToken);
+      if (refreshedTokens) {
+        accessToken = refreshedTokens.accessToken;
+        refreshToken = refreshedTokens.refreshToken;
+        setAPIToken(accessToken);
+        setRefreshToken(refreshToken);
+      } else {
+        console.error("Failed to refresh tokens");
+      }
+    } else if (!refreshToken) {
+      console.error("Refresh token is null");
+    }
+    
         const response = await axios.post('https://actiwizcpe.galapfa.ro/users/create', {
           user_id: 0,
           student_name: "String",
@@ -86,7 +90,7 @@ const LoginPage = () => {
           headers: {
             'Authorization': `Bearer ${accessToken}`, // Bearer token from login
             'Refresh': refreshToken, // Refresh token from login
-            'Graph': newGraphToken, // Graph token from refresh
+            'Graph': graphToken, // Graph token from refresh
           },
         });
 
@@ -100,8 +104,7 @@ const LoginPage = () => {
         } catch (error) {
           console.error('Error fetching data:', error);
         }
-    
-  };
+      
 };
 
 const getTokens = async () => {
