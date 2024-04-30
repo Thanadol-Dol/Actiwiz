@@ -1,10 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, Query
 from typing import List, Union
 from ..models.club_model import ClubDetail
-from ..utils.database import Neo4j, get_neo4j
+from ..utils.database import Database, get_database
 from ..utils.club_util import extract_club_data, get_total_clubs_by_name, get_total_recommend_clubs, get_total_clubs_class
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
+from exponent_server_sdk import (
+    DeviceNotRegisteredError,
+    PushClient,
+    PushMessage,
+    PushServerError,
+    PushTicketError,
+)
+from fastapi_utilities import repeat_every, repeat_at
 
 clubRouter = APIRouter(
     prefix="/clubs",
@@ -12,6 +20,7 @@ clubRouter = APIRouter(
 )
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
+cron_expression = os.environ.get('CRON_EXPRESSION')
 
 @clubRouter.get("/recommend/user/{user_id}")
 @requires_auth
@@ -21,7 +30,7 @@ async def recommend_clubs(
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(10, description="Number of items per page"),
     priority: int = Query(1, description="Priority of the recommendation"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         # Validate the scope of the request
@@ -50,7 +59,7 @@ async def recommend_clubs(
         WHERE userNode.UserID = $user_id AND interest.Priority = $priority
         RETURN clubNode SKIP $skip LIMIT $limit"""
         recommend_params = {"user_id": user_id, "priority": priority, "skip": skip, "limit": results_size}
-        results = await neo4j.query(recommend_query, recommend_params, fetch_all=True)
+        results = await database.query(recommend_query, recommend_params, fetch_all=True)
         clubs_data = extract_club_data(results)
         
         has_next_page = True if total_clubs > skip + results_size else False
@@ -68,9 +77,9 @@ async def club_search(
     club_name: str = Path(...,description="The name of the club"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(10, description="Number of items per page"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
-    # Implement your Neo4j query to retrieve data based on the club_name
+    # Implement your Database query to retrieve data based on the club_name
     try:
         # Validate the scope of the request
         validate_scope(token_scp,request)
@@ -90,7 +99,7 @@ async def club_search(
         club_query = f"""MATCH (clubNode:Club) WHERE clubNode.ClubName 
         CONTAINS $club_name OR clubNode.ClubNameEng CONTAINS $club_name 
         RETURN clubNode SKIP $skip LIMIT $limit"""
-        results = await neo4j.query(club_query, club_params, fetch_all=True)
+        results = await database.query(club_query, club_params, fetch_all=True)
         club_data = extract_club_data(results)
         has_next_page = True if total_clubs > skip + results_size else False
         return {"clubs": club_data, "has_next_page": has_next_page}
@@ -105,14 +114,14 @@ async def join_club(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to join"),
     user_id: int = Query(...,description="The ID of the user joining the club"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         validate_scope(token_scp,request)
         query = f"""MATCH (userNode:User), (clubNode:Club) WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id
-        CREATE (userNode)-[:JOINED]->(clubNode)"""
+        MERGE (userNode)-[:JOINED]->(clubNode)"""
         params = {"user_id": user_id, "club_id": club_id}
-        await neo4j.run(query, params)
+        await database.run(query, params)
         return {"message": "User joined the club successfully."}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
@@ -125,16 +134,37 @@ async def leave_club(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to leave"),
     user_id: int = Query(...,description="The ID of the user leaving the club"),
-    neo4j: Neo4j = Depends(get_neo4j)
+    database: Database = Depends(get_database)
 ):
     try:
         validate_scope(token_scp,request)
         query = f"""MATCH (userNode:User)-[r:JOINED]->(clubNode:Club) 
         WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id DELETE r"""
         params = {"user_id": user_id, "club_id": club_id}
-        await neo4j.run(query, params)
+        await database.run(query, params)
         return {"message": "User left the club successfully."}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+# @clubRouter.on_event("startup")
+# @repeat_at(cron=cron_expression)
+# async def new_notification():
+#     try:
+#         database: Database = get_database()
+#         query = f"""MATCH (clubNode:Club)-[:SHOULD_NOTIFY_THIS]->(userNode:User)-[:HAVE_TOKENS]->(tokenNode:Token)
+#         RETURN tokenNode.ExpoPushToken, clubNode.ClubName"""
+#         results = await database.query(query, fetch_all=True)
+#         for result in results:
+#             PushClient().publish(
+#                 PushMessage(
+#                     to=result.get('tokenNode.ExpoPushToken'),
+#                     title="ชมรมใหม่ที่คุณอาจสนใจ",
+#                     body=result.get('clubNode.ClubName')
+#                 )
+#             )
+#     except AuthError as e:
+#         raise HTTPException(status_code=401, detail=str(e))
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))

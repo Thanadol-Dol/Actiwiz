@@ -5,7 +5,7 @@ uri = os.environ.get('NEO4J_URI')
 user = os.environ.get('NEO4J_USERNAME')
 password = os.environ.get('NEO4J_PASSWORD')
 
-class Neo4j:
+class Database:
     _instance = None
 
     def __new__(cls):
@@ -28,5 +28,5 @@ class Neo4j:
                 return None
             return result.data() if fetch_all else result.single().data()
 
-def get_neo4j():
-    return Neo4j()
+def get_database():
+    return Database()

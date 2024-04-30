@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers.user import userRouter
 from .routers.activity import activityRouter
 from .routers.club import clubRouter
+from .routers.academic import academicRouter
 from fastapi_microsoft_identity import initialize
 import os
 
@@ -23,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(academicRouter)
 app.include_router(userRouter)
 app.include_router(activityRouter)
 app.include_router(clubRouter)

@@ -3,3 +3,5 @@ neo4j
 uvicorn
 fastapi_microsoft_identity
 msal
+exponent_server_sdk
+fastapi-utilities
