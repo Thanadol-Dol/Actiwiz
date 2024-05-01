@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    build: ./app
     command: sh -c "uvicorn app.main:app --port=8000 --host=0.0.0.0"
     image: nad0l/actiwiz
     environment:
