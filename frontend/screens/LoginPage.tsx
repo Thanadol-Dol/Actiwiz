@@ -11,13 +11,13 @@ import FeedPage from "./FeedPage";
 import RequestDataUser from "./RequestDataUser";
 
 const LoginPage = () => {
+  const navigation = useNavigation();
   const [webviewVisible, setWebviewVisible] = useState(false);
   const webviewSource = "https://actiwizcpe.galapfa.ro/users/auth/url";
-  const [loginUrl, setLoginUrl] = useState("");
+  const [loginUrl, setLoginUrl] = useState<string>("");
   const [apiToken, setAPIToken] = useState<string | null>(null);
   const [graphToken, setGraphToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const navigation = useNavigation();
   
   useEffect(() => {
     const fetchLoginUrl = async () => {
@@ -37,20 +37,23 @@ const LoginPage = () => {
     fetchLoginUrl();
   }, []);
 
+  const navigateToNextScreen = (RequestDataUser: () => JSX.Element) => {
+    navigation.navigate('FeedPage' as never);
+  };
+
   const storeTokens = async (
     apiToken: string | null,
     refreshToken: string | null,
     graphToken: string | null
   ) => {
     try {
-      if (apiToken !== null && refreshToken !== null && graphToken !== null) {
+      if (apiToken && refreshToken && graphToken) {
         await AsyncStorage.setItem("apiToken", apiToken);
         await AsyncStorage.setItem("refreshToken", refreshToken);
         await AsyncStorage.setItem("graphToken", graphToken);
         setAPIToken(apiToken);
         setRefreshToken(refreshToken);
         setGraphToken(graphToken);
-        navigation.navigate("FeedPage" as never); // Fix: Pass the screen name as a string
       } else {
         console.error(
           "Invalid tokens: apiToken, refreshToken, or graphToken is null"
@@ -61,35 +64,28 @@ const LoginPage = () => {
     }
   };
   
-  const handleWebViewNavigationStateChange = async (newState: { loading: boolean; url: string; title: string; }) => {
+  const handleWebViewNavigation = async (event: { url: string }) => {
+    const { url } = event;
+  
     try {
-      if (
-        newState.loading === false &&
-        newState.url === "https://actiwizcpe.galapfa.ro/users/auth/callback" &&
-        newState.title === "Success"
-      ) {
-        const { api_token, graph_token, refresh_token } = queryString.parse(
-          newState.url.split("?")[1]
-        );
+      if (url.includes('auth/callback')) {
+        const urlParams = queryString.parse(url.split('?')[1]);
+        const apiToken = Array.isArray(urlParams?.api_token) ? urlParams.api_token[0] : urlParams?.api_token;
+        const graphToken = Array.isArray(urlParams?.graph_token) ? urlParams.graph_token[0] : urlParams?.graph_token;
+        const refreshToken = Array.isArray(urlParams?.refresh_token) ? urlParams.refresh_token[0] : urlParams?.refresh_token;
   
-        if (api_token && graph_token && refresh_token) {
-          console.log("API Token:", api_token);
-          console.log("Graph Token:", graph_token);
-          console.log("Refresh Token:", refresh_token);
-  
-          await storeTokens(api_token.toString(), refresh_token.toString(), graph_token.toString());
+        // ตรวจสอบค่าที่ได้จาก URL Parameters ก่อนเก็บลงใน AsyncStorage
+        if (apiToken && graphToken && refreshToken) {
+          await storeTokens(apiToken, refreshToken, graphToken);
           setWebviewVisible(false);
-          alert("Success Tokens received successfully");
         } else {
-          console.error("Invalid tokens received");
+          console.error("Invalid tokens: apiToken, refreshToken, or graphToken is null");
         }
       }
     } catch (error) {
-      console.error("Error handling WebView navigation:", error);
+      console.error('Error handling WebView navigation:', error);
     }
   };
-  
-
 
 const getTokens = async () => {
   try {
@@ -164,7 +160,8 @@ return (
           onError={(error) => console.error('WebView error:', error)}
           onLoadStart={() => console.log('WebView loading started')}
           onLoadEnd={() => console.log('WebView loading ended')}
-          onNavigationStateChange={handleWebViewNavigationStateChange}
+          onNavigationStateChange={handleWebViewNavigation}
+          storetokens={storeTokens}
         />
       )}
       </View>
