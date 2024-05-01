@@ -1,0 +1,5 @@
+from notification_utils import new_activity_notification, activity_evaluation_notification, new_club_notification
+
+new_activity_notification()
+activity_evaluation_notification()
+new_club_notification()
