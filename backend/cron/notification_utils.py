@@ -13,8 +13,6 @@ def new_activity_notification():
     RETURN tokenNode.ExpoPushToken, activityNode.ActivityName"""
     results = database.query(query, fetch_all=True)
     for result in results:
-        print(result.get('tokenNode.ExpoPushToken'))
-        print(result.get('activityNode.ActivityName'))
         PushClient().publish(
             PushMessage(
                 to=result.get('tokenNode.ExpoPushToken'),
@@ -30,8 +28,6 @@ def activity_evaluation_notification():
     RETURN tokenNode.ExpoPushToken, activityNode.ActivityName"""
     results = database.query(query, fetch_all=True)
     for result in results:
-        print(result.get('tokenNode.ExpoPushToken'))
-        print(result.get('activityNode.ActivityName'))
         PushClient().publish(
             PushMessage(
                 to=result.get('tokenNode.ExpoPushToken'),
@@ -47,8 +43,6 @@ def new_club_notification():
     RETURN tokenNode.ExpoPushToken, clubNode.ClubName"""
     results = database.query(query, fetch_all=True)
     for result in results:
-        print(result.get('tokenNode.ExpoPushToken'))
-        print(result.get('clubNode.ClubName'))
         PushClient().publish(
             PushMessage(
                 to=result.get('tokenNode.ExpoPushToken'),
