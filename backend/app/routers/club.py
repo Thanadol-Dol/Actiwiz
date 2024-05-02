@@ -5,14 +5,6 @@ from ..utils.database import Database, get_database
 from ..utils.club_util import extract_club_data, get_total_clubs_by_name, get_total_recommend_clubs, get_total_clubs_class
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
-from exponent_server_sdk import (
-    DeviceNotRegisteredError,
-    PushClient,
-    PushMessage,
-    PushServerError,
-    PushTicketError,
-)
-from fastapi_utilities import repeat_every, repeat_at
 
 clubRouter = APIRouter(
     prefix="/clubs",
@@ -147,24 +139,3 @@ async def leave_club(
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-# @clubRouter.on_event("startup")
-# @repeat_at(cron=cron_expression)
-# async def new_notification():
-#     try:
-#         database: Database = get_database()
-#         query = f"""MATCH (clubNode:Club)-[:SHOULD_NOTIFY_THIS]->(userNode:User)-[:HAVE_TOKENS]->(tokenNode:Token)
-#         RETURN tokenNode.ExpoPushToken, clubNode.ClubName"""
-#         results = await database.query(query, fetch_all=True)
-#         for result in results:
-#             PushClient().publish(
-#                 PushMessage(
-#                     to=result.get('tokenNode.ExpoPushToken'),
-#                     title="ชมรมใหม่ที่คุณอาจสนใจ",
-#                     body=result.get('clubNode.ClubName')
-#                 )
-#             )
-#     except AuthError as e:
-#         raise HTTPException(status_code=401, detail=str(e))
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))

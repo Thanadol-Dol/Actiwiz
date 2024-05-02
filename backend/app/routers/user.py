@@ -50,7 +50,7 @@ async def auth_callback(request: Request, code: str):
         raise HTTPException(status_code=400, detail=result_graph["error_description"])
     graph_token = result_graph["access_token"]
     refresh_token = result_graph["refresh_token"]
-    return {"api_token": api_token, "graph_token": graph_token, "refresh_token": refresh_token}
+    return { "status" : 200, "response" : { "api_token": api_token, "graph_token": graph_token, "refresh_token": refresh_token }}
 
 @userRouter.get("/auth/refresh/api_token")
 async def refresh_graph_token(request: Request):
