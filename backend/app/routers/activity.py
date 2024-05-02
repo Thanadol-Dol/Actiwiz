@@ -80,9 +80,6 @@ async def activities_search(
         # Validate the scope of the request
         validate_scope(token_scp,request)
 
-        print(cron_expression)
-        print(type(cron_expression))
-
         # Calculate SKIP and LIMIT values for pagination
         skip = (page_number - 1) * results_size
 
