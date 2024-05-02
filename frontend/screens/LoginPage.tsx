@@ -170,6 +170,7 @@ return (
             style={{ flex: 1, marginTop: 30 }}
             javaScriptEnabled={true}
             domStorageEnabled={true}
+            incognito={true}
             startInLoadingState={true}
             onError={(error) => console.error('WebView error:', error)}
             onLoadStart={() => console.log('WebView loading started')}
