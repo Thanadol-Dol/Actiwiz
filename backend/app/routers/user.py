@@ -34,7 +34,7 @@ async def user_login(request: Request):
 async def auth_callback(request: Request, code: str):
     return {"code": code}
 
-@userRouter.get("/auth/callback/token")
+@userRouter.get("/auth/get/tokens")
 async def auth_callback(request: Request, code: str):
     result_api = auth_app.acquire_token_by_authorization_code(
         code,
