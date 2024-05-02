@@ -10,14 +10,6 @@ from ..utils.activity_util import (
     get_total_recommend_activities, 
     get_total_activities_class
 )
-from exponent_server_sdk import (
-    DeviceNotRegisteredError,
-    PushClient,
-    PushMessage,
-    PushServerError,
-    PushTicketError,
-)
-from fastapi_utilities import repeat_every, repeat_at
 
 activityRouter = APIRouter(
     prefix="/activities",
@@ -136,46 +128,3 @@ async def join_activity(
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# #Activity evaluation notification
-# @activityRouter.on_event("startup")
-# @repeat_at(cron=cron_expression)
-# async def activity_evaluation_notification():
-#     try:
-#         database: Database = get_database()
-#         query = f"""MATCH (tokenNode:Token)<-[:HAVE_TOKENS]-(userNode:User)-[:EVALUATE_AVAILABLE]->(activityNode:Activity) 
-#         RETURN tokenNode.ExpoPushToken, activityNode.ActivityName"""
-#         results = await database.query(query, fetch_all=True)
-#         for result in results:
-#             PushClient().publish(
-#                 PushMessage(
-#                     to=result.get('tokenNode.ExpoPushToken'),
-#                     title="กิจกรรมที่คุณเคยเข้าร่วมพร้อมให้ประเมินแล้ว",
-#                     body=result.get('activityNode.ActivityName')
-#                 )
-#             )
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-# #New activity notification
-# @activityRouter.on_event("startup")
-# @repeat_at(cron=cron_expression)
-# async def new_activity_notification():
-#     try:
-#         print("New activity notification triggered")
-#         database: Database = get_database()
-#         query = f"""MATCH (activityNode:Activity)-[:SHOULD_NOTIFY_THIS]->(userNode:User)-[:HAVE_TOKENS]->(tokenNode:Token)
-#         RETURN tokenNode.ExpoPushToken, activityNode.ActivityName"""
-#         results = await database.query(query, fetch_all=True)
-#         for result in results:
-#             PushClient().publish(
-#                 PushMessage(
-#                     to=result.get('tokenNode.ExpoPushToken'),
-#                     title="กิจกรรมใหม่ที่คุณอาจสนใจ",
-#                     body=result.get('activityNode.ActivityName')
-#                 )
-#             )
-#     except AuthError as e:
-#         raise HTTPException(status_code=401, detail=str(e))
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
