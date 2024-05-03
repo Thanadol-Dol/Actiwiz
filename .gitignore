@@ -246,3 +246,5 @@ docker-compose.yaml
 activities_by_principle
 
 clubs_by_name
+
+google-services.json

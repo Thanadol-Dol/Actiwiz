@@ -17,6 +17,7 @@ import CautionJoinEvent from "./components/CautionJoinEvent";
 import CautionJoinClubCancel from "./components/CautionJoinClubCancel";
 import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
 import CautionJoinClub from "./components/CautionJoinClub";
+import SetNotification from "./screens/SetNotification";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -44,6 +45,11 @@ const App = () => {
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SetNotification"
+              component={SetNotification}
               options={{ headerShown: false }}
             />
             <Stack.Screen
