@@ -12,17 +12,12 @@ academicRouter = APIRouter(
     tags=["academics"]
 )
 
-token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
-
 @academicRouter.get("/degrees", response_model=List[DegreeDetail])
 async def get_degrees(
     request: Request,
     database: Database = Depends(get_database)
 ):
     try:
-        # Validate the scope of the request
-        validate_scope(token_scp,request)
-
         # Query to get all degrees
         degree_query = f"""MATCH (departmentNode:Department) RETURN DISTINCT departmentNode.DegreeTH AS DegreeName"""
         results = await database.query(degree_query, fetch_all=True)
@@ -37,9 +32,6 @@ async def get_faculties(
     database: Database = Depends(get_database)
 ):
     try:
-        # Validate the scope of the request
-        validate_scope(token_scp,request)
-
         # Query to get all faculties
         faculty_query = f"""MATCH (departmentNode:Department) WHERE departmentNode.DegreeTH = $degree_name 
         RETURN DISTINCT departmentNode.Faculty AS FacultyName"""
@@ -57,9 +49,6 @@ async def get_departments(
     database: Database = Depends(get_database)
 ):
     try:
-        # Validate the scope of the request
-        validate_scope(token_scp,request)
-
         # Query to get all departments of a faculty
         department_query = f"""MATCH (departmentNode:Department)
         WHERE departmentNode.DegreeTH = $degree_name AND departmentNode.Faculty = $faculty_name
