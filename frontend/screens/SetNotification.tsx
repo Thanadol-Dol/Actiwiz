@@ -21,17 +21,15 @@ const SetNotification = ({navigation}: {navigation: any}) => {
                 setApiToken(apiToken);
                 try{
                     const url = (userId : number) => `https://actiwizcpe.galapfa.ro/users/register/tokens/${userId}`;
-                    const response = await axios.post(url(userId), null, {
+                    await axios.post(url(userId), null, {
                         headers: {
                             'Authorization': `Bearer ${apiToken}`,
                             'Notification': pushToken
                         }
                     });
-                    if(response.status === 200){
-                        navigation.navigate("FeedPage");
-                    }
+                    navigation.navigate("FeedPage");
                 } catch (error) {
-                    navigation.navigate("LoginPage");
+                    navigation.navigate("FeedPage");
                 }
             }
           };

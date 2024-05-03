@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { StyleSheet, View, Pressable, Text, Modal, ScrollView } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { StyleSheet, FlatList, View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -9,10 +9,20 @@ import EventDetailContainer from "../components/EventDetailContainer";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import { Searchbar } from 'react-native-paper';
 
-const FeedPage = () => {
-  const [atomsFormFieldDefaultVisible, setAtomsFormFieldDefaultVisible] =
-    useState(false);
-  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+const FeedPage = ({navigation}: {navigation: any}) => {
+  const [atomsFormFieldDefaultVisible, setAtomsFormFieldDefaultVisible] = useState(false);
+
+  const openAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(true);
+  }, []);
+
+  const closeAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(false);
+  }, []);
+
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [apiToken, setApiToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const openAtomsFormFieldDefault = useCallback(() => {
     setAtomsFormFieldDefaultVisible(true);
@@ -72,6 +82,103 @@ const FeedPage = () => {
             every tues, thus
           </Text>
           
+          <Image
+            style={[styles.pinAltDuotoneLineIcon, styles.IconLocation]}
+            contentFit="cover"
+            source={require("../assets/pin-alt-duotone-line.png")}
+          />
+          <Text style={[styles.kfc, styles.kfcTypo]}>KFC</Text>
+          <Text
+            style={[styles.text, styles.textTypo]}
+          >{`ยูยิตสูและบราซิลเลี่ยนยูยิตสู : เย็นวันนี้ซ้อมกันจ้า`}</Text>
+          <DetailContainer
+            detailText="Detail"
+            propTop={155}
+            propLeft={265}
+            propWidth={100}
+            propHeight={30}
+            propHeight1="100%"
+            propWidth1="100%"
+            propBackgroundColor1="#d8d8d8"
+            propBorderRadius1={4}
+            propMarginTop1={-6.5}
+            propRight1={16}
+            propMarginTop2={-6.5}
+            propLeft1="21.62%"
+            propFontSize={12}
+            propFontFamily="Ubuntu-Regular"
+            onButtonPress={() => navigation.navigate("DetailPage")}
+          />
+          <Image
+            style={[styles.image2Icon, styles.iconPosition1]}
+            contentFit="cover"
+            source={require("../assets/image-2.png")}
+          />
+        </View>
+        <View style={[styles.event2, styles.event2Layout]}>
+          <View style={[styles.event2Child, styles.event2Layout]} />
+          <Image
+            style={[styles.image3Icon, styles.event2Layout]}
+            contentFit="cover"
+            source={require("../assets/image-3.png")}
+          />
+          <Text style={[styles.TimeText, styles.Place]}>
+            30 Nov - 30 Dec 23
+          </Text>
+          <Image
+            style={[styles.pinAltDuotoneLineIcon1, styles.iconPosition]}
+            contentFit="cover"
+            source={require("../assets/pin-alt-duotone-line1.png")}
+          />
+          <Text style={[styles.n16LearningExchange, styles.Place]}>
+            N16 Learning exchange
+          </Text>
+          <Text style={[styles.innovationForKmutt, styles.textTypo]}>
+            โครงการประกวดนวัตกรรม Innovation For Kmutt...
+          </Text>
+          <DetailContainer
+            detailText="DETAIL"
+            propTop={155}
+            propLeft={265}
+            propWidth={100}
+            propHeight={30}
+            propHeight1="100%"
+            propWidth1="100%"
+            propBackgroundColor1="#d8d8d8"
+            propBorderRadius1={4}
+            propMarginTop1={-6.5}
+            propRight1={16}
+            propMarginTop2={-6.5}
+            propLeft1="21.62%"
+            propFontSize={12}
+            propFontFamily="Ubuntu-Regular"
+            onButtonPress={() => navigation.navigate("DetailPage")}
+          />
+          <Image
+            style={[styles.clockLightIcon1, styles.iconPosition]}
+            contentFit="cover"
+            source={require("../assets/clock-light1.png")}
+          />
+        </View>
+        <CompetitionSection />
+        <DetailContainer
+          detailText="Detail"
+          propTop={900}
+          propLeft={265}
+          propWidth={100}
+          propHeight={30}
+          propHeight1="100%"
+          propWidth1="100%"
+          propBackgroundColor1="#d8d8d8"
+          propBorderRadius1={4}
+          propMarginTop1={-6.5}
+          propRight1={16}
+          propMarginTop2={-6.5}
+          propLeft1="21.62%"
+          propFontSize={12}
+          propFontFamily="Ubuntu-Regular"
+          onButtonPress={() => navigation.navigate("DetailPage")}
+        />
 
         <EventDetailContainer />
         <View style={[styles.WhiteBoxLayout]} />
@@ -94,7 +201,6 @@ const FeedPage = () => {
           />
         </View>
       </Modal>
-      </View>
     </ScrollView>
   );
 };
