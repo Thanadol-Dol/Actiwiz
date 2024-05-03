@@ -1,36 +1,103 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, FlatList, View, Text, ScrollView } from "react-native";
+import React, { useState, useCallback } from "react";
+import { StyleSheet, View, Pressable, Text, Modal, ScrollView } from "react-native";
 import { Image } from "expo-image";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation, ParamListBase } from "@react-navigation/native";
 import DetailContainer from "../components/DetailContainer";
 import CompetitionSection from "../components/CompetitionSection";
 import EventDetailContainer from "../components/EventDetailContainer";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Searchbar } from 'react-native-paper';
-import { usePushNotifications } from "../usePushNotifications";
 
-const FeedPage = ({navigation}: {navigation: any}) => {
-  const [apiToken, setApiToken] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
+const FeedPage = () => {
+  const [atomsFormFieldDefaultVisible, setAtomsFormFieldDefaultVisible] =
+    useState(false);
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
 
-  useEffect(() => {
-    const fetchResources = async () => {
-      const apiToken = await AsyncStorage.getItem("apiToken");
-      const userId = await AsyncStorage.getItem("userId");
-      setApiToken(apiToken);
-      setUserId(parseInt(userId as string));
-    }
-    fetchResources();
+  const openAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(true);
   }, []);
+
+  const closeAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(false);
+  }, []);
+
+  const [searchQuery, setSearchQuery] = React.useState('');
   
   return (
     <ScrollView>
-      <Text>API Token: {apiToken}</Text>
-      <Text>User Id: {userId}</Text>
+      <View style={styles.feedPage}>
+      <View style={[styles.WhiteBoxIG, styles.WhiteBoxLayout]} />
+        <Searchbar
+          placeholder="Search"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.Searchbar}
+        />
+        <Pressable
+          style={[styles.notification, styles.notificationPosition]}
+          onPress={() => navigation.navigate("NotificationPage")}
+        >
+          <Image
+            style={styles.iconLayout}
+            contentFit="cover"
+            source={require("../assets/notification.png")}
+          />
+        </Pressable>
+        <Text style={styles.event}>Event :</Text>
+
+        <Image
+          style={[styles.feedPageInner, styles.notificationPosition]}
+          contentFit="cover"
+          source={require("../assets/ellipse-88.png")}
+        />
+        <Pressable
+          style={styles.profilePics}
+          onPress={() => navigation.navigate("EditProfile")}
+        >
+          <Image
+            style={[styles.icon1, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/NongNhaoSmall.png")}
+          />
+        </Pressable>
+        <View style={styles.event1}>
+          <View style={[styles.event1Child, styles.WhiteFrame]} />
+          <Image
+            style={[styles.clockLightIcon, styles.IconLocation]}
+            contentFit="cover"
+            source={require("../assets/clock-light.png")}
+          />
+          <Text style={[styles.TextTime, styles.kfcTypo]}>
+            every tues, thus
+          </Text>
+          
+
+        <EventDetailContainer />
+        <View style={[styles.WhiteBoxLayout]} />
+        <View style={[styles.SpaceBar1, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar2, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar3, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar4, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar5, styles.SpaceBetweenEvent]} />
+      </View>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={atomsFormFieldDefaultVisible}
+      >
+        <View style={styles.atomsFormFieldDefaultOverlay}>
+          <Pressable
+            style={styles.atomsFormFieldDefaultBg}
+            onPress={closeAtomsFormFieldDefault}
+          />
+        </View>
+      </Modal>
+      </View>
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   WhiteBoxLayout: {
     width: "100%",
@@ -134,7 +201,7 @@ const styles = StyleSheet.create({
     top: 580,
     height: 140,
     left: 0,
-    width: 390,
+    width: "390",
     position: "absolute",
   },
   notification: {
