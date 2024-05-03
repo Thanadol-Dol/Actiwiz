@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, FlatList, View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { Image } from "expo-image";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation, ParamListBase } from "@react-navigation/native";
 import DetailContainer from "../components/DetailContainer";
 import CompetitionSection from "../components/CompetitionSection";
 import EventDetailContainer from "../components/EventDetailContainer";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Searchbar } from 'react-native-paper';
-import { usePushNotifications } from "../usePushNotifications";
 
 const FeedPage = ({navigation}: {navigation: any}) => {
   const [atomsFormFieldDefaultVisible, setAtomsFormFieldDefaultVisible] = useState(false);
@@ -24,15 +24,15 @@ const FeedPage = ({navigation}: {navigation: any}) => {
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchResources = async () => {
-      const apiToken = await AsyncStorage.getItem("apiToken");
-      const userId = await AsyncStorage.getItem("userId");
-      setApiToken(apiToken);
-      setUserId(parseInt(userId as string));
-    }
-    fetchResources();
+  const openAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(true);
   }, []);
+
+  const closeAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(false);
+  }, []);
+
+  const [searchQuery, setSearchQuery] = React.useState('');
   
   return (
     <ScrollView>
@@ -81,6 +81,7 @@ const FeedPage = ({navigation}: {navigation: any}) => {
           <Text style={[styles.TextTime, styles.kfcTypo]}>
             every tues, thus
           </Text>
+          
           <Image
             style={[styles.pinAltDuotoneLineIcon, styles.IconLocation]}
             contentFit="cover"
@@ -179,7 +180,6 @@ const FeedPage = ({navigation}: {navigation: any}) => {
           onButtonPress={() => navigation.navigate("DetailPage")}
         />
 
-
         <EventDetailContainer />
         <View style={[styles.WhiteBoxLayout]} />
         <View style={[styles.SpaceBar1, styles.SpaceBetweenEvent]} />
@@ -204,7 +204,6 @@ const FeedPage = ({navigation}: {navigation: any}) => {
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   WhiteBoxLayout: {
     width: "100%",
@@ -308,7 +307,7 @@ const styles = StyleSheet.create({
     top: 580,
     height: 140,
     left: 0,
-    width: 390,
+    width: "390",
     position: "absolute",
   },
   notification: {

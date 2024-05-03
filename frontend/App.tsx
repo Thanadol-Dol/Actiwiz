@@ -20,6 +20,7 @@ import CautionJoinClub from "./components/CautionJoinClub";
 import SetNotification from "./screens/SetNotification";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import RequestDataUser from "./screens/RequestDataUser";
 
 const App = () => {
   const [hideSplashScreen, setHideSplashScreen] = React.useState(true);
@@ -42,16 +43,21 @@ const App = () => {
       <NavigationContainer>
         {hideSplashScreen ? (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen
+            {/* <Stack.Screen
               name="LoginPage"
               component={LoginPage}
               options={{ headerShown: false }}
-            />
+              /> */}
             <Stack.Screen
+              name="RequestDataUser"
+              component={RequestDataUser}
+              options={{ headerShown: false }}
+            />
+            {/* <Stack.Screen
               name="SetNotification"
               component={SetNotification}
               options={{ headerShown: false }}
-            />
+            /> */}
             <Stack.Screen
               name="FeedPage"
               component={FeedPage}

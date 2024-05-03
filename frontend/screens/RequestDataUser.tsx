@@ -1,81 +1,162 @@
-import React, { useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Image, Pressable, StyleSheet, Text, View, FlatList } from "react-native";
+import DropDownPicker from 'react-native-dropdown-picker';
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const RequestDataUser = () => {
-  const [userData, setUserData] = useState(null);
-  const [apiToken, setApiToken] = useState(null);
-  const [graphToken, setGraphToken] = useState(null);
-  const [refreshToken, setRefreshToken] = useState(null);
+  const [openDegree, setOpenDegree] = useState(false);
+  const [openFaculty, setOpenFaculty] = useState(false);
+  const [openDepartment, setOpenDepartment] = useState(false);
+
+  const [valueDegree, setValueDegree] = useState(null);
+  const [valueFaculty, setValueFaculty] = useState(null);
+  const [valueDepartment, setValueDepartment] = useState(null);
+
+  const [itemsDegree, setItemsDegree] = useState<any[]>([]);
+  const [itemsFaculty, setItemsFaculty] = useState<any[]>([]);
+  const [itemsDepartment, setItemsDepartment] = useState<any[]>([]);
+
+  console.log("itemsDegree:", itemsDegree);
+  console.log("itemsFaculty:", itemsFaculty);
+  console.log("itemsDepartment:", itemsDepartment);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const storedRefreshToken = await AsyncStorage.getItem("refreshToken");
-        if (!storedRefreshToken) {
-          console.error("Refresh token is missing");
-          return;
-        }
-  
-        const refreshApiTokenResponse = await refreshApiToken(storedRefreshToken);
-        if (refreshApiTokenResponse && refreshApiTokenResponse.api_token && refreshApiTokenResponse.graph_token) {
-          setApiToken(refreshApiTokenResponse.api_token);
-          setGraphToken(refreshApiTokenResponse.graph_token);
-  
-          const userId = refreshApiTokenResponse.user_id;
-          const userDataResponse = await fetchUserDataById(userId, refreshApiTokenResponse.api_token);
-          setUserData(userDataResponse);
-        } else {
-          console.error("Error fetching API token");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-  
-    fetchData();
+    axios.get('https://actiwizcpe.galapfa.ro/academics/degrees')
+      .then(response => {
+        const data: any[] = response.data;
+        const filteredData = data.filter(item => (
+          item.DegreeName !== null &&
+          item.DegreeName !== undefined &&
+          !itemsDegree.find(degree => degree.key === item.DegreeName)
+        ));
+        setItemsDegree(filteredData);
+      })
+      .catch(error => {
+        console.error('Error fetching degrees data:', error);
+      });
   }, []);
   
 
-  const refreshApiToken = async (refreshToken) => {
-    try {
-      const response = await axios.post(
-        "https://your-api-url.com/users/auth/refresh/api_token",
-        { refresh_token: refreshToken }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error refreshing API token:", error);
-      throw error;
+  useEffect(() => {
+    if (valueDegree) {
+      axios.get(`https://actiwizcpe.galapfa.ro/academics/${valueDegree}/faculties`)
+        .then(response => {
+          const data: any[] = response.data;
+          const filteredData = data.filter(item => (
+            item.FacultyName !== null &&
+            item.FacultyName !== undefined &&
+            !itemsDegree.find(degree => degree.key === item.FacultyName)
+          ));
+          setItemsFaculty(filteredData);
+        })
+        .catch(error => {
+          console.error('Error fetching faculties data:', error);
+        });
     }
-  };
+  }, [valueDegree]);
 
-  const fetchUserDataById = async (userId, apiToken) => {
-    try {
-      const response = await axios.get(`https://your-api-url.com/users/${userId}`, {
-        headers: { Authorization: `Bearer ${apiToken}` },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      throw error;
+  useEffect(() => {
+    if (valueFaculty) {
+      axios.get(`https://actiwizcpe.galapfa.ro/academics/${valueDegree}/${valueFaculty}/departments`)
+        .then(response => {
+          const data: any[] = response.data;
+          const filteredData = data.filter(item => (
+            item.DepartmentName !== null &&
+            item.DepartmentName !== undefined &&
+            !itemsDegree.find(degree => degree.key === item.DepartmentName)
+          ));
+          setItemsDepartment(filteredData);
+        })
+        .catch(error => {
+          console.error('Error fetching departments data:', error);
+        });
     }
-  };
+  }, [valueDegree,valueFaculty]);
 
   return (
-    <View>
-      {userData ? (
-        <View>
-          <Text>User ID: {userData.id}</Text>
-          <Text>Name: {userData.name}</Text>
-          <Text>Email: {userData.email}</Text>
-        </View>
-      ) : (
-        <Text>Loading user data...</Text>
-      )}
+    <View style={styles.container}>
+      <Image
+        style={styles.headerImage}
+        source={require("../assets/Header_Actiwiz.png")}
+      />
+        <DropDownPicker
+            placeholder="Select your degree"
+            open={openDegree}
+            value={valueDegree}
+            items={itemsDegree.map((item, index) => ({
+            key : index.toString(),
+            label: item.DegreeName,
+            value: item.DegreeName,
+          }))}
+          setOpen={setOpenDegree}
+          setValue={setValueDegree}
+          setItems={setItemsDegree}
+          containerStyle={{ marginBottom: 20, width: "80%", zIndex: 1000}}
+  />
+<DropDownPicker
+  placeholder="Select your faculty"
+  open={openFaculty}
+  value={valueFaculty}
+  items={itemsFaculty.map((item, index) => ({
+    key : index.toString(),
+    label: item.FacultyName,
+    value: item.FacultyName,
+  }))}
+  setOpen={setOpenFaculty}
+  setValue={setValueFaculty}
+  setItems={setItemsFaculty}
+  containerStyle={{ marginBottom: 20, width: "80%", zIndex: 999}}
+  dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
+/>
+<DropDownPicker
+  placeholder="Select your department"
+  open={openDepartment}
+  value={valueDepartment}
+  items={itemsDepartment.map((item, index) => ({
+    key : index.toString(),
+    label: item.DepartmentName,
+    value: item.DepartmentName,
+  }))}
+  setOpen={setOpenDepartment}
+  setValue={setValueDepartment}
+  setItems={setItemsDepartment}
+  containerStyle={{ marginBottom: 20, width: "80%", zIndex: 998}} 
+/>
+
+      <Text style={styles.createYourAccount}>Create your account</Text>
+      <Pressable style={styles.signupButton} onPress={() => {}}>
+        <Text style={styles.signupText}>Signup now</Text>
+      </Pressable>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerImage: {
+    width: "100%",
+    height: 170,
+    marginBottom: 20,
+  },
+  createYourAccount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
+  signupButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  signupText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
 
 export default RequestDataUser;
