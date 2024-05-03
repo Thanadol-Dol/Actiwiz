@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, FlatList, View, Text, ScrollView } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { StyleSheet, FlatList, View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { Image } from "expo-image";
 import DetailContainer from "../components/DetailContainer";
 import CompetitionSection from "../components/CompetitionSection";
@@ -10,6 +10,17 @@ import { Searchbar } from 'react-native-paper';
 import { usePushNotifications } from "../usePushNotifications";
 
 const FeedPage = ({navigation}: {navigation: any}) => {
+  const [atomsFormFieldDefaultVisible, setAtomsFormFieldDefaultVisible] = useState(false);
+
+  const openAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(true);
+  }, []);
+
+  const closeAtomsFormFieldDefault = useCallback(() => {
+    setAtomsFormFieldDefaultVisible(false);
+  }, []);
+
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
 
@@ -25,8 +36,171 @@ const FeedPage = ({navigation}: {navigation: any}) => {
   
   return (
     <ScrollView>
-      <Text>API Token: {apiToken}</Text>
-      <Text>User Id: {userId}</Text>
+      <View style={styles.feedPage}>
+      <View style={[styles.WhiteBoxIG, styles.WhiteBoxLayout]} />
+        <Searchbar
+          placeholder="Search"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.Searchbar}
+        />
+        <Pressable
+          style={[styles.notification, styles.notificationPosition]}
+          onPress={() => navigation.navigate("NotificationPage")}
+        >
+          <Image
+            style={styles.iconLayout}
+            contentFit="cover"
+            source={require("../assets/notification.png")}
+          />
+        </Pressable>
+        <Text style={styles.event}>Event :</Text>
+
+        <Image
+          style={[styles.feedPageInner, styles.notificationPosition]}
+          contentFit="cover"
+          source={require("../assets/ellipse-88.png")}
+        />
+        <Pressable
+          style={styles.profilePics}
+          onPress={() => navigation.navigate("EditProfile")}
+        >
+          <Image
+            style={[styles.icon1, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/NongNhaoSmall.png")}
+          />
+        </Pressable>
+        <View style={styles.event1}>
+          <View style={[styles.event1Child, styles.WhiteFrame]} />
+          <Image
+            style={[styles.clockLightIcon, styles.IconLocation]}
+            contentFit="cover"
+            source={require("../assets/clock-light.png")}
+          />
+          <Text style={[styles.TextTime, styles.kfcTypo]}>
+            every tues, thus
+          </Text>
+          <Image
+            style={[styles.pinAltDuotoneLineIcon, styles.IconLocation]}
+            contentFit="cover"
+            source={require("../assets/pin-alt-duotone-line.png")}
+          />
+          <Text style={[styles.kfc, styles.kfcTypo]}>KFC</Text>
+          <Text
+            style={[styles.text, styles.textTypo]}
+          >{`ยูยิตสูและบราซิลเลี่ยนยูยิตสู : เย็นวันนี้ซ้อมกันจ้า`}</Text>
+          <DetailContainer
+            detailText="Detail"
+            propTop={155}
+            propLeft={265}
+            propWidth={100}
+            propHeight={30}
+            propHeight1="100%"
+            propWidth1="100%"
+            propBackgroundColor1="#d8d8d8"
+            propBorderRadius1={4}
+            propMarginTop1={-6.5}
+            propRight1={16}
+            propMarginTop2={-6.5}
+            propLeft1="21.62%"
+            propFontSize={12}
+            propFontFamily="Ubuntu-Regular"
+            onButtonPress={() => navigation.navigate("DetailPage")}
+          />
+          <Image
+            style={[styles.image2Icon, styles.iconPosition1]}
+            contentFit="cover"
+            source={require("../assets/image-2.png")}
+          />
+        </View>
+        <View style={[styles.event2, styles.event2Layout]}>
+          <View style={[styles.event2Child, styles.event2Layout]} />
+          <Image
+            style={[styles.image3Icon, styles.event2Layout]}
+            contentFit="cover"
+            source={require("../assets/image-3.png")}
+          />
+          <Text style={[styles.TimeText, styles.Place]}>
+            30 Nov - 30 Dec 23
+          </Text>
+          <Image
+            style={[styles.pinAltDuotoneLineIcon1, styles.iconPosition]}
+            contentFit="cover"
+            source={require("../assets/pin-alt-duotone-line1.png")}
+          />
+          <Text style={[styles.n16LearningExchange, styles.Place]}>
+            N16 Learning exchange
+          </Text>
+          <Text style={[styles.innovationForKmutt, styles.textTypo]}>
+            โครงการประกวดนวัตกรรม Innovation For Kmutt...
+          </Text>
+          <DetailContainer
+            detailText="DETAIL"
+            propTop={155}
+            propLeft={265}
+            propWidth={100}
+            propHeight={30}
+            propHeight1="100%"
+            propWidth1="100%"
+            propBackgroundColor1="#d8d8d8"
+            propBorderRadius1={4}
+            propMarginTop1={-6.5}
+            propRight1={16}
+            propMarginTop2={-6.5}
+            propLeft1="21.62%"
+            propFontSize={12}
+            propFontFamily="Ubuntu-Regular"
+            onButtonPress={() => navigation.navigate("DetailPage")}
+          />
+          <Image
+            style={[styles.clockLightIcon1, styles.iconPosition]}
+            contentFit="cover"
+            source={require("../assets/clock-light1.png")}
+          />
+        </View>
+        <CompetitionSection />
+        <DetailContainer
+          detailText="Detail"
+          propTop={900}
+          propLeft={265}
+          propWidth={100}
+          propHeight={30}
+          propHeight1="100%"
+          propWidth1="100%"
+          propBackgroundColor1="#d8d8d8"
+          propBorderRadius1={4}
+          propMarginTop1={-6.5}
+          propRight1={16}
+          propMarginTop2={-6.5}
+          propLeft1="21.62%"
+          propFontSize={12}
+          propFontFamily="Ubuntu-Regular"
+          onButtonPress={() => navigation.navigate("DetailPage")}
+        />
+
+
+        <EventDetailContainer />
+        <View style={[styles.WhiteBoxLayout]} />
+        <View style={[styles.SpaceBar1, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar2, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar3, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar4, styles.SpaceBetweenEvent]} />
+        <View style={[styles.SpaceBar5, styles.SpaceBetweenEvent]} />
+      </View>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={atomsFormFieldDefaultVisible}
+      >
+        <View style={styles.atomsFormFieldDefaultOverlay}>
+          <Pressable
+            style={styles.atomsFormFieldDefaultBg}
+            onPress={closeAtomsFormFieldDefault}
+          />
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
