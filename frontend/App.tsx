@@ -43,11 +43,11 @@ const App = () => {
       <NavigationContainer>
         {hideSplashScreen ? (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {/* <Stack.Screen
+            <Stack.Screen
               name="LoginPage"
               component={LoginPage}
               options={{ headerShown: false }}
-              /> */}
+              />
             <Stack.Screen
               name="RequestDataUser"
               component={RequestDataUser}
