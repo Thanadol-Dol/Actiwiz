@@ -1,7 +1,7 @@
 import React, {  useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
-import { usePushNotifications } from "../usePushNotifications";
+import { usePushNotifications } from "../utils/usePushNotifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 
@@ -27,14 +27,14 @@ const SetNotification = ({navigation}: {navigation: any}) => {
                             'Notification': pushToken
                         }
                     });
-                    navigation.navigate("FeedPage");
                 } catch (error) {
-                    navigation.navigate("FeedPage");
+                    throw error;
                 }
             }
           };
           registerPushToken();
         }
+        navigation.navigate("FeedPage");
     }, [expoPushToken?.data]);
 
     return (

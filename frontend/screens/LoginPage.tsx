@@ -1,12 +1,10 @@
 import React, {  useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, View, Text, Pressable} from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color } from "../GlobalStyles";
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import FeedPage from "./FeedPage";
 
 const LoginPage = ({navigation}: {navigation: any}) => {
   const [webviewVisible, setWebviewVisible] = useState(false);
@@ -115,7 +113,7 @@ const LoginPage = ({navigation}: {navigation: any}) => {
   }, []);
 
   const navigateToNextScreen = (screenName : string, parameters : any | null = null ) => {
-    navigation.navigate(screenName);
+    navigation.navigate(screenName, parameters);
   };
 
   const getQueryParams = (url: string) => {
@@ -168,18 +166,20 @@ return (
           contentFit="cover"
           source={require("../assets/ActiwizPic.png")}
         />
-
-        <Text style={[styles.loginIntoYour, styles.loginTypo]}>
-          Login into your account
-        </Text>
-
-        <Pressable
-          style={[styles.rectangleGroup, styles.rectangleLayout]}
-          onPress={() => setWebviewVisible(!webviewVisible)}
-        >
-          <View style={[styles.rectangleView, styles.groupChildLayout]} />
-          <Text style={[styles.login, styles.loginTypo]}>Login</Text>
-        </Pressable>
+        {loginFlag && loginUrl && ( // Render text and Pressable when loginFlag and loginUrl are true
+          <>
+            <Text style={[styles.loginIntoYour, styles.loginTypo]}>
+              Login into your account
+            </Text>
+            <Pressable
+              style={[styles.rectangleGroup, styles.rectangleLayout]}
+              onPress={() => setWebviewVisible(!webviewVisible)}
+            >
+              <View style={[styles.rectangleView, styles.groupChildLayout]} />
+              <Text style={[styles.login, styles.loginTypo]}>Login</Text>
+            </Pressable>
+          </>
+        )}  
         {webviewVisible && loginUrl && loginFlag && (
           <WebView
           source={{ uri: loginUrl }}
