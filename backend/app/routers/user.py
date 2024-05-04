@@ -167,7 +167,7 @@ async def create_user(
         MERGE (userNode)-[:IN_FACULTY_OF]->(facultyNode)"""
         await database.run(faculty_relationship_query)
 
-        return {"message": "User created successfully"}
+        return {"user_id": user_next_id, "message": "User created successfully"}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
@@ -184,17 +184,17 @@ async def register_tokens(
         validate_scope(token_scp,request)
         
         notification_token = request.headers.get('Notification')
-        token_params = {"user_id": user_id, "notification_token": notification_token}
-        search_query = f"""MATCH (tokenNode:Token) WHERE tokenNode.UserID = $user_id AND tokenNode.ExpoPushToken = $notification_token
-        RETURN tokenNode"""
-        result = await database.query(search_query, token_params)
+        delete_query = f"""MATCH (tokenNode:Token) WHERE tokenNode.UserID = $user_id DETACH DELETE tokenNode"""
+        delete_params = {"user_id": user_id}
+        result = await database.query(delete_query, delete_params)
         if result is not None:
             return {"message": "Tokens already registered"}
         
         register_query = f"""MERGE (tokenNode:Token {{UserID: $user_id, ExpoPushToken: $notification_token}}) WITH tokenNode
         MATCH (userNode:User) WHERE userNode.UserID = $user_id
         MERGE (userNode)-[:HAVE_TOKENS]->(tokenNode)"""
-        await database.run(register_query, token_params)
+        register_params = {"user_id": user_id, "notification_token": notification_token}
+        await database.run(register_query, register_params)
         return {"message": "Tokens registered successfully"}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
