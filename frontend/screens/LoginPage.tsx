@@ -64,12 +64,12 @@ const LoginPage = ({navigation}: {navigation: any}) => {
         await AsyncStorage.setItem("userId", userId.toString(10));
         navigateToNextScreen('SetNotification');
       } else {
-        navigateToNextScreen('RequestDataUser',
-          {
+        navigateToNextScreen('RequestDataUser', {
             "student_name": checkData.student_name, 
             "academic_email": checkData.academic_email
-          }
-        );
+          });
+        console.log("student_name:", checkData.student_name);
+        console.log("academic_email:", checkData.academic_email);
       }
     } catch (error) {
       return error;

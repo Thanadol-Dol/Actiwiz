@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Image, Pressable, StyleSheet, Text, View, FlatList } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
+import { useNavigation } from "@react-navigation/native"; 
+import navigateToNextScreen from "/Users/zknnz/Desktop/Actiwiz/frontend/screens/LoginPage";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const RequestDataUser = () => {
+const RequestDataUser = ({ route }: { route: any }) => {
+  if (!route || !route.params) {
+    console.log(route);
+    console.error('Error: Route or route params are missing!');
+    return null; 
+  }
+
+  const { student_name, academic_email } = route.params;
+
+  if (!student_name || !academic_email) {
+    console.error('Error: Required route parameters are missing!');
+    console.log('Route Params:', route.params);
+    return null;
+  }
+
   const [openDegree, setOpenDegree] = useState(false);
   const [openFaculty, setOpenFaculty] = useState(false);
   const [openDepartment, setOpenDepartment] = useState(false);
@@ -16,6 +33,8 @@ const RequestDataUser = () => {
   const [itemsFaculty, setItemsFaculty] = useState<any[]>([]);
   const [itemsDepartment, setItemsDepartment] = useState<any[]>([]);
 
+  const navigation = useNavigation();
+  
   console.log("itemsDegree:", itemsDegree);
   console.log("itemsFaculty:", itemsFaculty);
   console.log("itemsDepartment:", itemsDepartment);
@@ -45,7 +64,7 @@ const RequestDataUser = () => {
           const filteredData = data.filter(item => (
             item.FacultyName !== null &&
             item.FacultyName !== undefined &&
-            !itemsDegree.find(degree => degree.key === item.FacultyName)
+            !itemsDegree.find(faculty => faculty.key === item.FacultyName)
           ));
           setItemsFaculty(filteredData);
         })
@@ -63,7 +82,7 @@ const RequestDataUser = () => {
           const filteredData = data.filter(item => (
             item.DepartmentName !== null &&
             item.DepartmentName !== undefined &&
-            !itemsDegree.find(degree => degree.key === item.DepartmentName)
+            !itemsDegree.find(department => department.key === item.DepartmentName)
           ));
           setItemsDepartment(filteredData);
         })
@@ -72,6 +91,32 @@ const RequestDataUser = () => {
         });
     }
   }, [valueDegree,valueFaculty]);
+
+  const handleSignup = () => {
+    if (!student_name || !academic_email || !valueDegree || !valueFaculty || !valueDepartment) {
+      console.error('Error: Required data is missing!');
+      return;
+    }
+  
+    const userData = {
+      student_name: student_name,
+      academic_degree: valueDegree,
+      academic_year: 0,
+      academic_email: academic_email,
+      faculty: valueFaculty,
+      department: valueDepartment
+    };
+  
+    axios.post('https://actiwizcpe.galapfa.ro/users/create', userData, headers: {'APIToken': apiToken})
+      .then(response => {
+        console.log('User created successfully:', response.data);
+        navigateToNextScreen('FeedPage');
+      })
+      .catch(error => {
+        console.error('Error creating user:', error);
+        // Handle error
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -85,8 +130,8 @@ const RequestDataUser = () => {
             value={valueDegree}
             items={itemsDegree.map((item, index) => ({
             key : index.toString(),
-            label: item.DegreeName,
-            value: item.DegreeName,
+            label: item.DegreeName as string,
+            value: item.DegreeName as string,
           }))}
           setOpen={setOpenDegree}
           setValue={setValueDegree}
@@ -99,8 +144,8 @@ const RequestDataUser = () => {
   value={valueFaculty}
   items={itemsFaculty.map((item, index) => ({
     key : index.toString(),
-    label: item.FacultyName,
-    value: item.FacultyName,
+    label: item.FacultyName as string,
+    value: item.FacultyName as string,
   }))}
   setOpen={setOpenFaculty}
   setValue={setValueFaculty}
@@ -114,8 +159,8 @@ const RequestDataUser = () => {
   value={valueDepartment}
   items={itemsDepartment.map((item, index) => ({
     key : index.toString(),
-    label: item.DepartmentName,
-    value: item.DepartmentName,
+    label: item.DepartmentName as string,
+    value: item.DepartmentName as string,
   }))}
   setOpen={setOpenDepartment}
   setValue={setValueDepartment}
@@ -124,7 +169,7 @@ const RequestDataUser = () => {
 />
 
       <Text style={styles.createYourAccount}>Create your account</Text>
-      <Pressable style={styles.signupButton} onPress={() => {}}>
+      <Pressable style={styles.signupButton} onPress={handleSignup}>
         <Text style={styles.signupText}>Signup now</Text>
       </Pressable>
     </View>
