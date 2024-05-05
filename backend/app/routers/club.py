@@ -21,6 +21,7 @@ async def recommend_clubs(
     user_id: int = Path(...,description="The ID of the user to retrieve"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(10, description="Number of items per page"),
+    extra_skip: int = Query(0, description="Extra skip value for pagination"),
     priority: int = Query(1, description="Priority of the recommendation"),
     database: Database = Depends(get_database)
 ):
@@ -29,7 +30,7 @@ async def recommend_clubs(
         validate_scope(token_scp,request)
 
         # Calculate SKIP and LIMIT values for pagination
-        skip = (page_number - 1) * results_size
+        skip = ((page_number - 1) * results_size) + extra_skip
         
         # Get total classes
         total_classes = await get_total_clubs_class()

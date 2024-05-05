@@ -152,7 +152,7 @@ async def create_user(
         new_user = user.model_dump()
         new_user['UserID'] = user_next_id
         user_params = {"user_params": new_user}
-        user_query = f"""MERGE (userNode:User $user_params)"""
+        user_query = f"""CREATE (userNode:User $user_params)"""
         await database.run(user_query, user_params)
         
         department_relationship_query = f"""MATCH (userNode:User), (departmentNode:Department) 
