@@ -52,7 +52,7 @@ async def get_departments(
         # Query to get all departments of a faculty
         department_query = f"""MATCH (departmentNode:Department)
         WHERE departmentNode.DegreeTH = $degree_name AND departmentNode.Faculty = $faculty_name
-        RETURN departmentNode.DepartmentName AS DepartmentName"""
+        RETURN DISTINCT departmentNode.DepartmentName AS DepartmentName"""
         department_params = {"degree_name": degree_name, "faculty_name": faculty_name}
         results = await database.query(department_query, department_params, fetch_all=True)
         return results
