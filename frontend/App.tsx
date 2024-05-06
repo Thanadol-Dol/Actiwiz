@@ -53,11 +53,11 @@ const App = () => {
               component={RequestDataUser}
               options={{ headerShown: false }}
             />
-            {/* <Stack.Screen
+            <Stack.Screen
               name="SetNotification"
               component={SetNotification}
               options={{ headerShown: false }}
-            /> */}
+            />
             <Stack.Screen
               name="FeedPage"
               component={FeedPage}
