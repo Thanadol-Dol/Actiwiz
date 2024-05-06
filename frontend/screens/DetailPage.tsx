@@ -1,13 +1,12 @@
-import React, { useState, useCallback } from "react";
-import {StyleSheet, View, Pressable, Text, Linking, Modal} from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import {StyleSheet, View, ScrollView, Pressable, Text, Linking, Modal} from "react-native";
 import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 
-const DetailPage = () => {
-  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
 
   const openGroupContainer = useCallback(() => {
@@ -20,101 +19,87 @@ const DetailPage = () => {
 
   return (
     <>
-      <View style={[styles.detailPage, styles.iconLayout]}>
-        <View style={[styles.detailPageChild, styles.image4IconPosition]} />
+    <View style={[styles.screenHeader]}>
+        <Pressable
+          style={styles.backArrow}
+          onPress={() => navigation.goBack()}
+        >
         <Image
-          style={[styles.image4Icon, styles.image4IconPosition]}
+          style={[styles.icon, styles.iconLayout]}
+          contentFit="cover"
+          source={require("../assets/arrow-back-ios1.png")}
+        />
+        </Pressable>
+    </View>
+      <ScrollView>
+        <Image
+          style={styles.image4IconPosition}
           contentFit="cover"
           source={require("../assets/image-41.png")}
         />
+        <View style={styles.detailContainer}>
+        <Text style={styles.detailHeader}>{`Description\n`}</Text>
+          <Text style={styles.detailBody}>{`BANGMOD STREET BASKETBALL 3x3 2022 การแข่งขัน Basketball 3x3 ภายในมหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี จะจัดแข่งขันในวันที่ 26 พฤศจิกายน 2566 ชิงเงินรางวัลรวมมูลค่ากว่า 3,000 บาท มีทั้งทีมชายและทีมหญิงนะ สามารถลงทะเบียนสมัครเข้าร่วมแข่งขันที่ : https://forms.gle/ao8XrNosGM6dKSNF8 (หรือสแกน QR Code ด้านล่าง) หมายเหตุ: มีค่าประกันทีม ทีมละ 200 บาท จะได้รับคืนหลังจากการแข่งขัน สมัครได้ตั้งแต่วันนี้ ถึง วันที่ 22 พฤศจิกายน 2566 เวลา 23.59 น. รีบสมัครกันมาเยอะๆน้า รับจำนวนจำกัด หมายเหตุ : สงวนสิทธิ์ในการสมัครเฉพาะนักศึกษามหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรีเท่านั้น`}</Text>
+        </View>
         <Pressable
-          style={styles.arrowBackIos}
-          onPress={() => navigation.navigate("FeedPage")}
-        >
-          <Image
-            style={[styles.icon, styles.iconLayout]}
-            contentFit="cover"
-            source={require("../assets/arrow-back-ios1.png")}
-          />
-        </Pressable>
-        <Pressable
-          style={[styles.rectangleParent, styles.groupChildLayout]}
+          style={[styles.rectangleParent]}
           onPress={openGroupContainer}
         >
-          <View style={[styles.groupChild, styles.groupChildLayout]} />
           <Text style={styles.join}>Join</Text>
         </Pressable>
-        <Text style={styles.descriptionBangmodContainer}>
-          <Text style={styles.description}>{`Description : 
-`}</Text>
-          <Text style={styles.bangmodStreetBasketball3x3}>
-            {`BANGMOD STREET BASKETBALL 3x3 2022
-การแข่งขัน Basketball 3x3 ภายในมหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี
-จะจัดแข่งขันในวันที่ 26 พฤศจิกายน 2566
-ชิงเงินรางวัลรวมมูลค่ากว่า 3,000 บาท มีทั้งทีมชายและทีมหญิงนะ
-สามารถลงทะเบียนสมัครเข้าร่วมแข่งขันที่ :
-`}
-          </Text>
-          <Text style={styles.bangmodStreetBasketball3x3}>
-            <Text style={styles.httpsformsgleao8xrnosgm6d1}>
-              https://forms.gle/ao8XrNosGM6dKSNF
-            </Text>
-          </Text>
-          <Text style={styles.bangmodStreetBasketball3x3}>
-            {`8
-(หรือสแกน QR Code ด้านล่าง)
-หมายเหตุ: มีค่าประกันทีม ทีมละ 200 บาท จะได้รับคืนหลังจากการแข่งขัน
-สมัครได้ตั้งแต่วันนี้ ถึง วันที่ 22 พฤศจิกายน 2566 เวลา 23.59 น. รีบสมัครกันมาเยอะๆน้า
-รับจำนวนจำกัด
-หมายเหตุ : สงวนสิทธิ์ในการสมัครเฉพาะนักศึกษามหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรีเท่านั้น`}
-          </Text>
-        </Text>
-      </View>
 
-      <Modal animationType="fade" transparent visible={groupContainerVisible}>
-        <View style={styles.groupContainerOverlay}>
-          <Pressable
-            style={styles.groupContainerBg}
-            onPress={closeGroupContainer}
-          />
-          <CautionJoinEvent onClose={closeGroupContainer} />
-        </View>
-      </Modal>
+        <Modal animationType="fade" transparent visible={groupContainerVisible}>
+          <View style={styles.groupContainerOverlay}>
+            <Pressable
+              style={styles.groupContainerBg}
+              onPress={closeGroupContainer}
+            />
+            <CautionJoinEvent onClose={closeGroupContainer} />
+          </View>
+        </Modal>
+      </ScrollView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  iconLayout: {
-    overflow: "hidden",
-  },
-  image4IconPosition: {
-    width: "100%",
-    position: "absolute",
-  },
-  groupChildLayout: {
-    height: 50,
-    width: 359,
-    position: "absolute",
-  },
-  detailPageChild: {
+  screenHeader: {
     backgroundColor: Color.colorDarkorange_100,
-    height: 383,
+    height: "8%",
     width: "100%",
   },
-  image4Icon: {
-    top: 64,
-    height: 371,
-  },
-  icon: {
-    height: "100%",
-  },
-  arrowBackIos: {
+  backArrow: {
     left: 14,
     top: 31,
     width: 24,
     height: 24,
     position: "absolute",
+  },
+  detailContainer: {
+    textAlign: 'left',
+    fontSize: 18,
+    padding: 30,
+    width: "100%",
+    color: Color.colorBlack,
+  },
+  detailHeader: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontFamily: FontFamily.ubuntuBold,
+  },
+  detailBody: {
+    fontSize: 15,
+    fontFamily: FontFamily.ubuntuRegular,
+  },
+  iconLayout: {
+    overflow: "hidden",
+  },
+  image4IconPosition: {
+    height: 371,
+    width: "100%",
+  },
+  icon: {
+    height: "100%",
   },
   groupContainerOverlay: {
     flex: 1,
@@ -143,51 +128,23 @@ const styles = StyleSheet.create({
     top: 0,
   },
   join: {
-    marginTop: -11.75,
-    marginLeft: -52.65,
-    top: "50%",
-    left: "50%",
     fontSize: FontSize.size_base_2,
     fontWeight: "600",
     fontFamily: FontFamily.poppinsSemiBold,
-    color: Color.iOSFFFFFF,
-    textAlign: "center",
-    width: 106,
-    position: "absolute",
+    color: Color.iOSFFFFFF
   },
   rectangleParent: {
-    top: 739,
-    left: 18,
-  },
-  description: {
-    fontSize: FontSize.size_sm,
-    fontWeight: "700",
-    fontFamily: FontFamily.ubuntuBold,
-  },
-  bangmodStreetBasketball3x3: {
-    fontSize: FontSize.size_xs,
-    fontFamily: FontFamily.ubuntuRegular,
-  },
-  httpsformsgleao8xrnosgm6d1: {
-    textDecorationLine: "underline",
-  },
-  descriptionBangmodContainer: {
-    top: 462,
-    left: 24,
-    textTransform: "uppercase",
-    color: Color.colorBlack,
-    textAlign: "left",
-    width: 346,
-    height: 251,
-    position: "absolute",
-  },
-  detailPage: {
-    borderRadius: Border.br_3xs,
-    backgroundColor: Color.iOSFFFFFF,
-    flex: 1,
-    height: "100%",
-    width: "100%",
-  },
+    bottom: 20, // Adjust as needed
+    alignSelf: "center", // Center horizontally
+    paddingHorizontal: "40%", // Add padding for touch area
+    paddingVertical: 15, // Add padding for touch area
+    backgroundColor: Color.colorDarkorange_200,
+    borderRadius: 8,
+    flexDirection: "row", // Ensure children are aligned horizontally
+    alignItems: "center", // Center children vertically
+    elevation: 3, // Add elevation for shadow
+    marginTop: 20, // Adjust as needed
+  }
 });
 
 export default DetailPage;
