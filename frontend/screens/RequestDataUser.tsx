@@ -24,17 +24,40 @@ const RequestDataUser = ({ route }: { route: any }) => {
   const [openDegree, setOpenDegree] = useState(false);
   const [openFaculty, setOpenFaculty] = useState(false);
   const [openDepartment, setOpenDepartment] = useState(false);
+  const [openAcademicYear, setOpenAcademicYear] = useState(false);
 
   const [valueDegree, setValueDegree] = useState(null);
   const [valueFaculty, setValueFaculty] = useState(null);
   const [valueDepartment, setValueDepartment] = useState(null);
+  const [valueAcademicYear, setValueAcademicYear] = useState(null);
 
   const [itemsDegree, setItemsDegree] = useState<any[]>([]);
   const [itemsFaculty, setItemsFaculty] = useState<any[]>([]);
   const [itemsDepartment, setItemsDepartment] = useState<any[]>([]);
+  const [itemsAcademicYear, setItemsAcademicYear] = useState<any[]>([
+    { label: "First Year", value: 1 },
+    { label: "Second Year", value: 2 },
+    { label: "Third Year", value: 3 },
+    { label: "Fourth Year", value: 4 },
+  ]);
 
   const navigation = useNavigation();
-  
+  const [apiToken, setApiToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchApiToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem("apiToken");
+        setApiToken(token);
+        console.log("apiToken:", token);
+      } catch (error) {
+        console.error("Error fetching apiToken from AsyncStorage:", error);
+      }
+    };
+
+    fetchApiToken();
+  }, []);
+
   console.log("itemsDegree:", itemsDegree);
   console.log("itemsFaculty:", itemsFaculty);
   console.log("itemsDepartment:", itemsDepartment);
@@ -90,27 +113,38 @@ const RequestDataUser = ({ route }: { route: any }) => {
           console.error('Error fetching departments data:', error);
         });
     }
-  }, [valueDegree,valueFaculty]);
+  }, [valueDegree, valueFaculty]);
 
   const handleSignup = () => {
-    if (!student_name || !academic_email || !valueDegree || !valueFaculty || !valueDepartment) {
-      console.error('Error: Required data is missing!');
+    if (!student_name || !academic_email || !valueDegree || !valueFaculty || !valueDepartment || !apiToken) {
+      console.error('Error: Required data or apiToken is missing!');
       return;
     }
   
     const userData = {
-      student_name: student_name,
-      academic_degree: valueDegree,
-      academic_year: 0,
-      academic_email: academic_email,
-      faculty: valueFaculty,
-      department: valueDepartment
+      "UserID": 0,
+      "StudentName": student_name,
+      "AcademicDegree": valueDegree,
+      "AcademicYear": valueAcademicYear,
+      "AcademicEmail": academic_email,
+      "Faculty": valueFaculty,
+      "Department": valueDepartment
     };
-  
-    axios.post('https://actiwizcpe.galapfa.ro/users/create', userData, headers: {'APIToken': apiToken})
+    console.log('user_id:', userData.UserID);
+    console.log('student_name:', student_name);
+    console.log('valueDegree:', valueDegree);
+    console.log('valueAcademicYear:', valueAcademicYear);
+    console.log('academic_email:', academic_email);
+    console.log('valueFaculty:', valueFaculty);
+    console.log('valueDepartment:', valueDepartment);
+
+    axios.post('https://actiwizcpe.galapfa.ro/users/create', userData, {
+      headers: {
+      "Authorization": `Bearer ${apiToken}`
+    }})
       .then(response => {
         console.log('User created successfully:', response.data);
-        navigateToNextScreen('FeedPage');
+        navigateToNextScreen({ navigation: 'FeedPage' });
       })
       .catch(error => {
         console.error('Error creating user:', error);
@@ -124,49 +158,64 @@ const RequestDataUser = ({ route }: { route: any }) => {
         style={styles.headerImage}
         source={require("../assets/Header_Actiwiz.png")}
       />
-        <DropDownPicker
-            placeholder="Select your degree"
-            open={openDegree}
-            value={valueDegree}
-            items={itemsDegree.map((item, index) => ({
-            key : index.toString(),
-            label: item.DegreeName as string,
-            value: item.DegreeName as string,
-          }))}
-          setOpen={setOpenDegree}
-          setValue={setValueDegree}
-          setItems={setItemsDegree}
-          containerStyle={{ marginBottom: 20, width: "80%", zIndex: 1000}}
-  />
-<DropDownPicker
-  placeholder="Select your faculty"
-  open={openFaculty}
-  value={valueFaculty}
-  items={itemsFaculty.map((item, index) => ({
-    key : index.toString(),
-    label: item.FacultyName as string,
-    value: item.FacultyName as string,
-  }))}
-  setOpen={setOpenFaculty}
-  setValue={setValueFaculty}
-  setItems={setItemsFaculty}
-  containerStyle={{ marginBottom: 20, width: "80%", zIndex: 999}}
-  dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
-/>
-<DropDownPicker
-  placeholder="Select your department"
-  open={openDepartment}
-  value={valueDepartment}
-  items={itemsDepartment.map((item, index) => ({
-    key : index.toString(),
-    label: item.DepartmentName as string,
-    value: item.DepartmentName as string,
-  }))}
-  setOpen={setOpenDepartment}
-  setValue={setValueDepartment}
-  setItems={setItemsDepartment}
-  containerStyle={{ marginBottom: 20, width: "80%", zIndex: 998}} 
-/>
+      <DropDownPicker
+        placeholder="Select your academic year"
+        open={openAcademicYear}
+        value={valueAcademicYear}
+        items={itemsAcademicYear.map((item, index) => ({ 
+          key: index.toString(),
+          label: item.label,
+          value: item.value.toString(),
+        }))}
+        setOpen={setOpenAcademicYear}
+        setValue={setValueAcademicYear}
+        setItems={setItemsAcademicYear} 
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 1000 }}
+      />
+
+      <DropDownPicker
+        placeholder="Select your degree"
+        open={openDegree}
+        value={valueDegree}
+        items={itemsDegree.map((item, index) => ({
+          key: index.toString(),
+          label: item.DegreeName as string,
+          value: item.DegreeName as string,
+        }))}
+        setOpen={setOpenDegree}
+        setValue={setValueDegree}
+        setItems={setItemsDegree}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 950 }}
+      />
+      <DropDownPicker
+        placeholder="Select your faculty"
+        open={openFaculty}
+        value={valueFaculty}
+        items={itemsFaculty.map((item, index) => ({
+          key: index.toString(),
+          label: item.FacultyName as string,
+          value: item.FacultyName as string,
+        }))}
+        setOpen={setOpenFaculty}
+        setValue={setValueFaculty}
+        setItems={setItemsFaculty}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 900 }}
+        dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
+      />
+      <DropDownPicker
+        placeholder="Select your department"
+        open={openDepartment}
+        value={valueDepartment}
+        items={itemsDepartment.map((item, index) => ({
+          key: index.toString(),
+          label: item.DepartmentName as string,
+          value: item.DepartmentName as string,
+        }))}
+        setOpen={setOpenDepartment}
+        setValue={setValueDepartment}
+        setItems={setItemsDepartment}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 850 }}
+      />
 
       <Text style={styles.createYourAccount}>Create your account</Text>
       <Pressable style={styles.signupButton} onPress={handleSignup}>
@@ -175,6 +224,7 @@ const RequestDataUser = ({ route }: { route: any }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

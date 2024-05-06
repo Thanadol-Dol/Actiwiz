@@ -1,33 +1,103 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Text, TouchableOpacity } from "react-native";
+import { View, ScrollView, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Searchbar } from 'react-native-paper';
 import { Image } from "expo-image";
+import { useNavigation } from '@react-navigation/native';
+import navigateToNextScreen from "/Users/zknnz/Desktop/Actiwiz/frontend/screens/LoginPage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
+interface IDataItem {
+  ActivityID: number;
+  ActivityName: string;
+  ActivityNameENG: string;
+  Description: string;
+  HourTotal: number;
+  DayTotal: number;
+  Semester: number;
+  Organizer: string;
+  OpenDate: string;
+  CloseDate: string;
+  AcademicYear: number;
+}
+
 const FeedPage = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [data, setData] = useState([]);
+  const navigation = useNavigation();
+  const [data, setData] = useState<IDataItem[]>([]);
+  const [searchText, setSearchText] = useState('');
+  const [user_id, setUser_id] = useState('');
+
+  const [apiToken, setApiToken] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
+    const fetchApiToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem("apiToken");
+        setApiToken(token);
+      } catch (error) {
+        console.error("Error fetching apiToken from AsyncStorage:", error);
+      }
+    };
+
+    fetchApiToken();
   }, []);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    fetchData(searchText);
+    getUserIDFromStorage();
+  }, [apiToken]);
+
+  const fetchData = async (activityName: any) => {
     try {
-      const response = await axios.get("https://example.com/api/data");
+      if (!apiToken) {
+        console.error("apiToken is null or undefined");
+        return;
+      }
+  
+      const nameToSearch = activityName.trim() ? activityName.trim() : 'all';
+      const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/${nameToSearch}`, {
+        headers: {
+          "Authorization": `Bearer ${apiToken}`
+        }
+      });
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+  
 
-  const filteredData = data.filter(item =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const getUserIDFromStorage = async () => {
+    try {
+      const storedUserID = await AsyncStorage.getItem('userId');
+      console.log('Stored User ID:', storedUserID);
+      if (storedUserID !== null) {
+        setUser_id(storedUserID);
+      }
+    } catch (error) {
+      console.error("Error fetching user ID from AsyncStorage:", error);
+    }
+  };
 
   const handleProfilePress = () => {
-    // Navigate to EditProfile screen
-    console.log("Navigate to EditProfile screen");
+    navigateToNextScreen({ navigation: 'DetailPage' });
+  };
+
+  const onChangeSearch = (query: string) => {
+    setSearchText(query);
+    fetchData(query);
+  };
+
+  const navigateToDetailPage = (item: IDataItem) => {
+    navigation.navigate('DetailPage', { item });
+  };
+
+  const renderData = () => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return (
+        <Text>No data available</Text>
+      );
+    }
   };
 
   return (
@@ -38,25 +108,17 @@ const FeedPage = () => {
           source={require("../assets/NongNhaoSmall.png")}
         />
       </TouchableOpacity>
+
       <Searchbar
         placeholder="Search"
-        onChangeText={(text) => setSearchQuery(text)}
-        value={searchQuery}
+        onChangeText={onChangeSearch}
+        value={searchText}
         style={styles.searchbar}
       />
-      <FlatList
-        data={filteredData}
-        renderItem={({ item }) => (
-          <View style={styles.feedItem}>
-            <Image style={styles.feedItemImage} source={{ uri: item.image }} />
-            <View style={styles.feedItemText}>
-              <Text style={styles.feedItemTitle}>{item.title}</Text>
-              <Text style={styles.feedItemDescription}>{item.description}</Text>
-            </View>
-          </View>
-        )}
-        keyExtractor={item => item.id}
-      />
+      
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {renderData()}
+        </ScrollView>
     </View>
   );
 };
@@ -64,48 +126,51 @@ const FeedPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFA500",
-    padding: 20,
+    backgroundColor: '#fff',
+  },
+  profileIconContainer: {
+    padding: 10,
+  },
+  profileIcon: {
+    width: 30,
+    height: 30,
   },
   searchbar: {
-    top: 70,
-    marginBottom: 20,
-    borderRadius: 10,
-    height: 50,
+    marginHorizontal: 10,
+    marginVertical: 10,
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  scrollContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 20,
   },
   feedItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 8,
+    elevation: 3,
   },
   feedItemImage: {
-    width: 100,
-    height: 100,
-    marginRight: 20,
-    borderRadius: 10,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
   },
   feedItemText: {
     flex: 1,
   },
   feedItemTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   feedItemDescription: {
-    fontSize: 16,
-  },
-  profileIconContainer: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-    zIndex: 1,
-  },
-  profileIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    top: 20,
+    fontSize: 14,
+    color: '#555',
   },
 });
 
