@@ -1,6 +1,6 @@
 import React, {  useEffect, useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, View, Text, Pressable} from "react-native";
+import { ActivityIndicator, StyleSheet, View, Text, Pressable} from "react-native";
 import { FontFamily, FontSize, Color } from "../GlobalStyles";
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
@@ -166,6 +166,9 @@ return (
           contentFit="cover"
           source={require("../assets/ActiwizPic.png")}
         />
+        {!loginFlag && (
+          <ActivityIndicator style={styles.loaderAnimIcon} size="large" color={Color.colorDarkorange_200} />
+        )}
         {loginFlag && loginUrl && ( // Render text and Pressable when loginFlag and loginUrl are true
           <>
             <Text style={[styles.loginIntoYour, styles.loginTypo]}>
@@ -258,6 +261,13 @@ loginPosition: {
     left: 4,
     color: Color.iOSFFFFFF,
     width: "100%",
+  },
+  loaderAnimIcon: {
+    top: 500,
+    left: 134,
+    width: 121,
+    height: 121,
+    position: "absolute",
   },
 });
 
