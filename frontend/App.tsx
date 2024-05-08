@@ -3,7 +3,8 @@ import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import LoginPage from "./screens/LoginPage";
-import FeedPage from "./screens/FeedPage";
+import FeedPageEvent from "./screens/FeedPageEvent";
+import FeedPageClub from "./screens/FeedPageClub";
 import DetailPage from "./screens/DetailPage";
 import NotificationPage from "./screens/NotificationPage";
 import EditProfile from "./screens/EditProfile";
@@ -60,7 +61,7 @@ const App = () => {
             />
             <Stack.Screen
               name="FeedPage"
-              component={FeedPage}
+              component={FeedPageClub}
               options={{ headerShown: false }}
             />
             <Stack.Screen
