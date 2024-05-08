@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from "@react-navigation/native"; 
-import navigateToNextScreen from "/Users/zknnz/Desktop/Actiwiz/frontend/screens/LoginPage";
+import navigateToNextScreen from "../screens/LoginPage";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
