@@ -105,9 +105,9 @@ async def activities_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@activityRouter.post("/join/{activity_id}")
+@activityRouter.get("/check/joined/{activity_id}")
 @requires_auth
-async def join_activity(
+async def check_joined_activity(
     request: Request,
     activity_id: int = Path(...,description="The ID of the activity to join"),
     user_id: int = Query(...,description="The ID of the user joining the activity"),
@@ -122,7 +122,22 @@ async def join_activity(
         search_results = await database.query(search_query, params)
         if search_results:
             return {"joined": True, "message": "User already joined the activity."}
+        return {"joined": False, "message": "User has not joined the activity."}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+@activityRouter.post("/join/{activity_id}")
+@requires_auth
+async def join_activity(
+    request: Request,
+    activity_id: int = Path(...,description="The ID of the activity to join"),
+    user_id: int = Query(...,description="The ID of the user joining the activity"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
         merge_query = f"""MATCH (userNode:User), (activityNode:Activity) 
         WHERE userNode.UserID = $user_id AND activityNode.ActivityID = $activity_id
         MERGE (userNode)-[:PARTICIPATE_IN]->(activityNode)"""
