@@ -101,6 +101,29 @@ async def club_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@clubRouter.get("/check/joined/{club_id}")
+@requires_auth
+async def join_club(
+    request: Request,
+    club_id: str = Path(...,description="The ID of the club to join"),
+    user_id: int = Query(...,description="The ID of the user joining the club"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
+
+        search_query = f"""MATCH p=(userNode:User)-[:IS_MEMBER_OF]->(clubNode:Club) 
+        WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id RETURN p"""
+        params = {"user_id": user_id, "club_id": club_id}
+        search_results = await database.query(search_query, params)
+        if search_results:
+            return {"joined": True, "message": "User already joined the club."}
+        return {"joined": False, "message": "User has not joined the club."}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @clubRouter.post("/join/{club_id}")
 @requires_auth
 async def join_club(
