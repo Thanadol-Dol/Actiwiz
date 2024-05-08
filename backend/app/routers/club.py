@@ -111,10 +111,17 @@ async def join_club(
 ):
     try:
         validate_scope(token_scp,request)
-        query = f"""MATCH (userNode:User), (clubNode:Club) WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id
-        MERGE (userNode)-[:JOINED]->(clubNode)"""
+
+        search_query = f"""MATCH p=(userNode:User)-[:IS_MEMBER_OF]->(clubNode:Club) 
+        WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id RETURN p"""
         params = {"user_id": user_id, "club_id": club_id}
-        await database.run(query, params)
+        search_results = await database.query(search_query, params)
+        if search_results:
+            return {"joined": True, "message": "User already joined the club."}
+
+        merge_query = f"""MATCH (userNode:User), (clubNode:Club) WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id
+        MERGE (userNode)-[:IS_MEMBER_OF]->(clubNode)"""
+        await database.run(merge_query, params)
         return {"message": "User joined the club successfully."}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
@@ -131,7 +138,7 @@ async def leave_club(
 ):
     try:
         validate_scope(token_scp,request)
-        query = f"""MATCH (userNode:User)-[r:JOINED]->(clubNode:Club) 
+        query = f"""MATCH (userNode:User)-[r:IS_MEMBER_OF]->(clubNode:Club) 
         WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id DELETE r"""
         params = {"user_id": user_id, "club_id": club_id}
         await database.run(query, params)
