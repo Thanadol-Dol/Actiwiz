@@ -5,8 +5,12 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
+  const activityName = route.params.ActivityName;
+  const activityDescription = route.params.Description;
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
 
   const openGroupContainer = useCallback(() => {
@@ -19,7 +23,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
 
   return (
     <>
-    <View style={[styles.screenHeader]}>
+      <View style={[styles.screenHeader]}>
         <Pressable
           style={styles.backArrow}
           onPress={() => navigation.goBack()}
@@ -30,7 +34,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
           source={require("../assets/arrow-back-ios1.png")}
         />
         </Pressable>
-    </View>
+      </View>
       <ScrollView>
         <Image
           style={styles.image4IconPosition}
@@ -38,8 +42,8 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
           source={require("../assets/image-41.png")}
         />
         <View style={styles.detailContainer}>
-        <Text style={styles.detailHeader}>{`Description\n`}</Text>
-          <Text style={styles.detailBody}>{`BANGMOD STREET BASKETBALL 3x3 2022 การแข่งขัน Basketball 3x3 ภายในมหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี จะจัดแข่งขันในวันที่ 26 พฤศจิกายน 2566 ชิงเงินรางวัลรวมมูลค่ากว่า 3,000 บาท มีทั้งทีมชายและทีมหญิงนะ สามารถลงทะเบียนสมัครเข้าร่วมแข่งขันที่ : https://forms.gle/ao8XrNosGM6dKSNF8 (หรือสแกน QR Code ด้านล่าง) หมายเหตุ: มีค่าประกันทีม ทีมละ 200 บาท จะได้รับคืนหลังจากการแข่งขัน สมัครได้ตั้งแต่วันนี้ ถึง วันที่ 22 พฤศจิกายน 2566 เวลา 23.59 น. รีบสมัครกันมาเยอะๆน้า รับจำนวนจำกัด หมายเหตุ : สงวนสิทธิ์ในการสมัครเฉพาะนักศึกษามหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรีเท่านั้น`}</Text>
+        <Text style={styles.detailHeader}>{activityName + '\n'}</Text>
+          <Text style={styles.detailBody}>{activityDescription}</Text>
         </View>
         <Pressable
           style={[styles.rectangleParent]}
@@ -47,7 +51,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         >
           <Text style={styles.join}>Join</Text>
         </Pressable>
-
+        
         <Modal animationType="fade" transparent visible={groupContainerVisible}>
           <View style={styles.groupContainerOverlay}>
             <Pressable
