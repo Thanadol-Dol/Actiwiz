@@ -110,7 +110,7 @@ const FeedPage = ({navigation}: {navigation: any}) => {
   };
   
   const navigateToDetailPage = (item: DataItem) => {
-    navigation.navigate('DetailPage', { "ActivityName": item.ActivityName, "Description": item.Description });
+    navigation.navigate('DetailPage', {"ActivityID": item.ActivityID, "ActivityName": item.ActivityName, "Description": item.Description });
   };
   
   const renderData = () => {
