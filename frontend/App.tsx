@@ -1,5 +1,4 @@
-const Stack = createNativeStackNavigator();
-import * as React from "react";
+import React, { useState } from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import LoginPage from "./screens/LoginPage";
@@ -19,12 +18,14 @@ import CautionJoinClubCancel from "./components/CautionJoinClubCancel";
 import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
 import CautionJoinClub from "./components/CautionJoinClub";
 import SetNotification from "./screens/SetNotification";
-
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RequestDataUser from "./screens/RequestDataUser";
+import Navbar from "./components/NavBar";
+
+const Stack = createNativeStackNavigator();
 
 const App = () => {
-  const [hideSplashScreen, setHideSplashScreen] = React.useState(true);
+  const [activePage, setActivePage] = useState<'FeedPageEvent' | 'FeedPageClub'>('FeedPageEvent');
 
   const [fontsLoaded, error] = useFonts({
     "Ubuntu-Regular": require("./assets/fonts/Ubuntu-Regular.ttf"),
@@ -42,22 +43,25 @@ const App = () => {
   return (
     <>
       <NavigationContainer>
-        {hideSplashScreen ? (
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator 
+            screenOptions={{ headerShown: false }}
+            initialRouteName="FeedPageEvent"
+          >
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
-              options={{ headerShown: false }}
               />
             <Stack.Screen
               name="RequestDataUser"
               component={RequestDataUser}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="SetNotification"
               component={SetNotification}
-              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="FeedPageEvent"
+              component={FeedPageEvent}
             />
             <Stack.Screen
               name="FeedPage"
@@ -67,65 +71,53 @@ const App = () => {
             <Stack.Screen
               name="DetailPage"
               component={DetailPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="NotificationPage"
               component={NotificationPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="EditProfile"
               component={EditProfile}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="JoinPage"
               component={JoinPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="NotificationJoinedPage"
               component={NotificationJoinedPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="EvaluatePage"
               component={EvaluatePage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="ToSinfoPage"
               component={ToSinfoPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="ClubPage"
               component={ClubPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="JoinClubPage"
               component={JoinClubPage}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="CautionJoinClubCancel"
               component={CautionJoinClubCancel}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="CautionJoinEventCancel"
               component={CautionJoinEventCancel}
-              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="CautionJoinClub"
               component={CautionJoinClub}
-              options={{ headerShown: false }}
             />
           </Stack.Navigator>
-        ) : null}
+          <Navbar activePage={activePage} setActivePage={setActivePage} />
       </NavigationContainer>
     </>
   );

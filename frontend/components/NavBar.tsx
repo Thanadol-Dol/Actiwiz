@@ -1,53 +1,47 @@
-import * as React from "react";
-import { StyleSheet, View } from "react-native";
-import { Image } from "expo-image";
-import { Color } from "../GlobalStyles";
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 
-const NavBar = () => {
+interface NavbarProps {
+  activePage: 'FeedPageEvent' | 'FeedPageClub';
+  setActivePage: (page: 'FeedPageEvent' | 'FeedPageClub') => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage }) => {
   return (
-    <View style={styles.navBar}>
-      <View style={styles.navBarChild} />
-      <Image
-        style={[styles.searchLightIcon, styles.lightIconPosition]}
-        contentFit="cover"
-        source={require("../assets/search-light.png")}
-      />
-      <Image
-        style={[styles.homeLightIcon, styles.lightIconPosition]}
-        contentFit="cover"
-        source={require("../assets/home-light.png")}
-      />
+    <View style={styles.navbar}>
+      <TouchableOpacity
+        style={[styles.navButton, activePage === 'FeedPageEvent' && styles.activeNavButton]}
+        onPress={() => setActivePage('FeedPageEvent')}
+      >
+        <Text style={styles.navText}>Event</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.navButton, activePage === 'FeedPageClub' && styles.activeNavButton]}
+        onPress={() => setActivePage('FeedPageClub')}
+      >
+        <Text style={styles.navText}>Club</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  lightIconPosition: {
-    height: 39,
-    width: 38,
-    bottom: 14,
-    left: "50%",
-    position: "absolute",
+  navbar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 10,
   },
-  navBarChild: {
-    marginLeft: -195,
-    bottom: 0,
-    backgroundColor: Color.colorDarkslategray_100,
-    left: "50%",
-    position: "absolute",
-    height: 68,
-    width: 390,
+  navButton: {
+    paddingHorizontal: 20,
   },
-  searchLightIcon: {
-    marginLeft: -146,
+  navText: {
+    fontWeight: 'bold',
   },
-  homeLightIcon: {
-    marginLeft: -14,
-  },
-  navBar: {
-    height: 68,
-    width: 390,
+  activeNavButton: {
+    borderBottomWidth: 2,
+    borderColor: '#ff8f00',
   },
 });
 
-export default NavBar;
+export default Navbar;

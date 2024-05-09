@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableWithoutFeedback, Keyboard } from 'react-native';
 import navigateToNextScreen from "./LoginPage";
+import Navbar from "../components/NavBar";
 import axios from "axios";
 
 interface DataItem {
@@ -21,12 +22,13 @@ interface DataItem {
   AcademicYear: number;
 }
 
-const FeedPage = ({navigation}: {navigation: any}) => {
+const FeedPageEvent = ({navigation}: {navigation: any}) => {
   const [data, setData] = useState<DataItem[]>([]);
   const [searchText, setSearchText] = useState('');
   const [user_id, setUser_id] = useState('');
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<DataItem[]>([]);
+  const [activePage, setActivePage] = useState<'FeedPageEvent' | 'FeedPageClub'>('FeedPageEvent');
 
   useEffect(() => {
     const fetchApiTokenAndUserID = async () => {
@@ -110,7 +112,7 @@ const FeedPage = ({navigation}: {navigation: any}) => {
   };
   
   const navigateToDetailPage = (item: DataItem) => {
-    navigation.navigate('DetailPage', {"ActivityID": item.ActivityID, "ActivityName": item.ActivityName, "Description": item.Description });
+    navigation.navigate('DetailPage', { "ActivityName": item.ActivityName, "Description": item.Description });
   };
   
   const renderData = () => {
@@ -276,4 +278,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedPage;
+export default FeedPageEvent;

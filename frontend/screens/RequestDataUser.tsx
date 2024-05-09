@@ -77,7 +77,6 @@ const RequestDataUser = ({ route }: { route: any }) => {
         console.error('Error fetching degrees data:', error);
       });
   }, []);
-  
 
   useEffect(() => {
     if (valueDegree) {

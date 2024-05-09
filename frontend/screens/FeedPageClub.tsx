@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity, StyleSheet, Text } from "react-native";
+import { View, ScrollView, TouchableOpacity, StyleSheet, Text, Image, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Searchbar } from 'react-native-paper';
-import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { TouchableWithoutFeedback, Keyboard } from 'react-native';
-import navigateToNextScreen from "./LoginPage";
 import axios from "axios";
 
 interface DataItem {
@@ -13,7 +10,7 @@ interface DataItem {
   "ClubNameENG" : string,
 }
 
-const FeedPage = ({navigation}: {navigation: any}) => {
+const FeedPageClub = ({navigation}: {navigation: any}) => {
   const [data, setData] = useState<DataItem[]>([]);
   const [searchText, setSearchText] = useState('');
   const [user_id, setUser_id] = useState('');
@@ -94,7 +91,7 @@ const FeedPage = ({navigation}: {navigation: any}) => {
   }, [apiToken, searchText]);
 
   const handleProfilePress = () => {
-    navigateToNextScreen({ navigation: 'Editprofile' });
+    navigation.navigate('Editprofile');
   };
 
   const onChangeSearch = (query: string) => {
@@ -192,39 +189,10 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     top: 0,
   },
-  contentContainer: {
-    flex: 1,
-  },
   scrollContainer: {
     paddingHorizontal: 10,
     paddingVertical: 20,
     paddingBottom: 300, 
-  },
-  feedItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 8,
-    elevation: 3,
-  },
-  feedItemImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  feedItemText: {
-    flex: 1,
-  },
-  feedItemTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  feedItemDescription: {
-    fontSize: 14,
-    color: '#555',
   },
   cardContainer: {
     padding: 20,
@@ -266,4 +234,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedPage;
+export default FeedPageClub;
