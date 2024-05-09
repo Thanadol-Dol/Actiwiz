@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View, FlatList } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from "@react-navigation/native"; 
 import navigateToNextScreen from "../screens/LoginPage";
@@ -152,6 +152,7 @@ const RequestDataUser = ({ route }: { route: any }) => {
   };
 
   return (
+
     <View style={styles.container}>
       <Image
         style={styles.headerImage}
@@ -169,7 +170,10 @@ const RequestDataUser = ({ route }: { route: any }) => {
         setOpen={setOpenAcademicYear}
         setValue={setValueAcademicYear}
         setItems={setItemsAcademicYear} 
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 1000 }}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 4 }}
+        scrollViewProps={{
+          scrollEnabled: true,
+        }}
       />
 
       <DropDownPicker
@@ -184,7 +188,10 @@ const RequestDataUser = ({ route }: { route: any }) => {
         setOpen={setOpenDegree}
         setValue={setValueDegree}
         setItems={setItemsDegree}
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 950 }}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 3 }}
+        scrollViewProps={{
+          scrollEnabled: true,
+        }}
       />
       <DropDownPicker
         placeholder="Select your faculty"
@@ -198,8 +205,11 @@ const RequestDataUser = ({ route }: { route: any }) => {
         setOpen={setOpenFaculty}
         setValue={setValueFaculty}
         setItems={setItemsFaculty}
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 900 }}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 2 }}
         dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
+        scrollViewProps={{
+          scrollEnabled: true,
+        }}
       />
       <DropDownPicker
         placeholder="Select your department"
@@ -213,7 +223,10 @@ const RequestDataUser = ({ route }: { route: any }) => {
         setOpen={setOpenDepartment}
         setValue={setValueDepartment}
         setItems={setItemsDepartment}
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 850 }}
+        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 1}}
+        scrollViewProps={{
+          scrollEnabled: true,
+        }}
       />
 
       <Text style={styles.createYourAccount}>Create your account</Text>
@@ -221,6 +234,7 @@ const RequestDataUser = ({ route }: { route: any }) => {
         <Text style={styles.signupText}>Signup now</Text>
       </Pressable>
     </View>
+
   );
 };
 

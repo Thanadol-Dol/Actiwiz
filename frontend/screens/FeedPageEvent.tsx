@@ -28,7 +28,6 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   const [user_id, setUser_id] = useState('');
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<DataItem[]>([]);
-  const [activePage, setActivePage] = useState<'FeedPageEvent' | 'FeedPageClub'>('FeedPageEvent');
 
   useEffect(() => {
     const fetchApiTokenAndUserID = async () => {
@@ -81,7 +80,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!apiToken) {
+        if (!apiToken || !user_id) {
           console.error("apiToken is null or undefined");
           return;
         }
@@ -178,6 +177,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
           />
           {renderData()}
         </ScrollView>
+        <Navbar activePage={'FeedPageEvent'} setActivePage={(page) => navigation.navigate(page)} />
       </View>
     </TouchableWithoutFeedback>
   );

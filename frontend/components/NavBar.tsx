@@ -13,13 +13,13 @@ const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage }) => {
         style={[styles.navButton, activePage === 'FeedPageEvent' && styles.activeNavButton]}
         onPress={() => setActivePage('FeedPageEvent')}
       >
-        <Text style={styles.navText}>Event</Text>
+        <Text style={[styles.navText, activePage === 'FeedPageEvent' && styles.activeNavText]}>Event</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.navButton, activePage === 'FeedPageClub' && styles.activeNavButton]}
         onPress={() => setActivePage('FeedPageClub')}
       >
-        <Text style={styles.navText}>Club</Text>
+        <Text style={[styles.navText, activePage === 'FeedPageClub' && styles.activeNavText]}>Club</Text>
       </TouchableOpacity>
     </View>
   );
@@ -37,10 +37,14 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontWeight: 'bold',
+    color: '#000', // ตั้งค่าสีข้อความเป็นสีดำ
   },
   activeNavButton: {
     borderBottomWidth: 2,
     borderColor: '#ff8f00',
+  },
+  activeNavText: {
+    color: '#ff8f00', // ตั้งค่าสีข้อความเมื่อ Active เป็นสีส้ม
   },
 });
 

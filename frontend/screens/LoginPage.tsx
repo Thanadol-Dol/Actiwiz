@@ -169,7 +169,7 @@ return (
         {!loginFlag && (
           <ActivityIndicator style={styles.loaderAnimIcon} size="large" color={Color.colorDarkorange_200} />
         )}
-        {loginFlag && loginUrl && ( // Render text and Pressable when loginFlag and loginUrl are true
+        {loginFlag && loginUrl && (
           <>
             <Text style={[styles.loginIntoYour, styles.loginTypo]}>
               Login into your account
