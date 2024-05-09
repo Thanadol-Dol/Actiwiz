@@ -34,7 +34,7 @@ const SetNotification = ({navigation}: {navigation: any}) => {
           };
           registerPushToken();
         }
-        navigation.navigate("FeedPage");
+        navigation.navigate("FeedPageEvent");
     }, [expoPushToken?.data]);
 
     return (

@@ -7,16 +7,10 @@ import FeedPageClub from "./screens/FeedPageClub";
 import DetailPage from "./screens/DetailPage";
 import NotificationPage from "./screens/NotificationPage";
 import EditProfile from "./screens/EditProfile";
-import JoinPage from "./screens/JoinPage";
 import NotificationJoinedPage from "./screens/NotificationJoinedPage";
 import EvaluatePage from "./screens/EvaluatePage";
 import ToSinfoPage from "./screens/ToSinfoPage";
 import ClubPage from "./screens/ClubPage";
-import JoinClubPage from "./screens/JoinClubPage";
-import CautionJoinEvent from "./components/CautionJoinEvent";
-import CautionJoinClubCancel from "./components/CautionJoinClubCancel";
-import CautionJoinEventCancel from "./screens/CautionJoinEventCancel";
-import CautionJoinClub from "./components/CautionJoinClub";
 import SetNotification from "./screens/SetNotification";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RequestDataUser from "./screens/RequestDataUser";
@@ -43,10 +37,7 @@ const App = () => {
   return (
     <>
       <NavigationContainer>
-          <Stack.Navigator 
-            screenOptions={{ headerShown: false }}
-            initialRouteName="FeedPageEvent"
-          >
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
@@ -64,9 +55,8 @@ const App = () => {
               component={FeedPageEvent}
             />
             <Stack.Screen
-              name="FeedPage"
-              component={FeedPageEvent}
-              options={{ headerShown: false }}
+              name="FeedPageClub"
+              component={FeedPageClub}
             />
             <Stack.Screen
               name="DetailPage"
@@ -79,10 +69,6 @@ const App = () => {
             <Stack.Screen
               name="EditProfile"
               component={EditProfile}
-            />
-            <Stack.Screen
-              name="JoinPage"
-              component={JoinPage}
             />
             <Stack.Screen
               name="NotificationJoinedPage"
@@ -100,24 +86,7 @@ const App = () => {
               name="ClubPage"
               component={ClubPage}
             />
-            <Stack.Screen
-              name="JoinClubPage"
-              component={JoinClubPage}
-            />
-            <Stack.Screen
-              name="CautionJoinClubCancel"
-              component={CautionJoinClubCancel}
-            />
-            <Stack.Screen
-              name="CautionJoinEventCancel"
-              component={CautionJoinEventCancel}
-            />
-            <Stack.Screen
-              name="CautionJoinClub"
-              component={CautionJoinClub}
-            />
           </Stack.Navigator>
-          <Navbar activePage={activePage} setActivePage={setActivePage} />
       </NavigationContainer>
     </>
   );

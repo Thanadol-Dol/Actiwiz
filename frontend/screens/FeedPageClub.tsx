@@ -99,7 +99,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   };
   
   const navigateToDetailPage = (item: DataItem) => {
-    navigation.navigate('ClubPage', { "ClubName": item.ClubName});
+    navigation.navigate('ClubPage', {"ClubID": item.ClubID ,"ClubName": item.ClubName});
   };
   
   const renderData = () => {

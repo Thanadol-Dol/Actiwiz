@@ -102,11 +102,11 @@ const LoginPage = ({navigation}: {navigation: any}) => {
         } 
         else {
           fetchLoginUrl();
-          setLoginFlag(!loginFlag);
+          setLoginFlag(true);
         }
       } catch (error) {
         fetchLoginUrl();
-        setLoginFlag(!loginFlag);
+        setLoginFlag(true);
       }
     };
     getTokens();
@@ -222,20 +222,20 @@ loginPosition: {
     top: 500,
     left: 120,
     color: Color.colorDimgray,
+    position: "absolute",
   },
   loginTypo: {
     textAlign: "center",
     fontFamily: FontFamily.poppinsSemiBold,
     fontWeight: "700",
     fontSize: FontSize.size_base_2,
-    position: "absolute",
   },
   rectangleGroup: {
     top: 550,
   },
   rectangleLayout: {
     height: 50,
-    left: 24,
+    left: 12,
     width: 359,
     position: "absolute",
   },
@@ -257,10 +257,9 @@ loginPosition: {
     position: "absolute",
   },
   login: {
-    top: 14,
-    left: 4,
+    flex: 1,
+    textAlignVertical: "center",
     color: Color.iOSFFFFFF,
-    width: "100%",
   },
   loaderAnimIcon: {
     top: 500,

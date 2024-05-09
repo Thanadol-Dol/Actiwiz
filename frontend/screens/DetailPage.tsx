@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
   },
   detailContainer: {
     textAlign: 'left',
-    fontSize: 18,
     padding: 30,
     width: "100%",
     color: Color.colorBlack,
