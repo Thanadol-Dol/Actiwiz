@@ -4,18 +4,18 @@ import { Border, Color, FontSize, FontFamily } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-export type CautionJoinEventType = {
+export type CautionLeaveClubType = {
   onClose?: () => void;
   onUpdate?: () => void;
-  activityID: number;
+  clubID: string;
 };
 
-const CautionJoinEvent = ({ onClose, onUpdate, activityID }: CautionJoinEventType) => {
-  const requestJoinEvent = async () => {
+const CautionLeaveClub = ({ onClose, onUpdate, clubID }: CautionLeaveClubType) => {
+  const requestLeaveClub = async () => {
     try {
       const apiToken = await AsyncStorage.getItem("apiToken");
       const userId = await AsyncStorage.getItem('userId');
-      const response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/join/${activityID}`, null, {
+      const response = await axios.delete(`https://actiwizcpe.galapfa.ro/clubs/leave/${clubID}`, {
           headers: {
             'Authorization': `Bearer ${apiToken}`
           },
@@ -29,22 +29,22 @@ const CautionJoinEvent = ({ onClose, onUpdate, activityID }: CautionJoinEventTyp
     }
   };
 
-  const joinEvent = () => {
+  const leaveClub = () => {
     if(onClose) onClose();
     if(onUpdate) onUpdate();
-    requestJoinEvent();
+    requestLeaveClub();
   }
 
   return (
-    <View style={styles.cautionJoinEvent}>
-      <View style={styles.cautionJoinEventChild}>
+    <View style={styles.cautionLeaveClub}>
+      <View style={styles.cautionLeaveClubChild}>
         <Text style={styles.cautionText}>Are You Sure?</Text>
         <View style={styles.buttonContainer}>
-          <Pressable style = {[styles.cautionButton,styles.yesButton]} onPress={joinEvent}>
-            <Text style={styles.buttonText}>Yes</Text>
+          <Pressable style = {[styles.cautionButton,styles.yesButton]} onPress={leaveClub}>
+            <Text style={[styles.buttonText,styles.yesButtonText]}>Yes</Text>
           </Pressable>
           <Pressable style = {[styles.cautionButton,styles.noButton]} onPress={onClose}>
-            <Text style={styles.buttonText}>No</Text>
+            <Text style={[styles.buttonText,styles.noButtonText]}>No</Text>
           </Pressable>
         </View>
       </View>
@@ -53,14 +53,14 @@ const CautionJoinEvent = ({ onClose, onUpdate, activityID }: CautionJoinEventTyp
 };
 
 const styles = StyleSheet.create({
-  cautionJoinEvent: {
+  cautionLeaveClub: {
     width: 380,
     height: 175,
     overflow: "hidden",
     maxWidth: "85%",
     maxHeight: "100%",
   },
-  cautionJoinEventChild: {
+  cautionLeaveClubChild: {
     height: "100%",
     width: "100%",
     borderRadius: Border.br_3xs,
@@ -94,15 +94,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
     fontSize: FontSize.size_xl,
-    fontFamily: FontFamily.ubuntuRegular,
-    color: Color.colorWhitesmoke_100,
+    fontFamily: FontFamily.ubuntuRegular
+  },
+  yesButtonText: {
+    color: Color.colorWhitesmoke_100
+  },
+  noButtonText: {
+    color: Color.colorBlack
   },
   yesButton: {
-    backgroundColor: Color.colorForestgreen
+    backgroundColor: Color.colorFirebrick
   },
   noButton: {
-    backgroundColor: Color.colorFirebrick
+    backgroundColor: Color.colorGainsboro_100
   },
 });
 
-export default CautionJoinEvent;
+export default CautionLeaveClub;

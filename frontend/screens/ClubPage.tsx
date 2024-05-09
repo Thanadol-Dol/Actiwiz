@@ -1,13 +1,16 @@
-import React, { useState, useCallback } from "react";
-import { Text, StyleSheet, View, Pressable, Modal } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { Text, StyleSheet, View, ScrollView, Pressable, Modal, ImageStyle} from "react-native";
 import { Image } from "expo-image";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation, ParamListBase } from "@react-navigation/native";
 import CautionJoinClub from "../components/CautionJoinClub";
+import CautionLeaveClub from "../components/CautionLeavClub";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
-const ClubPage = () => {
-  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
+  const clubID = route.params.ClubID;
+  const clubName = route.params.ClubName;
+  const [joinedClub, setJoinedClub] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
 
   const openGroupContainer = useCallback(() => {
@@ -18,115 +21,129 @@ const ClubPage = () => {
     setGroupContainerVisible(false);
   }, []);
 
+  const toggleJoinClub = useCallback(() => {
+    setJoinedClub(!joinedClub);
+  }, [joinedClub]);
+
+  useEffect(() => {
+    const checkJoinedClub = async () => {
+      try {
+        const apiToken = await AsyncStorage.getItem("apiToken");
+        const userId = await AsyncStorage.getItem('userId');
+        const response = await axios.get(`https://actiwizcpe.galapfa.ro/clubs/check/joined/${clubID}`, {
+            headers: {
+              'Authorization': `Bearer ${apiToken}`
+            },
+            params: {
+              user_id: userId
+            }
+        })
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+      }
+    };
+    
+    checkJoinedClub();
+  }, []);
+
   return (
     <>
-      <View style={[styles.clubPage, styles.iconLayout]}>
-        <Text style={[styles.basketballClubKmutt, styles.joinFlexBox]}>
-          Basketball club kmutt
-        </Text>
-        <Text style={[styles.description, styles.descriptionTypo]}>
-          Description : ชมรมบาสเก็ตบอล มหาวิทยาลัยเทคโนโลยี
-        </Text>
-        <View style={[styles.clubPageChild, styles.clubPosition]} />
+      <View style={[styles.screenHeader]}>
         <Pressable
-          style={styles.arrowBackIos}
-          onPress={() => navigation.navigate("FeedPage")}
+          style={styles.backArrow}
+          onPress={() => navigation.goBack()}
         >
-          <Image
-            style={[styles.icon, styles.iconLayout]}
-            contentFit="cover"
-            source={require("../assets/arrow-back-ios1.png")}
-          />
-        </Pressable>
         <Image
-          style={[styles.clubPageItem, styles.clubPosition]}
+          style={[styles.icon, styles.iconLayout]}
+          contentFit="cover"
+          source={require("../assets/arrow-back-ios1.png")}
+        />
+        </Pressable>
+      </View>
+      <ScrollView>
+        <Image
+          style={styles.image4IconPosition}
           contentFit="cover"
           source={require("../assets/rectangle-40.png")}
         />
-        <Pressable
-          style={[styles.rectangleParent, styles.groupChildLayout]}
-          onPress={openGroupContainer}
-        >
-          <View style={[styles.groupChild, styles.groupChildLayout]} />
-          <Text style={[styles.join, styles.joinFlexBox]}>Join</Text>
-        </Pressable>
-      </View>
-
-      <Modal animationType="fade" transparent visible={groupContainerVisible}>
-        <View style={styles.groupContainerOverlay}>
-          <Pressable
-            style={styles.groupContainerBg}
-            onPress={closeGroupContainer}
-          />
-          <CautionJoinClub onClose={closeGroupContainer} />
+        <View style={styles.detailContainer}>
+          <Text style={styles.detailHeader}>{clubName}</Text>
         </View>
-      </Modal>
+          
+            {joinedClub
+              ? 
+              <Pressable
+                style={[styles.rectangleParent,styles.rectangleParentJoined]}
+                onPress={openGroupContainer}
+              >
+                <Text style={styles.join}>Leave</Text>
+              </Pressable>
+              : 
+              <Pressable
+                style={[styles.rectangleParent,styles.rectangleParentNormal]}
+                onPress={openGroupContainer}
+              >
+                <Text style={styles.join}>Join</Text>
+              </Pressable>
+            }
+        
+          <Modal animationType="fade" transparent visible={groupContainerVisible}>
+            <View style={styles.groupContainerOverlay}>
+              <Pressable
+                style={styles.groupContainerBg}
+                onPress={closeGroupContainer}
+              />
+              {joinedClub
+                ? <CautionLeaveClub onClose={closeGroupContainer} onUpdate={toggleJoinClub} clubID={clubID}/>
+                : <CautionJoinClub onClose={closeGroupContainer} onUpdate={toggleJoinClub} clubID={clubID}/>
+              }
+            </View>
+          </Modal>
+      </ScrollView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  iconLayout: {
-    overflow: "hidden",
+  screenHeader: {
+    backgroundColor: Color.colorDarkorange_100,
+    height: "8%",
     width: "100%",
   },
-  joinFlexBox: {
-    textAlign: "center",
-    position: "absolute",
-  },
-  descriptionTypo: {
-    color: Color.colorBlack,
-    fontFamily: FontFamily.ubuntuRegular,
-    textTransform: "uppercase",
-  },
-  clubPosition: {
-    width: 390,
-    left: 0,
-    position: "absolute",
-  },
-  groupChildLayout: {
-    height: 50,
-    width: 359,
-    position: "absolute",
-  },
-  basketballClubKmutt: {
-    top: 449,
-    left: 11,
-    fontSize: FontSize.size_5xl,
-    width: 368,
-    height: 30,
-    color: Color.colorBlack,
-    fontFamily: FontFamily.ubuntuRegular,
-    textTransform: "uppercase",
-  },
-  description: {
-    top: 492,
-    left: 29,
-    fontSize: FontSize.size_xl,
-    textAlign: "left",
-    width: 302,
-    height: 56,
-    position: "absolute",
-  },
-  clubPageChild: {
-    backgroundColor: Color.colorDarkorange_100,
-    height: 383,
-    top: 0,
-    width: 390,
-  },
-  icon: {
-    height: "100%",
-  },
-  arrowBackIos: {
+  backArrow: {
     left: 14,
     top: 31,
     width: 24,
     height: 24,
     position: "absolute",
   },
-  clubPageItem: {
-    top: 64,
+  detailContainer: {
+    textAlign: 'left',
+    padding: 30,
+    width: "100%",
+    color: Color.colorBlack,
+    marginBottom: "30%",
+  },
+  detailHeader: {
+    fontSize: 30,
+    fontWeight: "700",
+    fontFamily: FontFamily.ubuntuBold,
+    textAlign: "left",
+  },
+  detailBody: {
+    fontSize: 15,
+    fontFamily: FontFamily.ubuntuRegular,
+  },
+  iconLayout: {
+    overflow: "hidden",
+  },
+  image4IconPosition: {
     height: 371,
+    width: "100%",
+  },
+  icon: {
+    height: "100%",
   },
   groupContainerOverlay: {
     flex: 1,
@@ -138,8 +155,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    left: 0,
-    top: 0,
   },
   groupChild: {
     borderRadius: 8,
@@ -157,26 +172,36 @@ const styles = StyleSheet.create({
     top: 0,
   },
   join: {
-    marginTop: -11.75,
-    marginLeft: -52.65,
-    top: "50%",
-    left: "50%",
     fontSize: FontSize.size_base_2,
     fontWeight: "600",
     fontFamily: FontFamily.poppinsSemiBold,
     color: Color.iOSFFFFFF,
-    width: 106,
   },
   rectangleParent: {
-    top: 639,
-    left: 15,
+    bottom: 20, // Adjust as needed
+    alignSelf: "center", // Center horizontally
+    borderRadius: 8,
+    elevation: 3, // Add elevation for shadow
+    marginTop: 20, // Adjust as needed
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: "38%", // Add padding for touch area
+    paddingVertical: 12, // Add padding for touch area
   },
-  clubPage: {
-    borderRadius: Border.br_3xs,
-    backgroundColor: Color.iOSFFFFFF,
+  rectangleParentNormal:{
+    backgroundColor: Color.colorDarkorange_200
+  },
+  rectangleParentJoined:{
+    backgroundColor: Color.colorFirebrick
+  },
+  checkRingRoundIcon: {
+    width: 39,
+    height: 39,
+  },
+  bottomPart:{
     flex: 1,
-    height: 844,
-  },
+    justifyContent: "center",
+  }
 });
 
 export default ClubPage;
