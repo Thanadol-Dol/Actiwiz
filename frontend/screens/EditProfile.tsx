@@ -1,173 +1,89 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, View, Pressable, Text, Modal } from "react-native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation, ParamListBase } from "@react-navigation/native";
+import { StyleSheet, View, Text, Modal, Pressable } from "react-native";
 import EditProfilePopup from "../components/EditProfilePopup";
 import DetailContainer from "../components/DetailContainer";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
-const EditProfile = () => {
-  const [rectangle1Visible, setRectangle1Visible] = useState(false);
-  const [rectangle2Visible, setRectangle2Visible] = useState(false);
-  const [rectangle3Visible, setRectangle3Visible] = useState(false);
-  const [
-    WinterImageVisible,
-    setWinterImageVisible,
-  ] = useState(false);
-  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
-  const [rectangle5Visible, setRectangle5Visible] = useState(false);
+export type profileToBeShown = {
+  Name: string;
+  AcademicDegree: string;
+  Year: number;
+  Department: string;
+}
 
-  const openRectangle1 = useCallback(() => {
-    setRectangle1Visible(true);
-  }, []);
+const EditProfile = ({navigation, route}: {navigation: any, route:any}) => {
+  const [shownProfile, setShownProfile] = useState<profileToBeShown | null>(null);
 
-  const closeRectangle1 = useCallback(() => {
-    setRectangle1Visible(false);
-  }, []);
+  const renderProfileData = () => {
+    if (!shownProfile) return null;
 
-  const openRectangle2 = useCallback(() => {
-    setRectangle2Visible(true);
-  }, []);
+    return Object.keys(shownProfile).map((key, index) => (
+      <View key={key}>
+        <Text style={styles.dataHeader}>{key}</Text>
+        <Text style={styles.dataBody}>{shownProfile ? (shownProfile as any)[key] : ''}</Text>
+      </View>
+    ));
+  };
 
-  const closeRectangle2 = useCallback(() => {
-    setRectangle2Visible(false);
-  }, []);
+  useEffect(() => {
+    const getUserProfile = async () => {
+      try {
+        const apiToken = await AsyncStorage.getItem("apiToken");
+        const userId = await AsyncStorage.getItem('userId');
+        const response = await axios.get(`https://actiwizcpe.galapfa.ro/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${apiToken}`
+            }
+        })
+        console.log(response.data);
+        const userProfile = response.data;
+        const shownProfile: profileToBeShown = {
+          Name: userProfile.StudentName,
+          AcademicDegree: userProfile.AcademicDegree,
+          Year: userProfile.AcademicYear,
+          Department: userProfile.Department
+        };
+        setShownProfile(shownProfile);
+        console.log(shownProfile);
+      } catch (error) {
+        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+      }
+    };
 
-  const openRectangle3 = useCallback(() => {
-    setRectangle3Visible(true);
-  }, []);
-
-  const closeRectangle3 = useCallback(() => {
-    setRectangle3Visible(false);
-  }, []);
-
-  const openWinterImage = useCallback(() => {
-    setWinterImageVisible(true);
-  }, []);
-
-  const closeWinterImage = useCallback(() => {
-    setWinterImageVisible(false);
-  }, []);
-
-  const openRectangle4 = useCallback(() => {
-    setRectangle5Visible(true);
-  }, []);
-
-  const closeRectangle4 = useCallback(() => {
-    setRectangle5Visible(false);
+    getUserProfile();
   }, []);
 
   return (
     <>
       <View style={styles.editProfile}>
-        <Image
-          style={styles.editProfileChild}
-          contentFit="cover"
-          source={require("../assets/ellipse-87.png")}
-        />
-        <View style={styles.editProfileItem} />
-        <Pressable
-          style={[styles.editProfileInner, styles.editChildLayout]}
-          onPress={openRectangle1}
-        />
-        <Pressable
-          style={[styles.rectanglePressable, styles.editChildLayout]}
-          onPress={openRectangle2}
-        />
-        <Pressable
-          style={[styles.editProfileChild1, styles.editChildLayout]}
-          onPress={openRectangle3}
-        />
-        <Pressable
-          style={styles.Winter}
-          onPress={openWinterImage}
-        >
-          <Image
-            style={[styles.icon, styles.iconLayout]}
-            contentFit="cover"
-            source={require("../assets/ProfileWinter.png")}
-          />
-        </Pressable>
-        <DetailContainer
-          detailText="Log Out"
-          propTop={650}
-          propLeft={137}
-          propWidth={120}
-          propHeight={40}
-          propElevation={4}
-          propHeight1="100%"
-          propWidth1="100%"
-          propBackgroundColor1="#d8d8d8"
-          propBorderRadius1={23}
-          propBackgroundColor2="#be2828"
-          propMarginTop1={-6.5}
-          propRight1={16}
-          propMarginTop2={-11.5}
-          propLeft1="10.8%"
-          propFontSize={16}
-          propColor="#fff"
-          propFontFamily="Poppins-Regular"
-          onButtonPress={() => navigation.navigate("LoginPage")}
-        />
-        <Text style={[styles.name, styles.nameTypo]}>Name</Text>
-        <Text style={[styles.studentId, styles.nameTypo]}>Student ID</Text>
-        <Text style={[styles.year, styles.nameTypo]}>Year</Text>
-        <Text style={[styles.academicId, styles.nameTypo]}>Department Of</Text>
-
-        <Pressable
-          style={styles.arrowBackIos}
-          onPress={() => navigation.navigate("FeedPage")}
-        >
-          <Image
-            style={[styles.icon1, styles.iconLayout]}
-            contentFit="cover"
-            source={require("../assets/arrow-back-ios1.png")}
-          />
-        </Pressable>
-        <Pressable
-          style={[styles.editProfileChild2, styles.editChildLayout]}
-          onPress={openRectangle4}
-        />
-      </View>
-
-      <Modal animationType="fade" transparent visible={rectangle1Visible}>
-        <View style={styles.rectangle1Overlay}>
-          <Pressable style={styles.rectangle1Bg} onPress={closeRectangle1} />
-        </View>
-      </Modal>
-
-      <Modal animationType="fade" transparent visible={rectangle2Visible}>
-        <View style={styles.rectangle2Overlay}>
-          <Pressable style={styles.rectangle2Bg} onPress={closeRectangle2} />
-        </View>
-      </Modal>
-
-      <Modal animationType="fade" transparent visible={rectangle3Visible}>
-        <View style={styles.rectangle3Overlay}>
-          <Pressable style={styles.rectangle3Bg} onPress={closeRectangle3} />
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="fade"
-        transparent
-        visible={WinterImageVisible}
-      >
-        <View style={styles.WinterImageOverlay}>
+        <View style={styles.upperPart}>
           <Pressable
-            style={styles.WinterImageBg}
-            onPress={closeWinterImage}
+            style={styles.arrowBackIos}
+            onPress={() => navigation.goBack()}
+          >
+            <Image
+              style={[styles.icon1, styles.iconLayout]}
+              contentFit="scale-down"
+              source={require("../assets/arrow-back-ios1.png")}
+            />
+          </Pressable>
+          <Image
+            style={styles.editProfileChild}
+            contentFit="fill"
+            source={require("../assets/ellipse-87.png")}
           />
-          <EditProfilePopup onClose={closeWinterImage} />
         </View>
-      </Modal>
-
-      <Modal animationType="fade" transparent visible={rectangle5Visible}>
-        <View style={styles.rectangle5Overlay}>
-          <Pressable style={styles.rectangle5Bg} onPress={closeRectangle4} />
+        <View style={styles.lowerPart}>
+          <View style={styles.profieArea}>
+            <View style={styles.profileAreaChild}>
+              {renderProfileData()}
+            </View>
+          </View>
         </View>
-      </Modal>
+      </View>
     </>
   );
 };
@@ -181,36 +97,31 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     backgroundColor: Color.colorDarkgray,
     left: 44,
-    position: "absolute",
   },
   iconLayout: {
     height: "100%",
     width: "100%",
   },
-  nameTypo: {
-    width: 122,
+  dataHeader: {
+    width: "auto",
     textAlign: "left",
     color: Color.colorDimgray,
     fontFamily: FontFamily.poppinsRegular,
     fontSize: FontSize.size_base_2,
-    left: 44,
-    position: "absolute",
   },
   editProfileChild: {
-    top: 100,
-    left: 125,
-    width: 140,
-    height: 140,
-    position: "absolute",
+    flex: 2,
+    height: "50%",
+    width: "50%",
   },
-  editProfileItem: {
-    top: 259,
-    left: 20,
+  profieArea: {
     backgroundColor: Color.iOSFFFFFF,
-    width: 350,
-    height: 466,
-    position: "absolute",
+    width: "100%",
+    height: "100%",
+    maxWidth: "80%",
+    maxHeight: "80%",
     borderRadius: Border.br_3xs,
+    flex: 1,
   },
   rectangle1Overlay: {
     flex: 1,
@@ -241,7 +152,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
   },
-  rectanglePressable: {
+  rectangleView: {
     top: 494,
   },
   rectangle3Overlay: {
@@ -299,11 +210,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   arrowBackIos: {
-    left: 22,
-    top: 80,
-    width: 24,
-    height: 24,
-    position: "absolute",
+    flex: 1,
+    height: "10%",
+    width: "10%",
+    left: "5%",
+    top: "5%",
+    alignSelf: "flex-start",
   },
   rectangle5Overlay: {
     flex: 1,
@@ -324,11 +236,31 @@ const styles = StyleSheet.create({
   editProfile: {
     backgroundColor: Color.colorDarkorange_100,
     flex: 1,
-    height: 844,
     overflow: "hidden",
     width: "100%",
-    borderRadius: Border.br_3xs,
+    height: "100%"
   },
+  upperPart: {
+    flex: 2,
+    alignItems: "center",
+  },
+  lowerPart: {
+    flex: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dataBody: {
+    width: "auto",
+    textAlign: "left",
+    color: Color.colorDimgray,
+    fontFamily: FontFamily.poppinsRegular,
+    fontSize: FontSize.size_sm,
+  },
+  profileAreaChild: {
+    flex: 1,
+    justifyContent: "space-evenly",
+    alignItems: "center",
+  }
 });
 
 export default EditProfile;
