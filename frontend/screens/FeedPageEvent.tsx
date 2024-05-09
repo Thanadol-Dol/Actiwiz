@@ -4,7 +4,6 @@ import { Searchbar } from 'react-native-paper';
 import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableWithoutFeedback, Keyboard } from 'react-native';
-import navigateToNextScreen from "./LoginPage";
 import Navbar from "../components/NavBar";
 import axios from "axios";
 
@@ -103,7 +102,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   }, [apiToken, searchText]);
 
   const handleProfilePress = () => {
-    navigateToNextScreen({ navigation: 'Editprofile' });
+    navigation.navigate('EditProfile');
   };
 
   const onChangeSearch = (query: string) => {
