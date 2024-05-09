@@ -61,7 +61,7 @@ const App = () => {
             />
             <Stack.Screen
               name="FeedPage"
-              component={FeedPageClub}
+              component={FeedPageEvent}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -107,11 +107,6 @@ const App = () => {
             <Stack.Screen
               name="JoinClubPage"
               component={JoinClubPage}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="CautionJoinEvent"
-              component={CautionJoinEvent}
               options={{ headerShown: false }}
             />
             <Stack.Screen

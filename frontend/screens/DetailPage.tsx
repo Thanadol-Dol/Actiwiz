@@ -21,6 +21,10 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
     setGroupContainerVisible(false);
   }, []);
 
+  const toggleJoinEvent = useCallback(() => {
+    setJoinedEvent(!joinedEvent);
+  }, [joinedEvent]);
+    
   useEffect(() => {
     const checkJoinedEvent = async () => {
       try {
@@ -93,7 +97,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
                 style={styles.groupContainerBg}
                 onPress={closeGroupContainer}
               />
-              <CautionJoinEvent onClose={closeGroupContainer} />
+              <CautionJoinEvent onClose={closeGroupContainer} onUpdate={toggleJoinEvent} activityID={activityID}/>
             </View>
           </Modal>
           </>
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
   },
   rectangleParentJoined:{
     paddingHorizontal: "30%", // Add padding for touch area
-    paddingVertical: 10, // Add padding for touch area
+    paddingVertical: 8, // Add padding for touch area
     backgroundColor: "#61f9cb"
   },
   checkRingRoundIcon: {
