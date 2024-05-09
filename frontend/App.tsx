@@ -14,12 +14,10 @@ import ClubPage from "./screens/ClubPage";
 import SetNotification from "./screens/SetNotification";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RequestDataUser from "./screens/RequestDataUser";
-import Navbar from "./components/NavBar";
 
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-  const [activePage, setActivePage] = useState<'FeedPageEvent' | 'FeedPageClub'>('FeedPageEvent');
 
   const [fontsLoaded, error] = useFonts({
     "Ubuntu-Regular": require("./assets/fonts/Ubuntu-Regular.ttf"),
@@ -35,7 +33,6 @@ const App = () => {
   }
 
   return (
-    <>
       <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen
@@ -88,7 +85,6 @@ const App = () => {
             />
           </Stack.Navigator>
       </NavigationContainer>
-    </>
   );
 };
 export default App;

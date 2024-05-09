@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, ScrollView, TouchableOpacity, StyleSheet, Text, Image, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Searchbar } from 'react-native-paper';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Navbar from "../components/NavBar";
 import axios from "axios";
 
 interface DataItem {
@@ -163,6 +164,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
           />
           {renderData()}
         </ScrollView>
+        <Navbar activePage={'FeedPageClub'} setActivePage={(page) => navigation.navigate(page)} />
       </View>
     </TouchableWithoutFeedback>
   );
