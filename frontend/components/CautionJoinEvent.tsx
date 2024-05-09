@@ -1,18 +1,38 @@
 import * as React from "react";
 import { View, StyleSheet, Text, Pressable } from "react-native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation, ParamListBase } from "@react-navigation/native";
-import DetailContainer from "./DetailContainer";
 import { Border, Color, FontSize, FontFamily } from "../GlobalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export type CautionJoinEventType = {
   onClose?: () => void;
+  onUpdate?: () => void;
+  activityID: number;
 };
 
-const CautionJoinEvent = ({ onClose }: CautionJoinEventType) => {
+const CautionJoinEvent = ({ onClose, onUpdate, activityID }: CautionJoinEventType) => {
+  const checkJoinedEvent = async () => {
+    try {
+      const apiToken = await AsyncStorage.getItem("apiToken");
+      const userId = await AsyncStorage.getItem('userId');
+      const response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/join/${activityID}`, null, {
+          headers: {
+            'Authorization': `Bearer ${apiToken}`
+          },
+          params: {
+            user_id: userId
+          }
+      })
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+    }
+  };
+
   const joinEvent = () => {
     if(onClose) onClose();
-    console.log("Join Event");
+    if(onUpdate) onUpdate();
+    checkJoinedEvent();
   }
 
   return (
