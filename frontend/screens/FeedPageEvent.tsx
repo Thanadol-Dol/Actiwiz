@@ -67,6 +67,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         });
         setRecommendations(response.data.activities);
       } catch (error) {
+        <Text>No recommend Event Now</Text>
         console.error("Error fetching recommendations:", error);
       }
     };

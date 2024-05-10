@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Image, Pressable, StyleSheet, Text, View, FlatList } from "react-native";
-import DropDownPicker from 'react-native-dropdown-picker';
-import { useNavigation } from "@react-navigation/native"; 
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import RNPickerSelect from 'react-native-picker-select';
+import { useNavigation } from "@react-navigation/native";
 import navigateToNextScreen from "../screens/LoginPage";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const RequestDataUser = ({ route }: { route: any }) => {
+const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }) => {
   if (!route || !route.params) {
-    console.log(route);
     console.error('Error: Route or route params are missing!');
     return null; 
   }
@@ -21,27 +20,22 @@ const RequestDataUser = ({ route }: { route: any }) => {
     return null;
   }
 
-  const [openDegree, setOpenDegree] = useState(false);
-  const [openFaculty, setOpenFaculty] = useState(false);
-  const [openDepartment, setOpenDepartment] = useState(false);
-  const [openAcademicYear, setOpenAcademicYear] = useState(false);
-
-  const [valueDegree, setValueDegree] = useState(null);
-  const [valueFaculty, setValueFaculty] = useState(null);
-  const [valueDepartment, setValueDepartment] = useState(null);
-  const [valueAcademicYear, setValueAcademicYear] = useState(null);
+  const [valueDegree, setValueDegree] = useState<string | null>(null);
+  const [valueFaculty, setValueFaculty] = useState<string | null>(null);
+  const [valueDepartment, setValueDepartment] = useState<string | null>(null);
+  const [valueAcademicYear, setValueAcademicYear] = useState<string | null>(null);
+  const [user_id, setUser_id] = useState('');
 
   const [itemsDegree, setItemsDegree] = useState<any[]>([]);
   const [itemsFaculty, setItemsFaculty] = useState<any[]>([]);
   const [itemsDepartment, setItemsDepartment] = useState<any[]>([]);
   const [itemsAcademicYear, setItemsAcademicYear] = useState<any[]>([
-    { label: "First Year", value: 1 },
-    { label: "Second Year", value: 2 },
-    { label: "Third Year", value: 3 },
-    { label: "Fourth Year", value: 4 },
+    { label: "First Year", value: "1" },
+    { label: "Second Year", value: "2" },
+    { label: "Third Year", value: "3" },
+    { label: "Fourth Year", value: "4" },
   ]);
 
-  const navigation = useNavigation();
   const [apiToken, setApiToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,10 +52,6 @@ const RequestDataUser = ({ route }: { route: any }) => {
     fetchApiToken();
   }, []);
 
-  console.log("itemsDegree:", itemsDegree);
-  console.log("itemsFaculty:", itemsFaculty);
-  console.log("itemsDepartment:", itemsDepartment);
-
   useEffect(() => {
     axios.get('https://actiwizcpe.galapfa.ro/academics/degrees')
       .then(response => {
@@ -69,7 +59,7 @@ const RequestDataUser = ({ route }: { route: any }) => {
         const filteredData = data.filter(item => (
           item.DegreeName !== null &&
           item.DegreeName !== undefined &&
-          !itemsDegree.find(degree => degree.key === item.DegreeName)
+          !itemsDegree.find(degree => degree.label === item.DegreeName)
         ));
         setItemsDegree(filteredData);
       })
@@ -86,7 +76,7 @@ const RequestDataUser = ({ route }: { route: any }) => {
           const filteredData = data.filter(item => (
             item.FacultyName !== null &&
             item.FacultyName !== undefined &&
-            !itemsDegree.find(faculty => faculty.key === item.FacultyName)
+            !itemsDegree.find(faculty => faculty.label === item.FacultyName)
           ));
           setItemsFaculty(filteredData);
         })
@@ -104,7 +94,7 @@ const RequestDataUser = ({ route }: { route: any }) => {
           const filteredData = data.filter(item => (
             item.DepartmentName !== null &&
             item.DepartmentName !== undefined &&
-            !itemsDegree.find(department => department.key === item.DepartmentName)
+            !itemsDegree.find(department => department.label === item.DepartmentName)
           ));
           setItemsDepartment(filteredData);
         })
@@ -129,104 +119,125 @@ const RequestDataUser = ({ route }: { route: any }) => {
       "Faculty": valueFaculty,
       "Department": valueDepartment
     };
-    console.log('user_id:', userData.UserID);
-    console.log('student_name:', student_name);
-    console.log('valueDegree:', valueDegree);
-    console.log('valueAcademicYear:', valueAcademicYear);
-    console.log('academic_email:', academic_email);
-    console.log('valueFaculty:', valueFaculty);
-    console.log('valueDepartment:', valueDepartment);
 
     axios.post('https://actiwizcpe.galapfa.ro/users/create', userData, {
       headers: {
-      "Authorization": `Bearer ${apiToken}`
-    }})
+        "Authorization": `Bearer ${apiToken}`
+      }
+    })
       .then(response => {
         console.log('User created successfully:', response.data);
-        navigateToNextScreen({ navigation: 'FeedPage' });
+        const userId = response.data.user_id;
+        AsyncStorage.setItem("userId", userId.toString())
+        .then(() => {
+          console.log('User ID stored successfully:', userId);
+          navigation.navigate('FeedPageEvent');
+        })
+        .catch(error => {
+          console.error('Error storing user ID:', error);
+        });
       })
       .catch(error => {
         console.error('Error creating user:', error);
-        // Handle error
       });
   };
 
   return (
-
     <View style={styles.container}>
       <Image
         style={styles.headerImage}
         source={require("../assets/Header_Actiwiz.png")}
       />
-      <DropDownPicker
-        placeholder="Select your academic year"
-        open={openAcademicYear}
-        value={valueAcademicYear}
-        items={itemsAcademicYear.map((item, index) => ({ 
-          key: index.toString(),
-          label: item.label,
-          value: item.value.toString(),
-        }))}
-        setOpen={setOpenAcademicYear}
-        setValue={setValueAcademicYear}
-        setItems={setItemsAcademicYear} 
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 4 }}
-        scrollViewProps={{
-          scrollEnabled: true,
+      <RNPickerSelect
+        placeholder={{
+          label: 'Select AcademicYear',
+          value: null,
         }}
+        onValueChange={(itemValue: string | null) => setValueAcademicYear(itemValue)}
+        items={itemsAcademicYear}
+        style={{inputAndroid: {
+          marginBottom: 40,
+          width: "80%",
+          zIndex: 1,
+          color: '#000000',
+          height: 50,
+          borderRadius: 10,
+          borderWidth: 2,
+          backgroundColor: '#FFFFFF',
+          overflow: 'hidden',
+          borderColor: '#000000',
+          paddingHorizontal: 10,
+          alignSelf: 'center',
+        },}}
       />
 
-      <DropDownPicker
-        placeholder="Select your degree"
-        open={openDegree}
-        value={valueDegree}
-        items={itemsDegree.map((item, index) => ({
-          key: index.toString(),
-          label: item.DegreeName as string,
-          value: item.DegreeName as string,
-        }))}
-        setOpen={setOpenDegree}
-        setValue={setValueDegree}
-        setItems={setItemsDegree}
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 3 }}
-        scrollViewProps={{
-          scrollEnabled: true,
+      <RNPickerSelect
+        placeholder={{
+          label: 'Select Degree',
+          value: null,
         }}
+        onValueChange={(itemValue: string | null) => setValueDegree(itemValue)}
+        items={itemsDegree.map(item => ({ label: item.DegreeName, value: item.DegreeName }))}
+        style={{inputAndroid: {
+          marginBottom: 40,
+          width: "80%",
+          zIndex: 1,
+          color: '#000000',
+          height: 50,
+          borderRadius: 10,
+          borderWidth: 2,
+          backgroundColor: '#FFFFFF',
+          overflow: 'hidden',
+          borderColor: '#000000',
+          paddingHorizontal: 10,
+          alignSelf: 'center',
+        },}}
       />
-      <DropDownPicker
-        placeholder="Select your faculty"
-        open={openFaculty}
-        value={valueFaculty}
-        items={itemsFaculty.map((item, index) => ({
-          key: index.toString(),
-          label: item.FacultyName as string,
-          value: item.FacultyName as string,
-        }))}
-        setOpen={setOpenFaculty}
-        setValue={setValueFaculty}
-        setItems={setItemsFaculty}
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 2 }}
-        dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
-        scrollViewProps={{
-          scrollEnabled: true,
+
+      <RNPickerSelect
+        placeholder={{
+          label: 'Select Faculty',
+          value: null,
         }}
+        onValueChange={(itemValue: string | null)=> setValueFaculty(itemValue)}
+        items={itemsFaculty.map(item => ({ label: item.FacultyName, value: item.FacultyName }))}
+        style={{inputAndroid: {
+          marginBottom: 40,
+          width: "80%",
+          zIndex: 1,
+          color: '#000000',
+          height: 50,
+          borderRadius: 10,
+          borderWidth: 2,
+          backgroundColor: '#FFFFFF',
+          overflow: 'hidden',
+          borderColor: '#000000',
+          paddingHorizontal: 10,
+          alignSelf: 'center',
+        },}}
       />
-      <DropDownPicker
-        placeholder="Select your department"
-        open={openDepartment}
-        value={valueDepartment}
-        items={itemsDepartment.map((item, index) => ({
-          key: index.toString(),
-          label: item.DepartmentName as string,
-          value: item.DepartmentName as string,
-        }))}
-        setOpen={setOpenDepartment}
-        setValue={setValueDepartment}
-        setItems={setItemsDepartment}
-        containerStyle={{ marginBottom: 20, width: "80%", zIndex: 1}}
-        scrollViewProps={{
-          scrollEnabled: true,
+
+      <RNPickerSelect
+        placeholder={{
+          label: 'Select Department',
+          value: null,
         }}
+        onValueChange={(itemValue: string | null) => setValueDepartment(itemValue)}
+        items={itemsDepartment.map(item => ({ label: item.DepartmentName, value: item.DepartmentName }))}
+        style={{inputAndroid: {
+          marginBottom: 40,
+          width: "80%",
+          zIndex: 1,
+          color: '#000000',
+          height: 50,
+          borderRadius: 10,
+          borderWidth: 2,
+          backgroundColor: '#FFFFFF',
+          overflow: 'hidden',
+          borderColor: '#000000',
+          paddingHorizontal: 10,
+          alignSelf: 'center',
+        },}}
       />
 
       <Text style={styles.createYourAccount}>Create your account</Text>
@@ -234,10 +245,37 @@ const RequestDataUser = ({ route }: { route: any }) => {
         <Text style={styles.signupText}>Signup now</Text>
       </Pressable>
     </View>
-
   );
-};
+}; 
 
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    marginBottom: 20,
+    width: "80%",
+    zIndex: 1,
+    color: '#000000',
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    borderColor: '#000000',
+    paddingHorizontal: 10,
+  },
+  inputAndroid: {
+    marginBottom: 20,
+    width: "80%",
+    zIndex: 1,
+    color: '#000000',
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    borderColor: '#000000',
+    paddingHorizontal: 10,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
