@@ -1,7 +1,7 @@
 import React, {  useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { ActivityIndicator, StyleSheet, View, Text, Pressable} from "react-native";
-import { FontFamily, FontSize, Color } from "../GlobalStyles";
+import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -62,12 +62,12 @@ const LoginPage = ({navigation}: {navigation: any}) => {
       if(checkData.login_success){
         const userId = checkData.user_id;
         await AsyncStorage.setItem("userId", userId.toString(10));
-        navigateToNextScreen('SetNotification');
+        //navigateToNextScreen('SetNotification');
       } else {
-        navigateToNextScreen('RequestDataUser', {
-            "student_name": checkData.student_name, 
-            "academic_email": checkData.academic_email
-          });
+        // navigateToNextScreen('RequestDataUser', {
+        //     "student_name": checkData.student_name, 
+        //     "academic_email": checkData.academic_email
+        //   });
         console.log("student_name:", checkData.student_name);
         console.log("academic_email:", checkData.academic_email);
       }
@@ -160,37 +160,44 @@ const LoginPage = ({navigation}: {navigation: any}) => {
 
 return (
     <>
-      <View style={[styles.loginPage, styles.loginPageBorder]}>
-        <Image
-          style={[styles.loginPageChild, styles.loginPosition]}
-          contentFit="cover"
-          source={require("../assets/ActiwizPic.png")}
-        />
-        {!loginFlag && (
-          <ActivityIndicator style={styles.loaderAnimIcon} size="large" color={Color.colorDarkorange_200} />
-        )}
-        {loginFlag && loginUrl && (
-          <>
-            <Text style={[styles.loginIntoYour, styles.loginTypo]}>
-              Login into your account
-            </Text>
-            <Pressable
-              style={[styles.rectangleGroup, styles.rectangleLayout]}
-              onPress={() => setWebviewVisible(!webviewVisible)}
-            >
-              <View style={[styles.rectangleView, styles.groupChildLayout]} />
-              <Text style={[styles.login, styles.loginTypo]}>Login</Text>
-            </Pressable>
-          </>
-        )}  
-        {webviewVisible && loginUrl && loginFlag && (
+      {
+        webviewVisible
+        ?
           <WebView
-          source={{ uri: loginUrl }}
-          incognito={true}
-          onNavigationStateChange={handleWebViewNavigation}
-        />
-      )}
-      </View>
+            source={{ uri: loginUrl }}
+            incognito={true}
+            onNavigationStateChange={handleWebViewNavigation}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0}}
+          />
+        :
+          <View style={styles.loginPage}>
+            <View style={styles.imageContainer}>
+              <View style={styles.block} />
+              <Image
+                style={styles.appBanner}
+                contentFit="cover"
+                source={require("../assets/ActiwizPic.png")}
+              />
+            </View>
+          {
+            loginFlag
+            ?
+            <View style={styles.loginArea}>
+              <Text style={[styles.textHeader, styles.textTypo]}>
+                Login into your account
+              </Text>
+              <Pressable
+                style={styles.rectangleGroup}
+                onPress={() => setWebviewVisible(!webviewVisible)}
+              >
+                <Text style={[styles.login, styles.textTypo]}>Login</Text>
+              </Pressable>
+            </View>
+            :
+              <ActivityIndicator style={styles.loaderAnimation} size="large" color={Color.colorDarkorange_200} />
+          }
+          </View>
+      }
     </>
   );
 };
@@ -201,45 +208,41 @@ const styles = StyleSheet.create({
     borderColor: Color.colorBlack,
     flex: 1,
     width: "100%",
-    height: 900,
+    height: "50%",
     overflow: "hidden",
+    justifyContent: "center",
   },
-  loginPageBorder: {
-    borderWidth: 1,
-    borderStyle: "solid",
-  },
-loginPageChild: {
-    height: 200,
+  appBanner: {
+    height: "100%",
     width: "100%",
-    top: 230,
+    flex: 1,
   },
-loginPosition: {
+  loginArea:{
+    flex: 1,
+    height: "100%",
+    maxHeight: "50%",
     width: "100%",
-    left: 0,
-    position: "absolute",
   },
-  loginIntoYour: {
-    top: 500,
-    left: 120,
-    color: Color.colorDimgray,
-    position: "absolute",
+  textHeader: {
+    color: Color.colorBlack,
+    textAlignVertical: "center",
+    flex: 1,
+    height: "100%",
+    width: "100%",
+    maxHeight: "25%",
+    marginTop: "5%",
   },
-  loginTypo: {
+  textTypo: {
     textAlign: "center",
     fontFamily: FontFamily.poppinsSemiBold,
     fontWeight: "700",
     fontSize: FontSize.size_base_2,
   },
   rectangleGroup: {
-    top: 550,
-  },
-  rectangleLayout: {
-    height: 50,
-    left: 12,
-    width: 359,
-    position: "absolute",
-  },
- rectangleView: {
+    flex: 4,
+    height: "100%",
+    maxHeight: "15%",
+    width: "90%",
     backgroundColor: Color.colorDarkorange_200,
     shadowColor: "rgba(253, 116, 1, 0.3)",
     shadowOffset: {
@@ -249,25 +252,27 @@ loginPosition: {
     shadowRadius: 24.23,
     elevation: 24.23,
     shadowOpacity: 1,
-  },
-  groupChildLayout: {
-    borderRadius: 15,
-    height: 50,
-    width: 359,
-    position: "absolute",
+    borderRadius: Border.br_3xl_5,
+    alignSelf: "center",
   },
   login: {
     flex: 1,
     textAlignVertical: "center",
     color: Color.iOSFFFFFF,
   },
-  loaderAnimIcon: {
-    top: 500,
-    left: 134,
-    width: 121,
-    height: 121,
-    position: "absolute",
+  loaderAnimation: {
+    flex: 1,
   },
+  imageContainer: {
+    flex: 1,
+    height: "100%",
+    width: "100%",
+  },
+  block: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  }
 });
 
 export default LoginPage;
