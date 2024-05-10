@@ -3,6 +3,7 @@ import { Image } from "expo-image";
 import { StyleSheet, View, Text, Modal, Pressable } from "react-native";
 import EditProfilePopup from "../components/EditProfilePopup";
 import DetailContainer from "../components/DetailContainer";
+import CautionLogOut from "../components/CautionLogout";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -14,18 +15,28 @@ export type profileToBeShown = {
   Department: string;
 }
 
-const EditProfile = ({navigation, route}: {navigation: any, route:any}) => {
+const EditProfile = ({navigation}: {navigation: any}) => {
   const [shownProfile, setShownProfile] = useState<profileToBeShown | null>(null);
+  const [groupContainerVisible, setGroupContainerVisible] = useState(false);
 
-  const renderProfileData = () => {
-    if (!shownProfile) return null;
+  const openGroupContainer = useCallback(() => {
+    setGroupContainerVisible(true);
+  }, []);
 
-    return Object.keys(shownProfile).map((key, index) => (
-      <View key={key}>
-        <Text style={styles.dataHeader}>{key}</Text>
-        <Text style={styles.dataBody}>{shownProfile ? (shownProfile as any)[key] : ''}</Text>
-      </View>
-    ));
+  const closeGroupContainer = useCallback(() => {
+    setGroupContainerVisible(false);
+  }, []);
+
+  const logOut = async () => {
+    try {
+      await AsyncStorage.removeItem("apiToken");
+      await AsyncStorage.removeItem("graphToken");
+      await AsyncStorage.removeItem("refreshToken");
+      await AsyncStorage.removeItem("userId");
+      navigation.navigate("LoginPage");
+    } catch (error) {
+      console.error("Error removing apiToken or userID from AsyncStorage:", error);
+    }
   };
 
   useEffect(() => {
@@ -77,27 +88,48 @@ const EditProfile = ({navigation, route}: {navigation: any, route:any}) => {
           />
         </View>
         <View style={styles.lowerPart}>
-          <View style={styles.profieArea}>
-            <View style={styles.profileAreaChild}>
-              {renderProfileData()}
+          <View style={styles.profileArea}>
+            <View style={styles.profileAreaChildContainer}>
+              <View style={styles.profileAreaChild}>
+                <Text style={styles.dataHeader}>Name</Text>
+                <Text style={styles.dataBody}>{shownProfile?.Name}</Text>
+              </View>
+              <View style={styles.profileAreaChild}>
+                <Text style={styles.dataHeader}>Academic Degree</Text>
+                <Text style={styles.dataBody}>{shownProfile?.AcademicDegree}</Text>
+              </View>
+              <View style={styles.profileAreaChild}>
+                <Text style={styles.dataHeader}>Academic Year</Text>
+                <Text style={styles.dataBody}>{shownProfile?.Year}</Text>
+              </View>
+              <View style={styles.profileAreaChild}>
+                <Text style={styles.dataHeader}>Department</Text>
+                <Text style={styles.dataBody}>{shownProfile?.Department}</Text>
+              </View>
+              <View style={styles.logOutButton}>
+                <Pressable onPress={openGroupContainer}>
+                  <Text style={styles.logOutButtonText}>LOG OUT</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         </View>
+
+        <Modal animationType="fade" transparent visible={groupContainerVisible}>
+          <View style={styles.groupContainerOverlay}>
+            <Pressable
+              style={styles.groupContainerBg}
+              onPress={closeGroupContainer}
+            />
+            <CautionLogOut onClose={closeGroupContainer} onLogout={logOut} />
+          </View>
+        </Modal>
       </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  editChildLayout: {
-    height: 43,
-    width: 307,
-    borderWidth: 2,
-    borderColor: Color.colorBlack,
-    borderStyle: "solid",
-    backgroundColor: Color.colorDarkgray,
-    left: 44,
-  },
   iconLayout: {
     height: "100%",
     width: "100%",
@@ -107,14 +139,15 @@ const styles = StyleSheet.create({
     textAlign: "left",
     color: Color.colorDimgray,
     fontFamily: FontFamily.poppinsRegular,
-    fontSize: FontSize.size_base_2,
+    fontSize: FontSize.size_xl,
+    fontWeight: "bold",
   },
   editProfileChild: {
     flex: 2,
     height: "50%",
     width: "50%",
   },
-  profieArea: {
+  profileArea: {
     backgroundColor: Color.iOSFFFFFF,
     width: "100%",
     height: "100%",
@@ -122,89 +155,6 @@ const styles = StyleSheet.create({
     maxHeight: "80%",
     borderRadius: Border.br_3xs,
     flex: 1,
-  },
-  rectangle1Overlay: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(113, 113, 113, 0.3)",
-  },
-  rectangle1Bg: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    left: 0,
-    top: 0,
-  },
-  editProfileInner: {
-    top: 572,
-  },
-  rectangle2Overlay: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(113, 113, 113, 0.3)",
-  },
-  rectangle2Bg: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    left: 0,
-    top: 0,
-  },
-  rectangleView: {
-    top: 494,
-  },
-  rectangle3Overlay: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(113, 113, 113, 0.3)",
-  },
-  rectangle3Bg: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    left: 0,
-    top: 0,
-  },
-  editProfileChild1: {
-    top: 416,
-  },
-  WinterImageOverlay: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(113, 113, 113, 0.3)",
-  },
-  WinterImageBg: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    left: 0,
-    top: 0,
-  },
-  icon: {
-    borderRadius: Border.br_341xl,
-  },
-  Winter: {
-    left: 133,
-    top: 105,
-    width: 124,
-    height: 130,
-    position: "absolute",
-  },
-  name: {
-    top: 314,
-  },
-  year: {
-    top: 470,
-  },
-  academicId: {
-    top: 548,
-  },
-  studentId: {
-    top: 392,
   },
   icon1: {
     overflow: "hidden",
@@ -216,22 +166,6 @@ const styles = StyleSheet.create({
     left: "5%",
     top: "5%",
     alignSelf: "flex-start",
-  },
-  rectangle5Overlay: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(113, 113, 113, 0.3)",
-  },
-  rectangle5Bg: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    left: 0,
-    top: 0,
-  },
-  editProfileChild2: {
-    top: 338,
   },
   editProfile: {
     backgroundColor: Color.colorDarkorange_100,
@@ -258,9 +192,45 @@ const styles = StyleSheet.create({
   },
   profileAreaChild: {
     flex: 1,
+  },
+  profileAreaChildContainer: {
+    flex: 1,
     justifyContent: "space-evenly",
+    padding: "10%",
+  },
+  logOutButton: {
+    flex: 2,
+    justifyContent: "center",
+    width: "100%",
+    height: "100%",
+    maxWidth: "50%",
+    maxHeight: "12%",
+    backgroundColor: Color.colorFirebrick,
+    borderRadius: Border.br_3xs,
+    marginTop: "5%",
+    alignSelf: "center",
+  },
+  logOutButtonText: {
+    color: Color.iOSFFFFFF,
+    fontFamily: FontFamily.poppinsRegular,
+    fontSize: FontSize.size_sm,
+    padding: "5%",
+    height: "100%",
+    width: "100%",
+    textAlign: "center",
+    textAlignVertical: "center",
+  },
+  groupContainerOverlay: {
+    flex: 1,
     alignItems: "center",
-  }
+    justifyContent: "center",
+    backgroundColor: "rgba(113, 113, 113, 0.3)",
+  },
+  groupContainerBg: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
 });
 
 export default EditProfile;

@@ -35,10 +35,11 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
               'Authorization': `Bearer ${apiToken}`
             },
             params: {
-              user_id: userId
+              user_id: parseInt(userId as string, 10)
             }
         })
         console.log(response.data);
+        setJoinedClub(response.data.joined);
       } catch (error) {
         console.error("Error fetching apiToken or userID from AsyncStorage:", error);
       }
@@ -70,7 +71,7 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
         <View style={styles.detailContainer}>
           <Text style={styles.detailHeader}>{clubName}</Text>
         </View>
-          
+
             {joinedClub
               ? 
               <Pressable

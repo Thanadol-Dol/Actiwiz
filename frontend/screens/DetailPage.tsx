@@ -35,7 +35,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
               'Authorization': `Bearer ${apiToken}`
             },
             params: {
-              user_id: userId
+              user_id: parseInt(userId as string, 10)
             }
         })
         setJoinedEvent(response.data.joined);

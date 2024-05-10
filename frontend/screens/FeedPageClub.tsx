@@ -92,7 +92,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   }, [apiToken, searchText]);
 
   const handleProfilePress = () => {
-    navigation.navigate('Editprofile');
+    navigation.navigate('EditProfile');
   };
 
   const onChangeSearch = (query: string) => {
