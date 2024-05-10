@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, StyleSheet, Text } from "react-nati
 import { Searchbar } from 'react-native-paper';
 import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { TouchableWithoutFeedback, Keyboard, BackHandler } from 'react-native';
 import Navbar from "../components/NavBar";
 import axios from "axios";
 
@@ -49,6 +49,19 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
     };
   
     fetchApiTokenAndUserID();
+
+    const backAction = () => {
+      // Exit the application when back button is pressed
+      BackHandler.exitApp();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
   }, []);
   
 
@@ -110,7 +123,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   };
   
   const navigateToDetailPage = (item: DataItem) => {
-    navigation.navigate('DetailPage', { "ActivityName": item.ActivityName, "Description": item.Description });
+    navigation.navigate('DetailPage', { "ActivityID": item.ActivityID ,"ActivityName": item.ActivityName, "Description": item.Description });
   };
   
   const renderData = () => {
