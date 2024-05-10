@@ -71,37 +71,40 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
           <Text style={styles.detailHeader}>{activityName + '\n'}</Text>
           <Text style={styles.detailBody}>{activityDescription}</Text>
         </View>
-        {joinedEvent && (
-          <View
-            style={[styles.rectangleParent,styles.rectangleParentJoined]}
-          >
-            <Image
-              style={styles.checkRingRoundIcon as ImageStyle}
-              source={require("../assets/check-ring-round.png")}
-            />
-            <Text style={styles.join}>Joined</Text>
-          </View>
-        )}
-        {!joinedEvent && (
-          <>
-          <Pressable
-            style={[styles.rectangleParent,styles.rectangleParentNormal]}
-            onPress={openGroupContainer}
-          >
-            <Text style={styles.join}>Join</Text>
-          </Pressable>
-        
-          <Modal animationType="fade" transparent visible={groupContainerVisible}>
-            <View style={styles.groupContainerOverlay}>
-              <Pressable
-                style={styles.groupContainerBg}
-                onPress={closeGroupContainer}
+
+        {
+          joinedEvent 
+          ?
+            <View
+              style={[styles.rectangleParent,styles.rectangleParentJoined]}
+            >
+              <Image
+                style={styles.checkRingRoundIcon as ImageStyle}
+                source={require("../assets/check-ring-round.png")}
               />
-              <CautionJoinEvent onClose={closeGroupContainer} onUpdate={toggleJoinEvent} activityID={activityID}/>
+              <Text style={styles.join}>Joined</Text>
             </View>
-          </Modal>
-          </>
-        )}
+          :
+            <>
+              <Pressable
+                style={[styles.rectangleParent,styles.rectangleParentNormal]}
+                onPress={openGroupContainer}
+              >
+                <Text style={styles.join}>Join</Text>
+              </Pressable>
+            
+              <Modal animationType="fade" transparent visible={groupContainerVisible}>
+                <View style={styles.groupContainerOverlay}>
+                  <Pressable
+                    style={styles.groupContainerBg}
+                    onPress={closeGroupContainer}
+                  />
+                  <CautionJoinEvent onClose={closeGroupContainer} onUpdate={toggleJoinEvent} activityID={activityID}/>
+                </View>
+              </Modal>
+            </>
+        }
+        
       </ScrollView>
     </>
   );
