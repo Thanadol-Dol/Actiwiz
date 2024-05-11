@@ -6,6 +6,7 @@ import CautionLeaveClub from "../components/CautionLeavClub";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { StatusBar } from "expo-status-bar";
 
 const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   const clubID = route.params.ClubID;
@@ -50,6 +51,7 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
 
   return (
     <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
       <View style={[styles.screenHeader]}>
         <Pressable
           style={styles.backArrow}

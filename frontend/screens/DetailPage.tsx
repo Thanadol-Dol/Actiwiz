@@ -5,6 +5,7 @@ import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { StatusBar } from "expo-status-bar";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
@@ -49,6 +50,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
 
   return (
     <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
       <View style={[styles.screenHeader]}>
         <Pressable
           style={styles.backArrow}

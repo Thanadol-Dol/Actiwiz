@@ -8,6 +8,7 @@ import Navbar from "../components/NavBar";
 import axios from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Color } from "../GlobalStyles";
+import { StatusBar } from "expo-status-bar";
 
 interface DataItem {
   ActivityID: number;
@@ -170,6 +171,8 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   };
 
   return (
+    <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
@@ -203,6 +206,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
       </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
+    </>
   );
 };
 

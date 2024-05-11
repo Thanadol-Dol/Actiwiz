@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "../components/NavBar";
 import {Color} from "../GlobalStyles";
 import axios from "axios";
+import { StatusBar } from "expo-status-bar";
 
 interface DataItem {
   "ClubID" : number,
@@ -144,6 +145,8 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   };
 
   return (
+    <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
@@ -177,6 +180,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
       </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
+    </>
   );
 };
 

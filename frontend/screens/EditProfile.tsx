@@ -7,6 +7,7 @@ import CautionLogOut from "../components/CautionLogout";
 import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { StatusBar } from "expo-status-bar";
 
 export type profileToBeShown = {
   Name: string;
@@ -69,6 +70,7 @@ const EditProfile = ({navigation}: {navigation: any}) => {
 
   return (
     <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
       <View style={styles.editProfile}>
         <View style={styles.upperPart}>
           <Pressable
