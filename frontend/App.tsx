@@ -34,7 +34,12 @@ const App = () => {
 
   return (
       <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{ 
+            headerShown: false,
+            headerStyle: {
+              backgroundColor: '#ff8f00'
+            }
+           }}>
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}

@@ -7,6 +7,7 @@ import { TouchableWithoutFeedback, Keyboard, BackHandler } from 'react-native';
 import Navbar from "../components/NavBar";
 import axios from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Color } from "../GlobalStyles";
 
 interface DataItem {
   ActivityID: number;
@@ -208,11 +209,11 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ff8f00',
+    backgroundColor: Color.colorDarkorange_100,
   },
   safeAreaContainer: {
     flex: 1,
-    backgroundColor: '#ff8f00',
+    backgroundColor: Color.colorDarkorange_100,
   },
   profileIconContainer: {
     width: 80,
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 60,
     backgroundColor: '#fff',
-    left: 10,
+    left: 15,
   },
   profileIcon: {
     width: 70,
