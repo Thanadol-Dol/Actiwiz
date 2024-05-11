@@ -33,7 +33,7 @@ const EditProfile = ({navigation}: {navigation: any}) => {
       await AsyncStorage.removeItem("graphToken");
       await AsyncStorage.removeItem("refreshToken");
       await AsyncStorage.removeItem("userId");
-      navigation.navigate("LoginPage");
+      navigation.navigate("LoginPage", { refresh: true });
     } catch (error) {
       console.error("Error removing apiToken or userID from AsyncStorage:", error);
     }
