@@ -4,11 +4,12 @@ import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 interface NavbarProps {
   activePage: 'FeedPageEvent' | 'FeedPageClub';
   setActivePage: (page: 'FeedPageEvent' | 'FeedPageClub') => void;
+  zIndex: number;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage }) => {
+const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage, zIndex }) => {
   return (
-    <View style={styles.navbar}>
+    <View style={[styles.navbar, zIndex !== undefined && { zIndex }]}>
       <TouchableOpacity
         style={[styles.navButton, activePage === 'FeedPageEvent' && styles.activeNavButton]}
         onPress={() => setActivePage('FeedPageEvent')}

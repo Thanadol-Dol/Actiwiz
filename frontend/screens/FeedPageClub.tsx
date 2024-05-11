@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, TouchableOpacity, StyleSheet, Text, Image, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Searchbar } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "../components/NavBar";
 import axios from "axios";
@@ -40,7 +41,6 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   
     fetchApiTokenAndUserID();
   }, []);
-  
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -131,6 +131,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
           <Image
             style={styles.cardImagerec}
             source={require("../assets/image-41.png")}
+            resizeMode="cover"
           />
           <View style={styles.cardDetails}>
           <Text style={{ fontWeight: 'bold' }}>{item.ClubName}</Text>
@@ -143,6 +144,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileIconContainer}>
           <Image
@@ -152,7 +154,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
         </TouchableOpacity>
         
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
+          contentContainerStyle={{paddingVertical: 10}}
           keyboardShouldPersistTaps="handled"
           stickyHeaderIndices={[0]}
         >
@@ -160,12 +162,19 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
             placeholder="Search"
             onChangeText={onChangeSearch}
             value={searchText}
-            style={styles.searchbar}
+            style={[styles.searchbar, {zIndex: 1}]}
           />
+          <View style={styles.scrollContainer}>
           {renderData()}
+          </View>
         </ScrollView>
-        <Navbar activePage={'FeedPageClub'} setActivePage={(page) => navigation.navigate(page)} />
+        <Navbar 
+        activePage={'FeedPageClub'} 
+        setActivePage={(page) => navigation.navigate(page)} 
+        zIndex={2}
+        />
       </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };
@@ -175,26 +184,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ff8f00',
   },
+  safeAreaContainer: {
+    flex: 1,
+    backgroundColor: '#ff8f00',
+  },
   profileIconContainer: {
-    padding: 20,
-    height: 50,
-    width: 50,
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 60,
+    backgroundColor: '#fff',
+    left: 10,
   },
   profileIcon: {
-    width: 40,
-    height: 40,
-    top: 12,
-    right: 10,
+    width: 70,
+    height: 70,
+    borderRadius: 40,
+    resizeMode: 'cover',
   },
   searchbar: {
+    flex: 1,
     marginHorizontal: 10,
     marginVertical: 10,
-    top: 0,
   },
   scrollContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    paddingBottom: 300, 
+    paddingHorizontal: 1,
+    paddingVertical: 5,
   },
   cardContainer: {
     padding: 20,

@@ -68,6 +68,7 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
         navigation.navigate('RequestDataUser', {
             "student_name": checkData.student_name, 
             "academic_email": checkData.academic_email
+
         });
         console.log("student_name:", checkData.student_name);
         console.log("academic_email:", checkData.academic_email);
