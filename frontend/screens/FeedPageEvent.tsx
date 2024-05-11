@@ -180,7 +180,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         </TouchableOpacity>
         
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
+          contentContainerStyle={{paddingVertical: 10}}
           keyboardShouldPersistTaps="handled"
           stickyHeaderIndices={[0]}
         >
