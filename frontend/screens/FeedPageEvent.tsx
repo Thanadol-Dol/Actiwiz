@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableWithoutFeedback, Keyboard, BackHandler } from 'react-native';
 import Navbar from "../components/NavBar";
 import axios from "axios";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface DataItem {
   ActivityID: number;
@@ -169,6 +170,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileIconContainer}>
           <Image
@@ -186,12 +188,19 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
             placeholder="Search"
             onChangeText={onChangeSearch}
             value={searchText}
-            style={styles.searchbar}
+            style={[styles.searchbar, {zIndex: 1}]}
           />
+          <View style={styles.scrollContainer}>
           {renderData()}
+          </View>
         </ScrollView>
-        <Navbar activePage={'FeedPageEvent'} setActivePage={(page) => navigation.navigate(page)} />
+        <Navbar 
+          activePage={'FeedPageEvent'} 
+          setActivePage={(page) => navigation.navigate(page)} 
+          zIndex={2}
+        />
       </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };
@@ -201,29 +210,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ff8f00',
   },
+  safeAreaContainer: {
+    flex: 1,
+    backgroundColor: '#ff8f00',
+  },
   profileIconContainer: {
-    padding: 20,
-    height: 50,
-    width: 50,
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 60,
+    backgroundColor: '#fff',
+    left: 10,
   },
   profileIcon: {
-    width: 40,
-    height: 40,
-    top: 12,
-    right: 10,
+    width: 70,
+    height: 70,
+    borderRadius: 40,
+    resizeMode: 'cover',
   },
   searchbar: {
+    flex: 1,
     marginHorizontal: 10,
     marginVertical: 10,
-    top: 0,
   },
   contentContainer: {
     flex: 1,
   },
   scrollContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    paddingBottom: 300, 
+    paddingHorizontal: 1,
+    paddingVertical: 5,
   },
   feedItem: {
     flexDirection: 'row',
