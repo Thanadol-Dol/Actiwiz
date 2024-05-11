@@ -4,6 +4,7 @@ import { Searchbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "../components/NavBar";
+import {Color} from "../GlobalStyles";
 import axios from "axios";
 
 interface DataItem {
@@ -182,11 +183,11 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ff8f00',
+    backgroundColor: Color.colorDarkorange_100,
   },
   safeAreaContainer: {
     flex: 1,
-    backgroundColor: '#ff8f00',
+    backgroundColor: Color.colorDarkorange_100,
   },
   profileIconContainer: {
     width: 80,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 60,
     backgroundColor: '#fff',
-    left: 10,
+    left: 15,
   },
   profileIcon: {
     width: 70,

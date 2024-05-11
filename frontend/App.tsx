@@ -14,6 +14,7 @@ import ClubPage from "./screens/ClubPage";
 import SetNotification from "./screens/SetNotification";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RequestDataUser from "./screens/RequestDataUser";
+import {Color} from "./GlobalStyles";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,7 +35,12 @@ const App = () => {
 
   return (
       <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{ 
+            headerShown: false,
+            headerStyle: {
+              backgroundColor: Color.colorDarkorange_100
+            }
+           }}>
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
