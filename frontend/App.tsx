@@ -38,7 +38,8 @@ const App = () => {
             <Stack.Screen
               name="LoginPage"
               component={LoginPage}
-              />
+              initialParams={{ refresh: true }}
+            />
             <Stack.Screen
               name="RequestDataUser"
               component={RequestDataUser}

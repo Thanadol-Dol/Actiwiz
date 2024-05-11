@@ -1,4 +1,5 @@
 import React, {  useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { ActivityIndicator, StyleSheet, View, Text, Pressable} from "react-native";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
@@ -6,7 +7,7 @@ import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const LoginPage = ({navigation}: {navigation: any}) => {
+const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
   const [webviewVisible, setWebviewVisible] = useState(false);
   const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
   const [loginUrl, setLoginUrl] = useState<string>('');
@@ -62,12 +63,12 @@ const LoginPage = ({navigation}: {navigation: any}) => {
       if(checkData.login_success){
         const userId = checkData.user_id;
         await AsyncStorage.setItem("userId", userId.toString(10));
-        //navigateToNextScreen('SetNotification');
+        navigation.navigate('SetNotification');
       } else {
-        // navigateToNextScreen('RequestDataUser', {
-        //     "student_name": checkData.student_name, 
-        //     "academic_email": checkData.academic_email
-        //   });
+        navigation.navigate('RequestDataUser', {
+            "student_name": checkData.student_name, 
+            "academic_email": checkData.academic_email
+        });
         console.log("student_name:", checkData.student_name);
         console.log("academic_email:", checkData.academic_email);
       }
@@ -91,30 +92,31 @@ const LoginPage = ({navigation}: {navigation: any}) => {
     }
   }
 
-  useEffect(() => {
-    const getTokens = async () => {
-      try {
-        const apiToken = await AsyncStorage.getItem("apiToken");
-        const graphToken = await AsyncStorage.getItem("graphToken");
-        const refreshToken = await AsyncStorage.getItem("refreshToken");
-        if(refreshToken){
-          await checkTokens(apiToken, graphToken, refreshToken);
-        } 
-        else {
-          fetchLoginUrl();
-          setLoginFlag(true);
-        }
-      } catch (error) {
-        fetchLoginUrl();
-        setLoginFlag(true);
+  useFocusEffect(
+    React.useCallback(() => {
+      if(route.params?.refresh){
+        const getTokens = async () => {
+          try {
+            const apiToken = await AsyncStorage.getItem("apiToken");
+            const graphToken = await AsyncStorage.getItem("graphToken");
+            const refreshToken = await AsyncStorage.getItem("refreshToken");
+            if(refreshToken){
+              await checkTokens(apiToken, graphToken, refreshToken);
+            } 
+            else {
+              fetchLoginUrl();
+              setLoginFlag(true);
+            }
+          } catch (error) {
+            fetchLoginUrl();
+            setLoginFlag(true);
+          }
+        };
+        getTokens();
+        navigation.setParams({ refresh: false });
       }
-    };
-    getTokens();
-  }, []);
-
-  const navigateToNextScreen = (screenName : string, parameters : any | null = null ) => {
-    navigation.navigate(screenName, parameters);
-  };
+    }, [route.params?.refresh])
+  );
 
   const getQueryParams = (url: string) => {
     const queryParams: { [key: string]: string } = {};
