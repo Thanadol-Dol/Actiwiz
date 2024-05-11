@@ -84,7 +84,7 @@ const EditProfile = ({navigation}: {navigation: any}) => {
           <Image
             style={styles.editProfileChild}
             contentFit="fill"
-            source={require("../assets/ellipse-87.png")}
+            source={require("../assets/login-photo.png")}
           />
         </View>
         <View style={styles.lowerPart}>

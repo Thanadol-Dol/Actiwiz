@@ -150,7 +150,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileIconContainer}>
           <Image
             style={styles.profileIcon}
-            source={require("../assets/NongNhaoSmall.png")}
+            source={require("../assets/login-photo.png")}
           />
         </TouchableOpacity>
         
