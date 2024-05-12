@@ -6,6 +6,7 @@ from ..utils.database import Database, get_database
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os, requests
 from ..utils.user_util import extract_user_data, get_user_next_id
+from ..utils.academic_util import degree_sort, extract_degree_thai
 
 academicRouter = APIRouter(
     prefix="/academics",
@@ -19,9 +20,11 @@ async def get_degrees(
 ):
     try:
         # Query to get all degrees
-        degree_query = f"""MATCH (departmentNode:Department) RETURN DISTINCT departmentNode.DegreeTH AS DegreeName"""
+        degree_query = f"""MATCH (departmentNode:Department) RETURN DISTINCT departmentNode.DegreeTH, departmentNode.DegreeENG"""
         results = await database.query(degree_query, fetch_all=True)
-        return results
+        sorted_results = sorted(results, key=degree_sort)
+        degree_thai = extract_degree_thai(sorted_results)
+        return degree_thai
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
