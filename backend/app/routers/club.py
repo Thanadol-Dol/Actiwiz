@@ -12,7 +12,6 @@ clubRouter = APIRouter(
 )
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
-cron_expression = os.environ.get('CRON_EXPRESSION')
 
 @clubRouter.get("/recommend/user/{user_id}")
 @requires_auth
@@ -21,7 +20,7 @@ async def recommend_clubs(
     user_id: int = Path(...,description="The ID of the user to retrieve"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(10, description="Number of items per page"),
-    extra_skip: int = Query(0, description="Extra skip value for pagination"),
+    offset: int = Query(0, description="Offset value for pagination"),
     priority: int = Query(1, description="Priority of the recommendation"),
     database: Database = Depends(get_database)
 ):
@@ -30,7 +29,7 @@ async def recommend_clubs(
         validate_scope(token_scp,request)
 
         # Calculate SKIP and LIMIT values for pagination
-        skip = ((page_number - 1) * results_size) + extra_skip
+        skip = ((page_number - 1) * results_size) - offset
         
         # Get total classes
         total_classes = await get_total_clubs_class()
@@ -54,8 +53,8 @@ async def recommend_clubs(
         recommend_params = {"user_id": user_id, "priority": priority, "skip": skip, "limit": results_size}
         results = await database.query(recommend_query, recommend_params, fetch_all=True)
         clubs_data = extract_club_data(results)
-        
-        has_next_page = True if total_clubs > skip + results_size else False
+
+        has_next_page = True if total_clubs > skip + len(clubs_data) else False
         has_next_class = True if total_classes > priority + 1 else False
         return {"clubs": clubs_data, "has_next_page": has_next_page, "has_next_class": has_next_class}
     except AuthError as e:
@@ -93,9 +92,9 @@ async def club_search(
         CONTAINS $club_name OR clubNode.ClubNameEng CONTAINS $club_name 
         RETURN clubNode SKIP $skip LIMIT $limit"""
         results = await database.query(club_query, club_params, fetch_all=True)
-        club_data = extract_club_data(results)
-        has_next_page = True if total_clubs > skip + results_size else False
-        return {"clubs": club_data, "has_next_page": has_next_page}
+        clubs_data = extract_club_data(results)
+        has_next_page = True if total_clubs > skip + skip + len(clubs_data) else False
+        return {"clubs": clubs_data, "has_next_page": has_next_page}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
@@ -124,6 +123,29 @@ async def join_club(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@clubRouter.post("/read/{club_id}")
+@requires_auth
+async def read_club(
+    request: Request,
+    club_id: str = Path(...,description="The ID of the club to join"),
+    user_id: int = Query(...,description="The ID of the user joining the club"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
+
+        merge_query = f"""MATCH (userNode:User), (clubNode:Club) WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id
+        MERGE (userNode)-[r:READ_THIS]->(clubNode)
+        ON CREATE SET r.count = 1
+        ON MATCH SET r.count = r.count + 1"""
+        params = {"user_id": user_id, "club_id": club_id}
+        await database.run(merge_query, params)
+        return {"message": "User joined the club successfully."}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @clubRouter.post("/join/{club_id}")
 @requires_auth
 async def join_club(
@@ -135,15 +157,9 @@ async def join_club(
     try:
         validate_scope(token_scp,request)
 
-        search_query = f"""MATCH p=(userNode:User)-[:IS_MEMBER_OF]->(clubNode:Club) 
-        WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id RETURN p"""
-        params = {"user_id": user_id, "club_id": club_id}
-        search_results = await database.query(search_query, params)
-        if search_results:
-            return {"joined": True, "message": "User already joined the club."}
-
         merge_query = f"""MATCH (userNode:User), (clubNode:Club) WHERE userNode.UserID = $user_id AND clubNode.ClubID = $club_id
         MERGE (userNode)-[:IS_MEMBER_OF]->(clubNode)"""
+        params = {"user_id": user_id, "club_id": club_id}
         await database.run(merge_query, params)
         return {"message": "User joined the club successfully."}
     except AuthError as e:
