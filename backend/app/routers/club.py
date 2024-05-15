@@ -56,7 +56,6 @@ async def recommend_clubs(
             next_page = page_number + 1
             next_priority = priority
         else:
-            next_page = 1
             priority_query = f"""MATCH (clubNode:Club)-[:DESCRIPT_BY_CLUP_ACTIVITY_NAME_AS]->(clubClassNode:Bert_Name)
             <-[interest:INTEREST_IN]-(userNode:User)
             WHERE userNode.UserID = $user_id RETURN DISTINCT interest.Priority ORDER BY interest.Priority"""
@@ -64,7 +63,12 @@ async def recommend_clubs(
 
             priority_list = [item["interest.Priority"] for item in priority_results]
             now_priority = priority_list.index(priority)
-            next_priority = priority_list[now_priority + 1] if now_priority + 1 < len(priority_list) else None
+            if now_priority + 1 < len(priority_list):
+                next_page = 1
+                next_priority = priority_list[now_priority + 1]
+            else:
+                next_page = None
+                next_priority = None
 
         return {"clubs": clubs_data, "next_page": next_page, "next_priority": next_priority}
     except AuthError as e:
@@ -105,7 +109,8 @@ async def club_search(
         clubs_data = extract_club_data(results)
 
         has_next_page = True if total_clubs > skip + skip + len(clubs_data) else False
-        return {"clubs": clubs_data, "has_next_page": has_next_page}
+        next_page = page_number + 1 if has_next_page else None
+        return {"clubs": clubs_data, "next_page": next_page}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:

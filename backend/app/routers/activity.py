@@ -61,7 +61,6 @@ async def recommend_activities(
             next_page = page_number + 1
             next_priority = priority
         else:
-            next_page = 1
             priority_query = f"""MATCH (activityNode:Activity)-[:DESCRIPT_BY_PRINCIPLE_AS]->(activityClassNode:No_Group_Principle_Cluster)
             <-[interest:INTEREST_IN]-(userNode:User)
             WHERE userNode.UserID = $user_id RETURN DISTINCT interest.Priority ORDER BY interest.Priority"""
@@ -69,7 +68,12 @@ async def recommend_activities(
 
             priority_list = [item["interest.Priority"] for item in priority_results]
             now_priority = priority_list.index(priority)
-            next_priority = priority_list[now_priority + 1] if now_priority + 1 < len(priority_list) else None
+            if now_priority + 1 < len(priority_list):
+                next_page = 1
+                next_priority = priority_list[now_priority + 1]
+            else:
+                next_page = None
+                next_priority = None
         return {"activities": activities_data, "next_page": next_page, "next_priority": next_priority}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
@@ -108,7 +112,8 @@ async def activities_search(
         activity_data = extract_activity_data(results)
 
         has_next_page = True if total_activities > skip + len(activity_data) else False
-        return {"activities": activity_data, "has_next_page": has_next_page}
+        next_page = page_number + 1 if has_next_page else None
+        return {"activities": activity_data, "next_page": next_page}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
