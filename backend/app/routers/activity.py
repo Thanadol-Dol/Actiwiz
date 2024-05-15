@@ -24,8 +24,7 @@ async def recommend_activities(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
     page_number: int = Query(1, description="Page number, starting from 1"),
-    results_size: int = Query(10, description="Number of items per page"),
-    offset: int = Query(0, description="Extra skip value for pagination"),
+    results_size: int = Query(6, description="Number of items per page"),
     priority: int = Query(1, description="Priority of the recommendation"),
     database: Database = Depends(get_database)
 ):
@@ -34,7 +33,7 @@ async def recommend_activities(
         validate_scope(token_scp,request)
 
         # Calculate SKIP and LIMIT values for pagination
-        skip = ((page_number - 1) * results_size) - offset
+        skip = (page_number - 1) * results_size
         
         # Get total classes
         total_classes = await get_total_activities_class()
@@ -47,8 +46,6 @@ async def recommend_activities(
         total_activities = await get_total_recommend_activities(user_id,priority)
         if total_activities == 0:
             raise HTTPException(status_code=404, detail="No activity found.")
-        if total_activities < skip:
-            raise HTTPException(status_code=404, detail="Page number out of range.")
 
         # Query to recommend activities with pagination
         recommend_query = f"""MATCH (activityNode:Activity)-[:DESCRIPT_BY_PRINCIPLE_AS]->(activityClassNode:No_Group_Principle_Cluster)
@@ -73,7 +70,7 @@ async def activities_search(
     request: Request,
     activity_name: str = Path(...,description= "The name of the activity"),
     page_number: int = Query(1, description="Page number, starting from 1"),
-    results_size: int = Query(10, description="Number of items per page"),
+    results_size: int = Query(6, description="Number of items per page"),
     database: Database = Depends(get_database)
 ):
     try:
@@ -97,6 +94,7 @@ async def activities_search(
         RETURN activityNode SKIP $skip LIMIT $limit"""
         results = await database.query(activity_query, activity_params, fetch_all=True)
         activity_data = extract_activity_data(results)
+
         has_next_page = True if total_activities > skip + len(activity_data) else False
         return {"activities": activity_data, "has_next_page": has_next_page}
     except AuthError as e:

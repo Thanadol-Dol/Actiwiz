@@ -19,8 +19,7 @@ async def recommend_clubs(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
     page_number: int = Query(1, description="Page number, starting from 1"),
-    results_size: int = Query(10, description="Number of items per page"),
-    offset: int = Query(0, description="Offset value for pagination"),
+    results_size: int = Query(6, description="Number of items per page"),
     priority: int = Query(1, description="Priority of the recommendation"),
     database: Database = Depends(get_database)
 ):
@@ -29,7 +28,7 @@ async def recommend_clubs(
         validate_scope(token_scp,request)
 
         # Calculate SKIP and LIMIT values for pagination
-        skip = ((page_number - 1) * results_size) - offset
+        skip = (page_number - 1) * results_size
         
         # Get total classes
         total_classes = await get_total_clubs_class()
@@ -42,8 +41,6 @@ async def recommend_clubs(
         total_clubs = await get_total_recommend_clubs(user_id,priority)
         if total_clubs == 0:
             raise HTTPException(status_code=404, detail="No club found.")
-        if total_clubs < skip:
-            raise HTTPException(status_code=404, detail="Page number out of range.")
 
         # Query to recommend clubs with pagination
         recommend_query = f"""MATCH (clubNode:Club)-[:DESCRIPT_BY_CLUP_ACTIVITY_NAME_AS]->(clubClassNode:Bert_Name)
@@ -68,7 +65,7 @@ async def club_search(
     request: Request,
     club_name: str = Path(...,description="The name of the club"),
     page_number: int = Query(1, description="Page number, starting from 1"),
-    results_size: int = Query(10, description="Number of items per page"),
+    results_size: int = Query(6, description="Number of items per page"),
     database: Database = Depends(get_database)
 ):
     # Implement your Database query to retrieve data based on the club_name
@@ -93,6 +90,7 @@ async def club_search(
         RETURN clubNode SKIP $skip LIMIT $limit"""
         results = await database.query(club_query, club_params, fetch_all=True)
         clubs_data = extract_club_data(results)
+
         has_next_page = True if total_clubs > skip + skip + len(clubs_data) else False
         return {"clubs": clubs_data, "has_next_page": has_next_page}
     except AuthError as e:
