@@ -1,18 +1,41 @@
 import React, { useState, useCallback, useEffect } from "react";
-import {StyleSheet, View, ScrollView, Pressable, Text, Linking, Modal, ImageStyle} from "react-native";
+import {StyleSheet, View, ScrollView, Pressable, Text, Linking, Modal, ImageStyle, ActivityIndicator} from "react-native";
 import { Image } from "expo-image";
 import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
+interface ActivityDetails {
+  ActivityID: number;
+  ActivityName: string;
+  ActivityNameENG: string;
+  Description: string;
+  HourTotal: number;
+  DayTotal: number;
+  Semester: number;
+  Organizer: string;
+  OpenDate: Date;
+  CloseDate: Date;
+  AcademicYear: number;
+};
+
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
   const activityName = route.params.ActivityName;
+  const activityNameENG = route.params.ActivityNameENG;
   const activityDescription = route.params.Description;
+  const activityHourTotal = route.params.HourTotal;
+  const activityDayTotal = route.params.DayTotal;
+  const activityOpenDate = new Date(route.params.OpenDate);
+  const activityCloseDate = new Date(route.params.CloseDate);
+  const activityAcademicYear = route.params.AcademicYear;
+  const [ReadDetails, setReadDetails] = useState<ActivityDetails | null>(null);
+
+  const [isLoading, setIsLoading] = useState(true);
   const [joinedEvent, setJoinedEvent] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
-
+  
   const openGroupContainer = useCallback(() => {
     setGroupContainerVisible(true);
   }, []);
@@ -24,28 +47,50 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const toggleJoinEvent = useCallback(() => {
     setJoinedEvent(!joinedEvent);
   }, [joinedEvent]);
-    
+
   useEffect(() => {
+    const ReadDetails = async () => {
+      try {
+        const apiToken = await AsyncStorage.getItem("apiToken");
+        const userId = await AsyncStorage.getItem('userId');
+        const activityID = route.params.ActivityID;
+        const response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityID}`, {
+          headers: {
+            'Authorization': `Bearer ${apiToken}`
+          }
+        });
+        console.log("activityID:", activityID);
+        setReadDetails(response.data);
+      } catch (error) {
+        console.error("Error fetching activity details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     const checkJoinedEvent = async () => {
       try {
         const apiToken = await AsyncStorage.getItem("apiToken");
         const userId = await AsyncStorage.getItem('userId');
         const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
-            headers: {
-              'Authorization': `Bearer ${apiToken}`
-            },
-            params: {
-              user_id: parseInt(userId as string, 10)
-            }
-        })
+          headers: {
+            'Authorization': `Bearer ${apiToken}`
+          },
+          params: {
+            user_id: parseInt(userId as string, 10)
+          }
+        });
         setJoinedEvent(response.data.joined);
       } catch (error) {
         console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    
+
+    ReadDetails();
     checkJoinedEvent();
-  }, []);
+  }, [activityID]);
 
   return (
     <>
@@ -69,42 +114,51 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         />
         <View style={styles.detailContainer}>
           <Text style={styles.detailHeader}>{activityName + '\n'}</Text>
-          <Text style={styles.detailBody}>{activityDescription}</Text>
+          <Text style={styles.detailHeader}>{activityNameENG + '\n'}</Text>
+          <Text style={styles.detailBody}>{activityDescription + '\n'}</Text>
+          <Text style={styles.detailBody}> ชั่วโมงกิจกรรม: {activityHourTotal} ชั่วโมง </Text>
+          <Text style={styles.detailBody}> จำนวนวัน: {activityDayTotal} วัน</Text>
+          <Text style={styles.detailBody}> วันเริ่มกิจกรรม: {activityOpenDate.toLocaleDateString()}</Text>
+          <Text style={styles.detailBody}> วันสิ้นสุดกิจกรรม: {activityCloseDate.toLocaleDateString() }</Text>
+          <Text style={styles.detailBody}> ปีการศึกษาที่: {activityAcademicYear + '\n'}</Text>
         </View>
 
         {
-          joinedEvent 
-          ?
-            <View
-              style={[styles.rectangleParent,styles.rectangleParentJoined]}
-            >
-              <Image
-                style={styles.checkRingRoundIcon as ImageStyle}
-                source={require("../assets/check-ring-round.png")}
-              />
-              <Text style={styles.join}>Joined</Text>
-            </View>
-          :
-            <>
-              <Pressable
-                style={[styles.rectangleParent,styles.rectangleParentNormal]}
-                onPress={openGroupContainer}
+          isLoading ? (
+            <ActivityIndicator size="large" color={Color.colorDarkorange_100} style={styles.loadingIndicator} />
+          ) : (
+            joinedEvent 
+            ?
+              <View
+                style={[styles.rectangleParent,styles.rectangleParentJoined]}
               >
-                <Text style={styles.join}>Join</Text>
-              </Pressable>
+                <Image
+                  style={styles.checkRingRoundIcon as ImageStyle}
+                  source={require("../assets/check-ring-round.png")}
+                />
+                <Text style={styles.join}>Joined</Text>
+              </View>
+            :
+              <>
+                <Pressable
+                  style={[styles.rectangleParent,styles.rectangleParentNormal]}
+                  onPress={openGroupContainer}
+                >
+                  <Text style={styles.join}>Join</Text>
+                </Pressable>
             
-              <Modal animationType="fade" transparent visible={groupContainerVisible}>
-                <View style={styles.groupContainerOverlay}>
-                  <Pressable
-                    style={styles.groupContainerBg}
-                    onPress={closeGroupContainer}
-                  />
-                  <CautionJoinEvent onClose={closeGroupContainer} onUpdate={toggleJoinEvent} activityID={activityID}/>
-                </View>
-              </Modal>
-            </>
+                <Modal animationType="fade" transparent visible={groupContainerVisible}>
+                  <View style={styles.groupContainerOverlay}>
+                    <Pressable
+                      style={styles.groupContainerBg}
+                      onPress={closeGroupContainer}
+                    />
+                    <CautionJoinEvent onClose={closeGroupContainer} onUpdate={toggleJoinEvent} activityID={activityID}/>
+                  </View>
+               </Modal>
+             </>
+          )
         }
-        
       </ScrollView>
     </>
   );
@@ -202,6 +256,9 @@ const styles = StyleSheet.create({
   checkRingRoundIcon: {
     width: 39,
     height: 39,
+  },
+  loadingIndicator: {
+    marginVertical: 20,
   }
 });
 

@@ -126,7 +126,19 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   };
   
   const navigateToDetailPage = (item: DataItem) => {
-    navigation.navigate('DetailPage', { "ActivityID": item.ActivityID ,"ActivityName": item.ActivityName, "Description": item.Description });
+    navigation.navigate('DetailPage', { 
+      "ActivityID": item.ActivityID ,
+      "ActivityName": item.ActivityName,
+      "ActivityNameENG": item.ActivityNameENG, 
+      "Description": item.Description,
+      "HourTotal": item.HourTotal,
+      "DayTotal": item.DayTotal,
+      "Semester": item.Semester,
+      "Organizer": item.Organizer,
+      "OpenDate": item.OpenDate,
+      "CloseDate": item.CloseDate,
+      "AcademicYear": item.AcademicYear,
+    });
   };
   
   const renderData = () => {
@@ -162,7 +174,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
             <Text style={styles.cardTitle}>{item.ActivityName}</Text>
             <Text style={styles.cardHourTotal}>ชั่วโมงกิจกรรม: {item.HourTotal} ชั่วโมง</Text>
             <Text style={styles.cardHourTotal}>จำนวนวัน: {item.DayTotal} วัน</Text>
-            <Text style={styles.cardDate}>วันที่จัด: {new Date(item.OpenDate).toLocaleDateString()}</Text>
+            <Text style={styles.cardDate}>วันเริ่มกิจกรรม: {new Date(item.OpenDate).toLocaleDateString()}</Text>
           </View>
         </TouchableOpacity>
       ));
