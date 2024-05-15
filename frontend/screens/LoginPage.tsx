@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { ActivityIndicator, StyleSheet, View, Text, Pressable} from "react-native";
@@ -52,6 +52,8 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
   };
 
   const checkUser = async (apiToken : string | null, graphToken : string | null) : Promise<any> => {
+    console.log("apiToken:", apiToken);
+    console.log("graphToken:", graphToken);
     try{
       const response = await axios.get('https://actiwizcpe.galapfa.ro/users/login', {
         headers: {
@@ -82,13 +84,14 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
     const checkResult = await checkUser(apiToken, graphToken) || null;
     const errorData = checkResult?.response.data || null;
     if(errorData){
+      await AsyncStorage.removeItem("apiToken");
+      await AsyncStorage.removeItem("graphToken");
       const api_token = await refreshApiToken(refreshToken);
       await AsyncStorage.setItem("apiToken", api_token.api_token);
 
       const tokens = await refreshGraphToken(refreshToken);
       await AsyncStorage.setItem("graphToken", tokens.graph_token);
       await AsyncStorage.setItem("refreshToken", tokens.refresh_token);
-
       await checkUser(api_token, tokens.graph_token);
     }
   }
@@ -105,10 +108,16 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
               await checkTokens(apiToken, graphToken, refreshToken);
             } 
             else {
+              await AsyncStorage.removeItem("apiToken");
+              await AsyncStorage.removeItem("graphToken");
+              await AsyncStorage.removeItem("refreshToken");
               fetchLoginUrl();
               setLoginFlag(true);
             }
           } catch (error) {
+            await AsyncStorage.removeItem("apiToken");
+            await AsyncStorage.removeItem("graphToken");
+            await AsyncStorage.removeItem("refreshToken");
             fetchLoginUrl();
             setLoginFlag(true);
           }
