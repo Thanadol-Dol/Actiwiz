@@ -5,6 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import navigateToNextScreen from "../screens/LoginPage";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Color } from "../GlobalStyles";
+import { StatusBar } from "expo-status-bar";
 
 const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }) => {
   if (!route || !route.params) {
@@ -143,6 +145,8 @@ const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }
   };
 
   return (
+    <>
+    <StatusBar backgroundColor={Color.iOSFFFFFF}/>
     <View style={styles.container}>
       <Image
         style={styles.headerImage}
@@ -242,40 +246,12 @@ const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }
 
       <Text style={styles.createYourAccount}>Create your account</Text>
       <Pressable style={styles.signupButton} onPress={handleSignup}>
-        <Text style={styles.signupText}>Signup now</Text>
+        <Text style={styles.signupText}>Signup Now</Text>
       </Pressable>
     </View>
+    </>
   );
 }; 
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    marginBottom: 20,
-    width: "80%",
-    zIndex: 1,
-    color: '#000000',
-    height: 50,
-    borderRadius: 10,
-    borderWidth: 2,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    borderColor: '#000000',
-    paddingHorizontal: 10,
-  },
-  inputAndroid: {
-    marginBottom: 20,
-    width: "80%",
-    zIndex: 1,
-    color: '#000000',
-    height: 50,
-    borderRadius: 10,
-    borderWidth: 2,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    borderColor: '#000000',
-    paddingHorizontal: 10,
-  },
-});
 
 const styles = StyleSheet.create({
   container: {
@@ -285,7 +261,8 @@ const styles = StyleSheet.create({
   headerImage: {
     width: "100%",
     height: 170,
-    marginBottom: 20,
+    marginBottom: "15%",
+    marginTop: "10%",
   },
   createYourAccount: {
     fontSize: 18,
@@ -293,10 +270,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   signupButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: Color.colorDarkorange_200,
     padding: 10,
     borderRadius: 5,
     marginTop: 20,
+    width: "50%",
   },
   signupText: {
     color: 'white',

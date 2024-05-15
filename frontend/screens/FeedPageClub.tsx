@@ -1,33 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity, StyleSheet, Text, Image, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { View, TouchableOpacity, StyleSheet, Image, FlatList, TouchableWithoutFeedback, Keyboard, Pressable, Text, ActivityIndicator } from "react-native";
 import { Searchbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "../components/NavBar";
-import {Color} from "../GlobalStyles";
+import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import axios from "axios";
-
-interface DataItem {
-  "ClubID" : number,
-  "ClubName" : string,
-  "ClubNameENG" : string,
-}
+import { StatusBar } from "expo-status-bar";
+import RecommendClubCard from "../components/RecommendClubCard";
+import SearchClubCard from "../components/SearchClubCard";
+import { ClubDetail } from "../interface/Club";
+import { getRecommendClubs, getSearchClubs } from "../utils/clubUtils";
 
 const FeedPageClub = ({navigation}: {navigation: any}) => {
-  const [data, setData] = useState<DataItem[]>([]);
+  const [searchData, setSearchData] = useState<ClubDetail[]>([]);
   const [searchText, setSearchText] = useState('');
   const [user_id, setUser_id] = useState('');
   const [apiToken, setApiToken] = useState<string | null>(null);
-  const [recommendations, setRecommendations] = useState<DataItem[]>([]);
+  const [recommendations, setRecommendations] = useState<ClubDetail[]>([]);
+  const [canLoad, setCanLoad] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState<number | null>(1);
+  const [priority, setPriority] = useState<number | null>(1);
+  const [searchPage, setSearchPage] = useState<number | null>(1);
+  const [hasMore, setHasMore] = useState(true);
 
+  //Utils Methods
   useEffect(() => {
     const fetchApiTokenAndUserID = async () => {
       try {
         const token = await AsyncStorage.getItem("apiToken");
         const storedUserID = await AsyncStorage.getItem('userId');
-  
-        console.log("Fetched apiToken:", token);
-        console.log('Stored User ID:', storedUserID);
   
         if (token && storedUserID) {
           setApiToken(token);
@@ -43,107 +46,125 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
     fetchApiTokenAndUserID();
   }, []);
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        if (!apiToken || !user_id) {
-          console.error("apiToken or user_id is null or undefined");
-          return;
-        }
-  
-        const response = await axios.get(`https://actiwizcpe.galapfa.ro/clubs/recommend/user/${user_id}`, {
-          headers: {
-            "Authorization": `Bearer ${apiToken}`
-          }
-        });
-        setRecommendations(response.data.clubs);
-      } catch (error) {
-        console.error("Error fetching recommendations:", error);
+  const handleProfilePress = () => {
+    navigation.navigate('EditProfile');
+  };
+
+  const checkLoading = () => {
+    if(!loading){
+      setCanLoad(true);
+    }
+  }
+
+  const hasMoreData = () => {
+    if(searchText.trim() !== ''){
+      if(page && priority){
+        setHasMore(true);
+      } else {
+        setHasMore(false);
       }
-    };
-  
+    } else {
+      setHasMore(true);
+    }
+  }
+
+  // Recommendations Methods
+  const fetchRecommendations = async () => {
+    setCanLoad(false);
+    setLoading(true);
+    try {
+      if (!apiToken || !user_id) {
+        console.error("apiToken or user_id is null or undefined");
+        return;
+      }
+
+      const response = await getRecommendClubs(page, priority);
+      if (page === 1 && priority === 1) {
+        setRecommendations(response.clubs);
+      } else {
+        setRecommendations(prevRecommendations => [...prevRecommendations, ...response.clubs]);
+      }
+
+      if(response.page === null && response.priority === null){
+        setHasMore(false);
+      } 
+      setPage(response.page);
+      setPriority(response.priority);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
+  };
+
+  useEffect(() => {
     if (apiToken && user_id) {
       fetchRecommendations();
     }
   }, [apiToken, user_id]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!apiToken) {
-          console.error("apiToken is null or undefined");
-          return;
-        }
-    
-        const nameToSearch = searchText.trim() ? searchText.trim() : 'all';
-        const response = await axios.get(`https://actiwizcpe.galapfa.ro/clubs/${nameToSearch}`, {
-          headers: {
-            "Authorization": `Bearer ${apiToken}`
-          }
-        });
-        setData(response.data.clubs);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+  const renderRecommendationItem = ({ item }: { item: ClubDetail }) => (
+    <RecommendClubCard key={item.ClubID} navigation={navigation} club={item}/>
+  );
+
+  const loadMoreRecommend = () => {
+    if(page && priority) {
+      console.log("Recommendations:", recommendations.length)
+      fetchRecommendations();
+    }
+  };
+
+  const fetchSearchData = async () => {
+    try {
+      if (!apiToken) {
+        console.error("apiToken is null or undefined");
+        return;
       }
-    };
   
-    if (searchText.trim()) {
-      fetchData();
+      const nameToSearch = searchText.trim() ? searchText.trim() : 'all';
+      const response = await getSearchClubs(searchPage, nameToSearch);
+      if (searchPage === 1) {
+        setSearchData(response.clubs);
+      } else {
+        setSearchData(prevSearch => [...prevSearch, ...response.clubs]);
+      }
+
+      if(response.page === null){
+        setHasMore(false);
+      }
+      setSearchPage(response.page);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching searchData:", error);
+    }
+  };
+
+  // Search Methods
+  useEffect(() => {
+    setSearchPage(1);
+
+    hasMoreData();
+    if (searchText.trim() !== '') {
+      fetchSearchData();
     }
   }, [apiToken, searchText]);
-
-  const handleProfilePress = () => {
-    navigation.navigate('EditProfile');
-  };
 
   const onChangeSearch = (query: string) => {
     setSearchText(query);
   };
-  
-  const navigateToDetailPage = (item: DataItem) => {
-    navigation.navigate('ClubPage', {"ClubID": item.ClubID ,"ClubName": item.ClubName});
-  };
-  
-  const renderData = () => {
-    if (searchText.trim() !== '') {
-      return data.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.cardContainer}
-          onPress={() => navigateToDetailPage(item)}
-        >
-           <Image
-            style={styles.cardImagesearch}
-            source={require("../assets/image-41.png")}
-          />
-          <View style={styles.cardDetails}>
-          <Text style={{ fontWeight: 'bold' }}>{item.ClubName}</Text>
-          <Text style={{ fontWeight: 'bold' }}>{item.ClubNameENG}</Text>
-          </View>
-        </TouchableOpacity>
-      ));
-    } else {
-      return recommendations.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.cardContainer}
-          onPress={() => navigateToDetailPage(item)}
-        >
-          <Image
-            style={styles.cardImagerec}
-            source={require("../assets/image-41.png")}
-            resizeMode="cover"
-          />
-          <View style={styles.cardDetails}>
-          <Text style={{ fontWeight: 'bold' }}>{item.ClubName}</Text>
-          <Text style={{ fontWeight: 'bold' }}>{item.ClubNameENG}</Text>
-          </View>
-        </TouchableOpacity>
-      ));
+
+  const renderSearchItem = ({ item }: { item: ClubDetail }) => (
+    <SearchClubCard key={item.ClubID} navigation={navigation} club={item}/>
+  );
+
+  const loadMoreSearch = () => {
+    if(searchPage){
+      fetchSearchData();
     }
   };
 
   return (
+    <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
@@ -154,29 +175,43 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
           />
         </TouchableOpacity>
         
-        <ScrollView
-          contentContainerStyle={{paddingVertical: 10}}
-          keyboardShouldPersistTaps="handled"
-          stickyHeaderIndices={[0]}
-        >
-          <Searchbar
-            placeholder="Search"
-            onChangeText={onChangeSearch}
-            value={searchText}
-            style={[styles.searchbar, {zIndex: 1}]}
-          />
-          <View style={styles.scrollContainer}>
-          {renderData()}
-          </View>
-        </ScrollView>
-        <Navbar 
-        activePage={'FeedPageClub'} 
-        setActivePage={(page) => navigation.navigate(page)} 
-        zIndex={2}
+        <Searchbar
+          placeholder="Search"
+          onChangeText={onChangeSearch}
+          value={searchText}
+          style={[styles.searchbar, {zIndex: 1}]}
+        />
+
+        <FlatList
+          data={searchText.trim() !== '' ? searchData : recommendations}
+          renderItem={searchText.trim() !== '' ? renderSearchItem : renderRecommendationItem}
+          keyExtractor={(item,index) => index.toString()}
+          contentContainerStyle={styles.flatListContent}
+          onEndReached={ hasMore ? checkLoading : null}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={ hasMore ?
+            canLoad ?
+            <Pressable
+              style={styles.rectangleGroup}
+              onPress={searchText.trim() !== '' ? loadMoreSearch : loadMoreRecommend}
+            >
+              <Text style={[styles.login, styles.textTypo]}>Load More</Text>
+            </Pressable> : <ActivityIndicator size="large" color={'#f0f0f0'} /> 
+            : null}
+          windowSize={12}
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+        />
+
+        <Navbar
+          activePage={'FeedPageClub'} 
+          setActivePage={(page) => navigation.navigate(page)} 
+          zIndex={2}
         />
       </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
+    </>
   );
 };
 
@@ -205,15 +240,20 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   searchbar: {
-    flex: 1,
     marginHorizontal: 10,
     marginVertical: 10,
   },
-  scrollContainer: {
-    paddingHorizontal: 1,
-    paddingVertical: 5,
+  flatListContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
-  cardContainer: {
+  textTypo: {
+    textAlign: "center",
+    fontFamily: FontFamily.poppinsSemiBold,
+    fontWeight: "700",
+    fontSize: FontSize.size_base_2,
+  },
+  rectangleGroup: {
     padding: 20,
     margin: 5,
     backgroundColor: '#f0f0f0',
@@ -221,35 +261,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cardImagerec: {
-    width: 170,
-    height: 200,
-    marginRight: 10,
-    left : -10,
-  },
-  cardImagesearch: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
-  },
-  cardTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  cardHourTotal: {
-    fontSize: 14,
-    color: '#555',
-  },
-  cardDetails: {
+  login: {
     flex: 1,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  cardDate: {
-    fontSize: 14,
-    color: '#555',
+    textAlignVertical: "center",
+    color: Color.colorDarkorange_200,
   },
 });
 

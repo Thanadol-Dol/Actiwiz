@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity, StyleSheet, Text } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, TouchableOpacity, StyleSheet, Text, FlatList, ActivityIndicator, Pressable } from "react-native";
 import { Searchbar } from 'react-native-paper';
 import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -7,38 +7,34 @@ import { TouchableWithoutFeedback, Keyboard, BackHandler } from 'react-native';
 import Navbar from "../components/NavBar";
 import axios from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Color } from "../GlobalStyles";
-
-interface DataItem {
-  ActivityID: number;
-  ActivityName: string;
-  ActivityNameENG: string;
-  Description: string;
-  HourTotal: number;
-  DayTotal: number;
-  Semester: number;
-  Organizer: string;
-  OpenDate: Date;
-  CloseDate: Date;
-  AcademicYear: number;
-}
+import { StatusBar } from "expo-status-bar";
+import { ActivityDetail, RecommendActivityResponse } from "../interface/Activity";
+import RecommendEventCard  from "../components/RecommendEventCard";
+import SearchEventCard from "../components/SearchEventCard";
+import { getRecommendActivities, getSearchActivities } from "../utils/activityUtils";
+import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 
 const FeedPageEvent = ({navigation}: {navigation: any}) => {
-  const [data, setData] = useState<DataItem[]>([]);
+  const [searchData, setSearchData] = useState<ActivityDetail[]>([]);
   const [searchText, setSearchText] = useState('');
   const [user_id, setUser_id] = useState('');
   const [apiToken, setApiToken] = useState<string | null>(null);
-  const [recommendations, setRecommendations] = useState<DataItem[]>([]);
+  const [recommendations, setRecommendations] = useState<ActivityDetail[]>([]);
+  const [canLoad, setCanLoad] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState<number | null>(1);
+  const [offset, setOffset] = useState<number | null>(null);
+  const [priority, setPriority] = useState<number | null>(1);
+  const [searchPage, setSearchPage] = useState<number | null>(1);
+  const [hasMore, setHasMore] = useState(true);
 
+  //Utils Methods
   useEffect(() => {
     const fetchApiTokenAndUserID = async () => {
       try {
         const token = await AsyncStorage.getItem("apiToken");
         const storedUserID = await AsyncStorage.getItem('userId');
-  
-        console.log("Fetched apiToken:", token);
-        console.log('Stored User ID:', storedUserID);
-  
+
         if (token && storedUserID) {
           setApiToken(token);
           setUser_id(storedUserID);
@@ -65,61 +61,111 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
 
     return () => backHandler.remove();
   }, []);
+
+  const handleProfilePress = () => {
+    navigation.navigate('EditProfile');
+  };
   
+  const checkLoading = () => {
+    if(!loading){
+      setCanLoad(true);
+    }
+  }
+
+  const hasMoreData = () => {
+    if(searchText.trim() !== ''){
+      if(page && priority){
+        setHasMore(true);
+      } else {
+        setHasMore(false);
+      }
+    } else {
+      setHasMore(true);
+    }
+  }
+
+  // Recommendations Methods
+  const fetchRecommendations = async () => {
+    setCanLoad(false);
+    setLoading(true);
+    try {
+      if (!apiToken || !user_id) {
+        console.error("apiToken or user_id is null or undefined");
+        return;
+      }
+
+      const response = await getRecommendActivities(page, priority);
+      if (page === 1 && priority === 1) {
+        setRecommendations(response.activities);
+      } else {
+        setRecommendations(prevRecommendations => [...prevRecommendations, ...response.activities]);
+      }
+
+      if(response.page === null && response.priority === null){
+        setHasMore(false);
+      } 
+      setPage(response.page);
+      setPriority(response.priority);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        if (!apiToken || !user_id) {
-          console.error("apiToken or user_id is null or undefined");
-          return;
-        }
-  
-        const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/recommend/user/${user_id}`, {
-          headers: {
-            "Authorization": `Bearer ${apiToken}`
-          }
-        });
-        setRecommendations(response.data.activities);
-      } catch (error) {
-        <Text>No recommend Event Now</Text>
-        console.error("Error fetching recommendations:", error);
-      }
-    };
-  
     if (apiToken && user_id) {
       fetchRecommendations();
     }
   }, [apiToken, user_id]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!apiToken || !user_id) {
-          console.error("apiToken is null or undefined");
-          return;
-        }
-    
-        const nameToSearch = searchText.trim() ? searchText.trim() : 'all';
-        const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/${nameToSearch}`, {
-          headers: {
-            "Authorization": `Bearer ${apiToken}`
-          }
-        });
-        setData(response.data.activities);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+  const renderRecommendationItem = ({ item }: { item: ActivityDetail }) => (
+    <RecommendEventCard key={item.ActivityID} navigation={navigation} event={item}/>
+  );
+
+  const loadMoreRecommend = () => {
+    if(page && priority) {
+      console.log("Recommendations:", recommendations.length)
+      fetchRecommendations();
+    }
+  };
+
+  // Search Methods
+  const fetchSearchData = async () => {
+    setCanLoad(false);
+    setLoading(true);
+    try {
+      if (!apiToken || !user_id) {
+        console.error("apiToken is null or undefined");
+        return;
       }
-    };
   
-    if (searchText.trim()) {
-      fetchData();
+      const nameToSearch = searchText.trim() ? searchText.trim() : 'all';
+
+      const response = await getSearchActivities(searchPage, nameToSearch);
+      if (searchPage === 1) {
+        setSearchData(response.activities);
+      } else {
+        setSearchData(prevSearch => [...prevSearch, ...response.activities]);
+      }
+
+      if(response.page === null){
+        setHasMore(false);
+      }
+      setSearchPage(response.page);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    setSearchPage(1);
+    
+    hasMoreData();
+    if (searchText.trim() !== '') {
+      fetchSearchData();
     }
   }, [apiToken, searchText]);
-
-  const handleProfilePress = () => {
-    navigation.navigate('EditProfile');
-  };
 
   const onChangeSearch = (query: string) => {
     setSearchText(query);
@@ -178,10 +224,20 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
           </View>
         </TouchableOpacity>
       ));
+
+  const renderSearchItem = ({ item }: { item: ActivityDetail }) => (
+    <SearchEventCard key={item.ActivityID} navigation={navigation} event={item}/>
+  );
+
+  const loadMoreSearch = () => {
+    if(searchPage){
+      fetchSearchData();
     }
   };
 
   return (
+    <>
+    <StatusBar backgroundColor={Color.colorDarkorange_100}/>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
@@ -192,21 +248,34 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
           />
         </TouchableOpacity>
         
-        <ScrollView
-          contentContainerStyle={{paddingVertical: 10}}
-          keyboardShouldPersistTaps="handled"
-          stickyHeaderIndices={[0]}
-        >
-          <Searchbar
-            placeholder="Search"
-            onChangeText={onChangeSearch}
-            value={searchText}
-            style={[styles.searchbar, {zIndex: 1}]}
-          />
-          <View style={styles.scrollContainer}>
-          {renderData()}
-          </View>
-        </ScrollView>
+        <Searchbar
+          placeholder="Search"
+          onChangeText={onChangeSearch}
+          value={searchText}
+          style={[styles.searchbar, {zIndex: 1}]}
+        />
+
+        <FlatList
+          data={searchText.trim() !== '' ? searchData : recommendations}
+          renderItem={searchText.trim() !== '' ? renderSearchItem : renderRecommendationItem}
+          keyExtractor={(item,index) => index.toString()}
+          contentContainerStyle={styles.flatListContent}
+          onEndReached={ hasMore ? checkLoading : null}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={ hasMore ?
+            canLoad ?
+            <Pressable
+              style={styles.rectangleGroup}
+              onPress={searchText.trim() !== '' ? loadMoreSearch : loadMoreRecommend}
+            >
+              <Text style={[styles.login, styles.textTypo]}>Load More</Text>
+            </Pressable> : <ActivityIndicator size="large" color={'#f0f0f0'} /> 
+            : null}
+          windowSize={12}
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+        />
+
         <Navbar 
           activePage={'FeedPageEvent'} 
           setActivePage={(page) => navigation.navigate(page)} 
@@ -215,6 +284,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
       </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
+    </>
   );
 };
 
@@ -243,44 +313,20 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   searchbar: {
-    flex: 1,
     marginHorizontal: 10,
     marginVertical: 10,
   },
-  contentContainer: {
-    flex: 1,
+  flatListContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
-  scrollContainer: {
-    paddingHorizontal: 1,
-    paddingVertical: 5,
+  textTypo: {
+    textAlign: "center",
+    fontFamily: FontFamily.poppinsSemiBold,
+    fontWeight: "700",
+    fontSize: FontSize.size_base_2,
   },
-  feedItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 8,
-    elevation: 3,
-  },
-  feedItemImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  feedItemText: {
-    flex: 1,
-  },
-  feedItemTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  feedItemDescription: {
-    fontSize: 14,
-    color: '#555',
-  },
-  cardContainer: {
+  rectangleGroup: {
     padding: 20,
     margin: 5,
     backgroundColor: '#f0f0f0',
@@ -288,35 +334,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cardImagerec: {
-    width: 170,
-    height: 200,
-    marginRight: 10,
-    left : -10,
-  },
-  cardImagesearch: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
-  },
-  cardTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  cardHourTotal: {
-    fontSize: 14,
-    color: '#555',
-  },
-  cardDetails: {
+  login: {
     flex: 1,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  cardDate: {
-    fontSize: 14,
-    color: '#555',
+    textAlignVertical: "center",
+    color: Color.colorDarkorange_200,
   },
 });
 
