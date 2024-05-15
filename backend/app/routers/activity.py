@@ -55,10 +55,22 @@ async def recommend_activities(
         recommend_params = {"user_id": user_id, "priority": priority, "skip": skip, "limit": results_size}
         results = await database.query(recommend_query, recommend_params, fetch_all=True)
         activities_data = extract_activity_data(results)
-        
+
         has_next_page = True if total_activities > skip + len(activities_data) else False
-        has_next_class = True if total_classes > priority + 1 else False
-        return {"activities": activities_data, "has_next_page": has_next_page, "has_next_class": has_next_class}
+        if has_next_page:
+            next_page = page_number + 1
+            next_priority = priority
+        else:
+            next_page = 1
+            priority_query = f"""MATCH (activityNode:Activity)-[:DESCRIPT_BY_PRINCIPLE_AS]->(activityClassNode:No_Group_Principle_Cluster)
+            <-[interest:INTEREST_IN]-(userNode:User)
+            WHERE userNode.UserID = $user_id RETURN DISTINCT interest.Priority ORDER BY interest.Priority"""
+            priority_results = await database.query(priority_query, {"user_id": user_id}, fetch_all=True)
+
+            priority_list = [item["interest.Priority"] for item in priority_results]
+            now_priority = priority_list.index(priority)
+            next_priority = priority_list[now_priority + 1] if now_priority + 1 < len(priority_list) else None
+        return {"activities": activities_data, "next_page": next_page, "next_priority": next_priority}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
