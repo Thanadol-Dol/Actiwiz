@@ -8,7 +8,19 @@ const RecommendEventCard = ({ navigation, event }: EventCardType) => {
     <TouchableOpacity
       key={event.ActivityID}
       style={styles.cardContainer}
-      onPress={() => navigation.navigate('DetailPage', { "ActivityID": event.ActivityID ,"ActivityName": event.ActivityName, "Description": event.Description })}
+      onPress={() => navigation.navigate('DetailPage', { 
+        "ActivityID": event.ActivityID ,
+        "ActivityName": event.ActivityName,
+        "ActivityNameENG": event.ActivityNameENG, 
+        "Description": event.Description,
+        "HourTotal": event.HourTotal,
+        "DayTotal": event.DayTotal,
+        "Semester": event.Semester,
+        "Organizer": event.Organizer,
+        "OpenDate": event.OpenDate,
+        "CloseDate": event.CloseDate,
+        "AcademicYear": event.AcademicYear,
+      })}
     >
       <Image
         style={styles.cardImagerec}

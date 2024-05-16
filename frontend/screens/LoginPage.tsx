@@ -92,7 +92,7 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
       const tokens = await refreshGraphToken(refreshToken);
       await AsyncStorage.setItem("graphToken", tokens.graph_token);
       await AsyncStorage.setItem("refreshToken", tokens.refresh_token);
-      await checkUser(api_token, tokens.graph_token);
+      await checkUser(api_token.api_token, tokens.graph_token);
     }
   }
 
