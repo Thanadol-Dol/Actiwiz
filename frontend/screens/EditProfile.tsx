@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, View, Text, Modal, Pressable } from "react-native";
+import { StyleSheet, View, Text, Modal, Pressable, ActivityIndicator } from "react-native";
 import EditProfilePopup from "../components/EditProfilePopup";
 import DetailContainer from "../components/DetailContainer";
 import CautionLogOut from "../components/CautionLogout";
@@ -19,6 +19,7 @@ export type profileToBeShown = {
 const EditProfile = ({navigation}: {navigation: any}) => {
   const [shownProfile, setShownProfile] = useState<profileToBeShown | null>(null);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const openGroupContainer = useCallback(() => {
     setGroupContainerVisible(true);
@@ -59,9 +60,11 @@ const EditProfile = ({navigation}: {navigation: any}) => {
           Department: userProfile.Department
         };
         setShownProfile(shownProfile);
+        setIsLoading(false);
         console.log(shownProfile);
       } catch (error) {
         console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+        setIsLoading(false);
       }
     };
 
@@ -92,6 +95,10 @@ const EditProfile = ({navigation}: {navigation: any}) => {
         <View style={styles.lowerPart}>
           <View style={styles.profileArea}>
             <View style={styles.profileAreaChildContainer}>
+            {isLoading ? (
+                <ActivityIndicator size="large" color={Color.colorDarkorange_100} />
+              ) : (
+                <>
               <View style={styles.profileAreaChild}>
                 <Text style={styles.dataHeader}>Name</Text>
                 <Text style={styles.dataBody}>{shownProfile?.Name}</Text>
@@ -113,6 +120,8 @@ const EditProfile = ({navigation}: {navigation: any}) => {
                   <Text style={styles.logOutButtonText}>LOG OUT</Text>
                 </Pressable>
               </View>
+              </>
+              )}
             </View>
           </View>
         </View>

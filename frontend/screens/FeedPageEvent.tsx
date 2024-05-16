@@ -170,7 +170,23 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   const onChangeSearch = (query: string) => {
     setSearchText(query);
   };
-
+  
+  const navigateToDetailPage = (item: ActivityDetail) => {
+    navigation.navigate('DetailPage', { 
+      "ActivityID": item.ActivityID ,
+      "ActivityName": item.ActivityName,
+      "ActivityNameENG": item.ActivityNameENG, 
+      "Description": item.Description,
+      "HourTotal": item.HourTotal,
+      "DayTotal": item.DayTotal,
+      "Semester": item.Semester,
+      "Organizer": item.Organizer,
+      "OpenDate": item.OpenDate,
+      "CloseDate": item.CloseDate,
+      "AcademicYear": item.AcademicYear,
+    });
+  };
+  
   const renderSearchItem = ({ item }: { item: ActivityDetail }) => (
     <SearchEventCard key={item.ActivityID} navigation={navigation} event={item}/>
   );
