@@ -21,6 +21,7 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
         setLoginUrl(data.auth_url);
       }
     } catch (error) {
+      console.log(error);
       throw error;
     }
   };
