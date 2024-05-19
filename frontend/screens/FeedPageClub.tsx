@@ -25,7 +25,6 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   const [searchPage, setSearchPage] = useState<number | null>(1);
   const [hasMore, setHasMore] = useState(true);
 
-  //Utils Methods
   useEffect(() => {
     const fetchApiTokenAndUserID = async () => {
       try {
