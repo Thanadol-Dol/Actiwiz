@@ -11,6 +11,7 @@ import { StatusBar } from "expo-status-bar";
 const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   const clubID = route.params.ClubID;
   const clubName = route.params.ClubName;
+
   const [joinedClub, setJoinedClub] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
 
@@ -27,6 +28,23 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   }, [joinedClub]);
 
   useEffect(() => {
+    const readDetail = async () => {
+      try {
+        const apiToken = await AsyncStorage.getItem("apiToken");
+        const userId = await AsyncStorage.getItem('userId');
+        const response = await axios.post(`https://actiwizcpe.galapfa.ro/clubs/read/${clubID}`, null, {
+            headers: {
+              'Authorization': `Bearer ${apiToken}`
+            },
+            params: {
+              user_id: parseInt(userId as string, 10),
+            }
+        });
+      } catch (error) {
+        console.error("Error fetching data from API:", error);
+      }
+    }
+
     const checkJoinedClub = async () => {
       try {
         const apiToken = await AsyncStorage.getItem("apiToken");
@@ -46,6 +64,7 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
       }
     };
     
+    readDetail();
     checkJoinedClub();
   }, []);
 
