@@ -119,6 +119,27 @@ async def activities_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@activityRouter.get("/id/{activity_id}")
+@requires_auth
+async def get_activity_by_id(
+    request: Request,
+    activity_id: int = Path(...,description="The ID of the activity to join"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
+        get_query = f"""MATCH (activityNode:Activity) 
+        WHERE activityNode.ActivityID = $activity_id
+        RETURN activityNode"""
+        get_params = {"activity_id": activity_id}
+        results = await database.query(get_query, get_params, fetch_all=True)
+        activity_data = extract_activity_data(results)
+        return activity_data[0]
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @activityRouter.get("/check/joined/{activity_id}")
 @requires_auth
 async def check_joined_activity(
