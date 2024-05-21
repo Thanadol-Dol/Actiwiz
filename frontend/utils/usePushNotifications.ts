@@ -5,11 +5,24 @@ import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 
 import { Platform } from "react-native";
+import { getActivityByID } from "../utils/activityUtils";
+import { getClubByID } from "../utils/clubUtils";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ActivityDetail } from "../interface/Activity";
 
 export interface PushNotificationState {
   expoPushToken?: Notifications.ExpoPushToken;
   notification?: Notifications.Notification;
 }
+
+export type RootStackParamList = {
+  Notification: undefined;
+  DetailPage: ActivityDetail;
+  ClubPage: { ClubID: string; ClubName: string };
+};
+
+type NotificationNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Notification'>;
 
 export const usePushNotifications = (): PushNotificationState => {
   Notifications.setNotificationHandler({
@@ -30,6 +43,7 @@ export const usePushNotifications = (): PushNotificationState => {
 
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
+  const navigation = useNavigation<NotificationNavigationProp>();
 
   async function registerForPushNotificationsAsync() {
     let token;
@@ -78,7 +92,35 @@ export const usePushNotifications = (): PushNotificationState => {
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
+        const ActivityID = response.notification.request.content.data.ActivityID;
+        const ClubID = response.notification.request.content.data.ClubID;
+        if(ActivityID){
+          getActivityByID(ActivityID).then((activity) => {
+              navigation.navigate('DetailPage', { 
+                "ActivityID": activity.ActivityID ,
+                "ActivityName": activity.ActivityName,
+                "ActivityNameENG": activity.ActivityNameENG, 
+                "Description": activity.Description,
+                "HourTotal": activity.HourTotal,
+                "DayTotal": activity.DayTotal,
+                "Semester": activity.Semester,
+                "Organizer": activity.Organizer,
+                "OpenDate": activity.OpenDate,
+                "CloseDate": activity.CloseDate,
+                "AcademicYear": activity.AcademicYear,
+              })
+            }
+          ).catch((error) => {
+            throw error;
+          });
+        } else if(ClubID){
+          getClubByID(ClubID).then((club) => {
+              navigation.navigate('ClubPage', {"ClubID": club.ClubID ,"ClubName": club.ClubName});
+            }
+          ).catch((error) => {
+            throw error;
+          });;
+        }
       });
 
     return () => {

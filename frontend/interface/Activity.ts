@@ -1,7 +1,7 @@
 export interface ActivityDetail {
     ActivityID: number;
     ActivityName: string;
-    ActivityNameENG: string;
+    ActivityNameENG: string | null;
     Description: string;
     HourTotal: number;
     DayTotal: number;

@@ -1,7 +1,7 @@
 export interface ClubDetail{
-    "ClubID" : number,
+    "ClubID" : string,
     "ClubName" : string,
-    "ClubNameENG" : string,
+    "ClubNameENG" : string | null,
 }
 
 export interface SearchClubResponse {

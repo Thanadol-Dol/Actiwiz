@@ -42,4 +42,19 @@ const getSearchClubs = async (page : number | null, nameToSearch: string) : Prom
     }
 }
 
-export { getRecommendClubs, getSearchClubs };
+const getClubByID = async (ClubID: string) : Promise<ClubDetail> => {
+    const apiToken = await AsyncStorage.getItem("apiToken");
+    try{
+        const response = await axios.get(`https://actiwizcpe.galapfa.ro/clubs/id/${ClubID}`,{
+                headers: {
+                    'Authorization': `Bearer ${apiToken}`
+                }
+            }
+        )
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { getRecommendClubs, getSearchClubs, getClubByID };
