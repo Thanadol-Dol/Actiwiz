@@ -5,6 +5,7 @@ import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { refreshApiToken } from "../utils/tokenUtils";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
@@ -29,40 +30,109 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   useEffect(() => {
     const readDetail = async () => {
       try {
-        const apiToken = await AsyncStorage.getItem("apiToken");
+        let apiToken = await AsyncStorage.getItem("apiToken");
         const userId = await AsyncStorage.getItem('userId');
         const activityid = parseInt(activityID as string, 10);
-        const response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityid}`, null, {
+        let response;
+  
+        try {
+          response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityid}`, null, {
             headers: {
               'Authorization': `Bearer ${apiToken}`
             },
             params: {
               user_id: parseInt(userId as string, 10),
             }
-        });
+          });
+        } catch (error) {
+          if ((error as any).response) {
+            console.log("API token might be expired, refreshing token...");
+            const refreshToken = await AsyncStorage.getItem("refreshToken");
+            if (refreshToken) {
+              try {
+                await refreshApiToken(refreshToken);
+                apiToken = await AsyncStorage.getItem("apiToken");
+                response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityid}`, null, {
+                  headers: {
+                    'Authorization': `Bearer ${apiToken}`
+                  },
+                  params: {
+                    user_id: parseInt(userId as string, 10),
+                  }
+                });
+              } catch (refreshError) {
+                console.error("Error refreshing token:", refreshError);
+                navigation.navigate("LoginPage", { refresh: true });
+                return;
+              }
+            } else {
+              console.error("Refresh token not found");
+              navigation.navigate("LoginPage", { refresh: true });
+              return;
+            }
+          } else {
+            throw error;
+          }
+        }
+  
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching data from API:", error);
       }
-    }
-
+    };
+  
     const checkJoinedEvent = async () => {
       try {
-        const apiToken = await AsyncStorage.getItem("apiToken");
+        let apiToken = await AsyncStorage.getItem("apiToken");
         const userId = await AsyncStorage.getItem('userId');
-        const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
+        let response;
+  
+        try {
+          response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
             headers: {
               'Authorization': `Bearer ${apiToken}`
             },
             params: {
               user_id: parseInt(userId as string, 10)
             }
-        })
+          });
+        } catch (error) {
+          if ((error as any).response) {
+            console.log("API token might be expired, refreshing token...");
+            const refreshToken = await AsyncStorage.getItem("refreshToken");
+            if (refreshToken) {
+              try {
+                await refreshApiToken(refreshToken);
+                apiToken = await AsyncStorage.getItem("apiToken");
+                response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
+                  headers: {
+                    'Authorization': `Bearer ${apiToken}`
+                  },
+                  params: {
+                    user_id: parseInt(userId as string, 10)
+                  }
+                });
+              } catch (refreshError) {
+                console.error("Error refreshing token:", refreshError);
+                navigation.navigate("LoginPage", { refresh: true });
+                return;
+              }
+            } else {
+              console.error("Refresh token not found");
+              navigation.navigate("LoginPage", { refresh: true });
+              return;
+            }
+          } else {
+            throw error;
+          }
+        }
+  
         setJoinedEvent(response.data.joined);
       } catch (error) {
         console.error("Error fetching apiToken or userID from AsyncStorage:", error);
       }
     };
-    
+  
     readDetail();
     checkJoinedEvent();
   }, [activityID]);
