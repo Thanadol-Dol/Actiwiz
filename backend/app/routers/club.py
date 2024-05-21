@@ -116,6 +116,28 @@ async def club_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@clubRouter.get("/id/{club_id}")
+@requires_auth
+async def get_club_by_id(
+    request: Request,
+    club_id: str = Path(...,description="The ID of the club to join"),
+    database: Database = Depends(get_database)
+):
+    try:
+        validate_scope(token_scp,request)
+
+        get_query = f"""MATCH (clubNode:Club) 
+        WHERE clubNode.ClubID = $club_id
+        RETURN clubNode"""
+        get_params = {"club_id": club_id}
+        results = await database.query(get_query, get_params,fetch_all=True)
+        club_data = extract_club_data(results)
+        return club_data[0]
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @clubRouter.get("/check/joined/{club_id}")
 @requires_auth
 async def join_club(
