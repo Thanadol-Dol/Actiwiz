@@ -42,4 +42,19 @@ const getSearchActivities = async (page : number | null, nameToSearch: string) :
     }
 }
 
-export { getRecommendActivities, getSearchActivities };
+const getActivityByID = async (ActivityID: number) : Promise<ActivityDetail> => {
+    const apiToken = await AsyncStorage.getItem("apiToken");
+    try{
+        const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/id/${ActivityID}`,{
+                headers: {
+                    'Authorization': `Bearer ${apiToken}`
+                }
+            }
+        )
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { getRecommendActivities, getSearchActivities, getActivityByID };
