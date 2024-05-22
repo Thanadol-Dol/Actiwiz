@@ -12,7 +12,6 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
   const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
   const [loginUrl, setLoginUrl] = useState<string>('');
   const [loginFlag, setLoginFlag] = useState<boolean>(false);
-  const [loading, setLoading] = useState(false);
 
   const fetchLoginUrl = async () => {
     try {
@@ -146,36 +145,29 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
     const { url } = event;
 
     if (url.includes("auth/callback")) {
-
-      setLoading(true);
-
       // Parse the URL to extract query parameters
       const params = getQueryParams(url);
       
       // Extract the code parameter
       const code = params["code"];
-      try {
-        const response = await axios.get('https://actiwizcpe.galapfa.ro/users/auth/get/tokens', {
-          params: { code: code },
-      });
 
+      axios.get('https://actiwizcpe.galapfa.ro/users/auth/get/tokens', {
+          params: {
+            code: code,
+          },
+      }).then((response) => {
         const tokens = response.data;
         const apiToken = tokens.api_token;
         const graphToken = tokens.graph_token;
         const refreshToken = tokens.refresh_token;
-
         AsyncStorage.setItem("apiToken", apiToken as string);
         AsyncStorage.setItem("graphToken", graphToken as string);
         AsyncStorage.setItem("refreshToken", refreshToken as string);
-
-        await checkUser(apiToken, graphToken);
-      } catch(error) {
-        console.log(error);
-      }
-      finally {
-        setLoading(false);
-        setWebviewVisible(false);
-      }
+        checkUser(apiToken, graphToken);
+      }).catch((error) => {
+        setWebviewVisible(!webviewVisible);
+        setLoginFlag(!loginFlag);
+      });
   };
 };
 
