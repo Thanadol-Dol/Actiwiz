@@ -5,8 +5,7 @@ import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { refreshApiToken } from "../utils/tokenUtils";
-import { ActivityDetail } from "../interface/Activity";
+import { refreshApiToken } from "../utils/credentialUtils";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
