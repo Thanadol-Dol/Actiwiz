@@ -14,7 +14,7 @@ const SetNotification = ({navigation}: {navigation: any}) => {
     useEffect(() => {
         const setCredentials = async () => {
             const api_token = await AsyncStorage.getItem("apiToken");
-            const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string));
+            const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string,10));
             if(api_token && user_id){
                 setUserId(user_id);
                 setApiToken(api_token);

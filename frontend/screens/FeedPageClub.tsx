@@ -5,17 +5,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "../components/NavBar";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
-import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 import RecommendClubCard from "../components/RecommendClubCard";
 import SearchClubCard from "../components/SearchClubCard";
 import { ClubDetail } from "../interface/Club";
 import { getRecommendClubs, getSearchClubs } from "../utils/clubUtils";
+import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 const FeedPageClub = ({navigation}: {navigation: any}) => {
   const [searchData, setSearchData] = useState<ClubDetail[]>([]);
   const [searchText, setSearchText] = useState('');
-  const [user_id, setUser_id] = useState('');
+  const [userId, setUserId] = useState<number | null>(null);
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<ClubDetail[]>([]);
   const [canLoad, setCanLoad] = useState(false);
@@ -26,23 +26,18 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchApiTokenAndUserID = async () => {
-      try {
-        const token = await AsyncStorage.getItem("apiToken");
-        const storedUserID = await AsyncStorage.getItem('userId');
-  
-        if (token && storedUserID) {
-          setApiToken(token);
-          setUser_id(storedUserID);
-        } else {
-          console.error("apiToken or userID is null or undefined");
-        }
-      } catch (error) {
-        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+    const setCredentials = async () => {
+      const api_token = await AsyncStorage.getItem("apiToken");
+      const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string,10));
+      if (api_token && user_id) {
+        setUserId(user_id);
+        setApiToken(api_token);
+      } else {
+        removeCredentials();
+        navigation.navigate("LoginPage", { refresh: true });
       }
     };
-  
-    fetchApiTokenAndUserID();
+    setCredentials();
   }, []);
 
   const handleProfilePress = () => {
@@ -55,27 +50,21 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
     }
   }
 
-  const hasMoreData = () => {
-    if(searchText.trim() !== ''){
-      if(page && priority){
-        setHasMore(true);
+  useEffect(() => {
+    if (apiToken && userId) {
+      if (searchText.trim() !== '') {
+        fetchSearchData();
       } else {
-        setHasMore(false);
+        fetchRecommendations();
       }
-    } else {
-      setHasMore(true);
     }
-  }
+  }, [apiToken]);
 
   // Recommendations Methods
   const fetchRecommendations = async () => {
-    setCanLoad(false);
-    setLoading(true);
     try {
-      if (!apiToken || !user_id) {
-        console.error("apiToken or user_id is null or undefined");
-        return;
-      }
+      setCanLoad(false);
+      setLoading(true);
 
       const response = await getRecommendClubs(page, priority);
       if (page === 1 && priority === 1) {
@@ -89,17 +78,23 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
       } 
       setPage(response.page);
       setPriority(response.priority);
+    } catch (error: any) {
+      console.log("Page:", page, "Priority:", priority);
+      if(error.response.status === 401 || error.response.data.detail.includes("401")){
+        try{
+            const refreshToken = await AsyncStorage.getItem("refreshToken");
+            const response = await setNewTokens(refreshToken);
+            setApiToken(response.api_token);
+        } catch (error) {
+            removeCredentials();
+            navigation.navigate("LoginPage", { refresh: true });
+            alert("Token Expired. Please login again.");
+        }
+      }
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
     }
   };
-
-  useEffect(() => {
-    if (apiToken && user_id) {
-      fetchRecommendations();
-    }
-  }, [apiToken, user_id]);
 
   const renderRecommendationItem = ({ item }: { item: ClubDetail }) => (
     <RecommendClubCard key={item.ClubID} navigation={navigation} club={item}/>
@@ -112,14 +107,14 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
     }
   };
 
+  // Search Methods
   const fetchSearchData = async () => {
     try {
-      if (!apiToken) {
-        console.error("apiToken is null or undefined");
-        return;
-      }
-  
+      setCanLoad(false);
+      setLoading(true);
+
       const nameToSearch = searchText.trim() ? searchText.trim() : 'all';
+
       const response = await getSearchClubs(searchPage, nameToSearch);
       if (searchPage === 1) {
         setSearchData(response.clubs);
@@ -131,21 +126,38 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
         setHasMore(false);
       }
       setSearchPage(response.page);
+    } catch (error: any) {
+      if(error.response.status === 401 || error.response.data.detail.includes("401")){
+        try{
+          const refreshToken = await AsyncStorage.getItem("refreshToken");
+          const response = await setNewTokens(refreshToken);
+          setApiToken(response.api_token);
+        } catch (error) {
+          removeCredentials();
+          navigation.navigate("LoginPage", { refresh: true });
+          alert("Token Expired. Please login again.");
+        }
+      }
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching searchData:", error);
     }
   };
 
-  // Search Methods
   useEffect(() => {
-    setSearchPage(1);
-
-    hasMoreData();
     if (searchText.trim() !== '') {
-      fetchSearchData();
+      if(apiToken){
+        setSearchPage(1);
+        setSearchData([]);
+        fetchSearchData();
+      }
+    } else {
+      if(page && priority){
+        setHasMore(true);
+      } else {
+        setHasMore(false);
+      }
     }
-  }, [apiToken, searchText]);
+  }, [searchText]);
 
   const onChangeSearch = (query: string) => {
     setSearchText(query);
