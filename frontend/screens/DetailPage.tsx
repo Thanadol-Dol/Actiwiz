@@ -6,11 +6,16 @@ import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { refreshApiToken } from "../utils/tokenUtils";
+import { ActivityDetail } from "../interface/Activity";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
   const activityName = route.params.ActivityName;
   const activityDescription = route.params.Description;
+  const HourTotal = route.params.HourTotal;
+  const DayTotal = route.params.DayTotal;
+  const OpenDate = route.params.OpenDate;
+  const AcademicYear = route.params.AcademicYear;
 
   const [joinedEvent, setJoinedEvent] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
@@ -159,7 +164,12 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         />
         <View style={styles.detailContainer}>
           <Text style={styles.detailHeader}>{activityName + '\n'}</Text>
-          <Text style={styles.detailBody}>{activityDescription}</Text>
+          {/* <Text style={styles.detailHeader}>{ActivityNameENG + '\n'}</Text> */}
+          <Text style={styles.detailBody}>{activityDescription + '\n'}</Text>
+          <Text style={styles.detailBody}>{"ชั่วโมงกิจกรรม : " + HourTotal + " ชั่วโมง"}</Text>
+          <Text style={styles.detailBody}>{"จำนวนวัน : " + DayTotal + "วัน"}</Text>
+          <Text style={styles.detailBody}>{"วันที่จัด : " + new Date(OpenDate).toLocaleDateString()}</Text>
+          <Text style={styles.detailBody}>{"ปีการศึกษา : " + AcademicYear}</Text>
         </View>
 
         {
