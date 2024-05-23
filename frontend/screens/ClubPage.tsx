@@ -7,10 +7,14 @@ import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
+import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   const clubID = route.params.ClubID;
   const clubName = route.params.ClubName;
+  const [apiToken, setApiToken] = useState<string | null>(null);
+  const [graphToken, setGraphToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const [joinedClub, setJoinedClub] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
@@ -28,6 +32,18 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   }, [joinedClub]);
 
   useEffect(() => {
+    const setCredentials = async () => {
+      const api_token = await AsyncStorage.getItem("apiToken");
+      if (api_token) {
+        setApiToken(api_token);
+      } else {
+        removeCredentials();
+        navigation.navigate("LoginPage", { refresh: true });
+      }
+    };
+  
+    setCredentials();
+
     const readDetail = async () => {
       try {
         const apiToken = await AsyncStorage.getItem("apiToken");

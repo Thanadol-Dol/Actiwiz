@@ -6,6 +6,7 @@ import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { refreshApiToken } from "../utils/credentialUtils";
+import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
@@ -15,7 +16,8 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const DayTotal = route.params.DayTotal;
   const OpenDate = route.params.OpenDate;
   const AcademicYear = route.params.AcademicYear;
-
+  
+  const [apiToken, setApiToken] = useState<string | null>(null);
   const [joinedEvent, setJoinedEvent] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
 
@@ -32,6 +34,18 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   }, [joinedEvent]);
     
   useEffect(() => {
+    const setCredentials = async () => {
+      const api_token = await AsyncStorage.getItem("apiToken");
+      if (api_token) {
+        setApiToken(api_token);
+      } else {
+        removeCredentials();
+        navigation.navigate("LoginPage", { refresh: true });
+      }
+    };
+  
+    setCredentials();
+
     const readDetail = async () => {
       try {
         let apiToken = await AsyncStorage.getItem("apiToken");
@@ -139,7 +153,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   
     readDetail();
     checkJoinedEvent();
-  }, [activityID]);
+  }, [activityID, apiToken]);
 
   return (
     <>

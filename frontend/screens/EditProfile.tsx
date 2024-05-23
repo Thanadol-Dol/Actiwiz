@@ -8,6 +8,7 @@ import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
+import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 export type profileToBeShown = {
   Name: string;
@@ -20,6 +21,7 @@ const EditProfile = ({navigation}: {navigation: any}) => {
   const [shownProfile, setShownProfile] = useState<profileToBeShown | null>(null);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [apiToken, setApiToken] = useState<string | null>(null);
 
   const openGroupContainer = useCallback(() => {
     setGroupContainerVisible(true);
@@ -42,6 +44,18 @@ const EditProfile = ({navigation}: {navigation: any}) => {
   };
 
   useEffect(() => {
+    const setCredentials = async () => {
+      const api_token = await AsyncStorage.getItem("apiToken");
+      if (api_token) {
+        setApiToken(api_token);
+      } else {
+        removeCredentials();
+        navigation.navigate("LoginPage", { refresh: true });
+      }
+    };
+  
+    setCredentials();
+
     const getUserProfile = async () => {
       try {
         const apiToken = await AsyncStorage.getItem("apiToken");
@@ -69,7 +83,7 @@ const EditProfile = ({navigation}: {navigation: any}) => {
     };
 
     getUserProfile();
-  }, []);
+  }, [apiToken]);
 
   return (
     <>
