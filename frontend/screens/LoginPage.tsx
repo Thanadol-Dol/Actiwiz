@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { ActivityIndicator, StyleSheet, View, Text, Pressable} from "react-native";
@@ -6,12 +6,15 @@ import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setNewTokens } from "../utils/credentialUtils";
 
 const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
   const [webviewVisible, setWebviewVisible] = useState(false);
   const webviewSource = 'https://actiwizcpe.galapfa.ro/users/auth/url';
   const [loginUrl, setLoginUrl] = useState<string>('');
   const [loginFlag, setLoginFlag] = useState<boolean>(false);
+  const [apiToken, setApiToken] = useState<string | null>(null);
+  const [graphToken, setGraphToken] = useState<string | null>(null);
 
   const fetchLoginUrl = async () => {
     try {
@@ -21,113 +24,9 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
         setLoginUrl(data.auth_url);
       }
     } catch (error) {
-      console.log(error);
       throw error;
     }
   };
-  
-  const refreshApiToken = async (refreshToken : string | null): Promise<any> => {
-    try {
-      const response = await axios.get('https://actiwizcpe.galapfa.ro/users/auth/refresh/api_token', {
-        headers: {
-          'Refresh': refreshToken
-        },
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
-  
-  const refreshGraphToken = async (refreshToken : string | null): Promise<any> => {
-    try {
-      const response = await axios.get('https://actiwizcpe.galapfa.ro/users/auth/refresh/graph_token', {
-        headers: {
-          'Refresh': refreshToken
-        },
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const checkUser = async (apiToken : string | null, graphToken : string | null) : Promise<any> => {
-    console.log("apiToken:", apiToken);
-    console.log("graphToken:", graphToken);
-    try{
-      const response = await axios.get('https://actiwizcpe.galapfa.ro/users/login', {
-        headers: {
-          'Authorization': `Bearer ${apiToken}`,
-          'Graph': graphToken
-        }
-      });
-      const checkData = response.data || null;
-      if(checkData.login_success){
-        const userId = checkData.user_id;
-        await AsyncStorage.setItem("userId", userId.toString(10));
-        navigation.navigate('SetNotification');
-      } else {
-        navigation.navigate('RequestDataUser', {
-            "student_name": checkData.student_name, 
-            "academic_email": checkData.academic_email
-
-        });
-        console.log("student_name:", checkData.student_name);
-        console.log("academic_email:", checkData.academic_email);
-      }
-    } catch (error) {
-      return error;
-    }
-  }
-
-  const checkTokens = async (apiToken : string | null, graphToken : string | null, refreshToken : string | null) => {
-    const checkResult = await checkUser(apiToken, graphToken) || null;
-    const errorData = checkResult?.response.data || null;
-    if(errorData){
-      await AsyncStorage.removeItem("apiToken");
-      await AsyncStorage.removeItem("graphToken");
-      const api_token = await refreshApiToken(refreshToken);
-      await AsyncStorage.setItem("apiToken", api_token.api_token);
-
-      const tokens = await refreshGraphToken(refreshToken);
-      await AsyncStorage.setItem("graphToken", tokens.graph_token);
-      await AsyncStorage.setItem("refreshToken", tokens.refresh_token);
-      await checkUser(api_token.api_token, tokens.graph_token);
-    }
-  }
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if(route.params?.refresh){
-        const getTokens = async () => {
-          try {
-            const apiToken = await AsyncStorage.getItem("apiToken");
-            const graphToken = await AsyncStorage.getItem("graphToken");
-            const refreshToken = await AsyncStorage.getItem("refreshToken");
-            if(refreshToken){
-              await checkTokens(apiToken, graphToken, refreshToken);
-            } 
-            else {
-              await AsyncStorage.removeItem("apiToken");
-              await AsyncStorage.removeItem("graphToken");
-              await AsyncStorage.removeItem("refreshToken");
-              fetchLoginUrl();
-              setLoginFlag(true);
-            }
-          } catch (error) {
-            await AsyncStorage.removeItem("apiToken");
-            await AsyncStorage.removeItem("graphToken");
-            await AsyncStorage.removeItem("refreshToken");
-            fetchLoginUrl();
-            setLoginFlag(true);
-          }
-        };
-        getTokens();
-        navigation.setParams({ refresh: false });
-      }
-    }, [route.params?.refresh])
-  );
 
   const getQueryParams = (url: string) => {
     const queryParams: { [key: string]: string } = {};
@@ -145,31 +44,105 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
     const { url } = event;
 
     if (url.includes("auth/callback")) {
-      // Parse the URL to extract query parameters
       const params = getQueryParams(url);
-      
-      // Extract the code parameter
       const code = params["code"];
-
-      axios.get('https://actiwizcpe.galapfa.ro/users/auth/get/tokens', {
-          params: {
-            code: code,
-          },
-      }).then((response) => {
-        const tokens = response.data;
-        const apiToken = tokens.api_token;
-        const graphToken = tokens.graph_token;
-        const refreshToken = tokens.refresh_token;
-        AsyncStorage.setItem("apiToken", apiToken as string);
-        AsyncStorage.setItem("graphToken", graphToken as string);
-        AsyncStorage.setItem("refreshToken", refreshToken as string);
-        checkUser(apiToken, graphToken);
-      }).catch((error) => {
-        setWebviewVisible(!webviewVisible);
-        setLoginFlag(!loginFlag);
-      });
+      if(code){
+        setWebviewVisible(false);
+        setLoginFlag(false);
+        try {
+          const response = await axios.get('https://actiwizcpe.galapfa.ro/users/auth/get/tokens', {
+              params: { code: code }
+            }
+          );
+          const tokens = response.data;
+          const api_token = tokens.api_token;
+          const graph_token = tokens.graph_token;
+          const refresh_token = tokens.refresh_token;
+  
+          await AsyncStorage.setItem("apiToken", api_token as string);
+          await AsyncStorage.setItem("graphToken", graph_token as string);
+          await AsyncStorage.setItem("refreshToken", refresh_token as string);
+  
+          setGraphToken(graph_token);
+          setApiToken(api_token);
+        } catch(error) {
+        }
+      }
+    };
   };
-};
+
+  const setLogin = async () => {
+    await AsyncStorage.removeItem("apiToken");
+    await AsyncStorage.removeItem("graphToken");
+    await AsyncStorage.removeItem("refreshToken");
+    fetchLoginUrl();
+    setLoginFlag(true);
+  }
+
+  const checkUser = async () : Promise<any> => {
+    try{
+      const response = await axios.get('https://actiwizcpe.galapfa.ro/users/login', {
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Graph': graphToken
+        }
+      });
+      const checkData = response.data || null;
+      if(checkData.login_success){
+        const userId = checkData.user_id;
+        await AsyncStorage.setItem("userId", userId.toString(10));
+        navigation.navigate('SetNotification');
+      } else {
+        navigation.navigate('RequestDataUser', {
+            "student_name": checkData.student_name, 
+            "academic_email": checkData.academic_email
+        });
+      }
+    } catch (error: any) {
+      if(error.response.status === 401 || error.response.data.detail.includes("401")){
+        try{
+          const refreshToken = await AsyncStorage.getItem("refreshToken");
+          const response = await setNewTokens(refreshToken);
+          setGraphToken(response.graph_token);
+          setApiToken(response.api_token);
+        } catch (error) {
+          setLogin();
+        }
+      }
+    }
+  }  
+
+  useEffect(() => {
+    const handleLogin = async () => {
+      if(apiToken && graphToken){
+        await checkUser();
+      }
+    }
+    handleLogin();
+  }, [apiToken]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if(route.params?.refresh){
+        const setCredential = async () => {
+          try {
+            const api_token = await AsyncStorage.getItem("apiToken");
+            const graph_token = await AsyncStorage.getItem("graphToken");
+            if(api_token && graph_token){
+              setGraphToken(graph_token);
+              setApiToken(api_token);
+            } else {
+              setLogin();
+            }
+          } catch (error) {
+            setLogin();
+          }
+        };
+        setCredential();
+        navigation.setParams({ refresh: false });
+      }
+    }, [route.params?.refresh])
+  );
 
 return (
     <>
