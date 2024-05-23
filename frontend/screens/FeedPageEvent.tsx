@@ -30,7 +30,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   useEffect(() => {
     const setCredentials = async () => {
       const api_token = await AsyncStorage.getItem("apiToken");
-      const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string));
+      const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string,10));
       if (api_token && user_id) {
         setUserId(user_id);
         setApiToken(api_token);
@@ -104,9 +104,8 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         } catch (error) {
             removeCredentials();
             navigation.navigate("LoginPage", { refresh: true });
+            alert("Token Expired. Please login again.");
         }
-      } else {
-        console.error("Error fetching recommendations:", error);
       }
     } finally {
       setLoading(false);
@@ -146,14 +145,13 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
     } catch (error: any) {
       if(error.response.status === 401 || error.response.data.detail.includes("401")){
         try{
-          alert("Token expired, please wait a moment and try again.");
           const refreshToken = await AsyncStorage.getItem("refreshToken");
           const response = await setNewTokens(refreshToken);
           setApiToken(response.api_token);
         } catch (error) {
-          alert("Please login again.");
           removeCredentials();
           navigation.navigate("LoginPage", { refresh: true });
+          alert("Token Expired. Please login again.");
         }
       }
     } finally {
@@ -163,9 +161,9 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
 
   useEffect(() => {
     if (searchText.trim() !== '') {
-      if(apiToken && userId){
-        setSearchData([]);
+      if(apiToken){
         setSearchPage(1);
+        setSearchData([]);
         fetchSearchData();
       }
     } else {
