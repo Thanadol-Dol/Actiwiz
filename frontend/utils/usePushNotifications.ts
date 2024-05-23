@@ -10,17 +10,12 @@ import { getClubByID } from "../utils/clubUtils";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ActivityDetail } from "../interface/Activity";
+import { RootStackParamList } from "../utils/navigationUtils";
 
 export interface PushNotificationState {
   expoPushToken?: Notifications.ExpoPushToken;
   notification?: Notifications.Notification;
 }
-
-export type RootStackParamList = {
-  Notification: undefined;
-  DetailPage: ActivityDetail;
-  ClubPage: { ClubID: string; ClubName: string };
-};
 
 type NotificationNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Notification'>;
 

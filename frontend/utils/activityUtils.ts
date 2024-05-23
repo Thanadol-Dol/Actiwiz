@@ -57,4 +57,11 @@ const getActivityByID = async (ActivityID: number) : Promise<ActivityDetail> => 
     }
 }
 
-export { getRecommendActivities, getSearchActivities, getActivityByID };
+const removeCredentials = () => {
+    AsyncStorage.removeItem("apiToken");
+    AsyncStorage.removeItem("graphToken");
+    AsyncStorage.removeItem("refreshToken");
+    AsyncStorage.removeItem("userId");
+}
+
+export { getRecommendActivities, getSearchActivities, getActivityByID, removeCredentials };

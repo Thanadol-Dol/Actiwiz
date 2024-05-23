@@ -5,7 +5,6 @@ import { Image } from "expo-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableWithoutFeedback, Keyboard, BackHandler } from 'react-native';
 import Navbar from "../components/NavBar";
-import axios from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { ActivityDetail, RecommendActivityResponse } from "../interface/Activity";
@@ -13,39 +12,35 @@ import RecommendEventCard  from "../components/RecommendEventCard";
 import SearchEventCard from "../components/SearchEventCard";
 import { getRecommendActivities, getSearchActivities } from "../utils/activityUtils";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
+import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 const FeedPageEvent = ({navigation}: {navigation: any}) => {
   const [searchData, setSearchData] = useState<ActivityDetail[]>([]);
   const [searchText, setSearchText] = useState('');
-  const [user_id, setUser_id] = useState('');
+  const [userId, setUserId] = useState<number | null>(null);
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<ActivityDetail[]>([]);
   const [canLoad, setCanLoad] = useState(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState<number | null>(1);
-  const [offset, setOffset] = useState<number | null>(null);
   const [priority, setPriority] = useState<number | null>(1);
   const [searchPage, setSearchPage] = useState<number | null>(1);
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchApiTokenAndUserID = async () => {
-      try {
-        const token = await AsyncStorage.getItem("apiToken");
-        const storedUserID = await AsyncStorage.getItem('userId');
-
-        if (token && storedUserID) {
-          setApiToken(token);
-          setUser_id(storedUserID);
-        } else {
-          console.error("apiToken or userID is null or undefined");
-        }
-      } catch (error) {
-        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
+    const setCredentials = async () => {
+      const api_token = await AsyncStorage.getItem("apiToken");
+      const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string));
+      if (api_token && user_id) {
+        setUserId(user_id);
+        setApiToken(api_token);
+      } else {
+        removeCredentials();
+        navigation.navigate("LoginPage", { refresh: true });
       }
     };
   
-    fetchApiTokenAndUserID();
+    setCredentials();
 
     const backAction = () => {
       // Exit the application when back button is pressed
@@ -71,27 +66,21 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
     }
   }
 
-  const hasMoreData = () => {
-    if(searchText.trim() !== ''){
-      if(page && priority){
-        setHasMore(true);
+  useEffect(() => {
+    if (apiToken && userId) {
+      if (searchText.trim() !== '') {
+        fetchSearchData();
       } else {
-        setHasMore(false);
+        fetchRecommendations();
       }
-    } else {
-      setHasMore(true);
     }
-  }
+  }, [apiToken]);
 
   // Recommendations Methods
   const fetchRecommendations = async () => {
-    setCanLoad(false);
-    setLoading(true);
     try {
-      if (!apiToken || !user_id) {
-        console.error("apiToken or user_id is null or undefined");
-        return;
-      }
+      setCanLoad(false);
+      setLoading(true);
 
       const response = await getRecommendActivities(page, priority);
       if (page === 1 && priority === 1) {
@@ -102,20 +91,27 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
 
       if(response.page === null && response.priority === null){
         setHasMore(false);
-      } 
+      }
       setPage(response.page);
       setPriority(response.priority);
+    } catch (error: any) {
+      console.log("Page:", page, "Priority:", priority);
+      if(error.response.status === 401 || error.response.data.detail.includes("401")){
+        try{
+            const refreshToken = await AsyncStorage.getItem("refreshToken");
+            const response = await setNewTokens(refreshToken);
+            setApiToken(response.api_token);
+        } catch (error) {
+            removeCredentials();
+            navigation.navigate("LoginPage", { refresh: true });
+        }
+      } else {
+        console.error("Error fetching recommendations:", error);
+      }
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
     }
   };
-
-  useEffect(() => {
-    if (apiToken && user_id) {
-      fetchRecommendations();
-    }
-  }, [apiToken, user_id]);
 
   const renderRecommendationItem = ({ item }: { item: ActivityDetail }) => (
     <RecommendEventCard key={item.ActivityID} navigation={navigation} event={item}/>
@@ -130,13 +126,9 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
 
   // Search Methods
   const fetchSearchData = async () => {
-    setCanLoad(false);
-    setLoading(true);
     try {
-      if (!apiToken || !user_id) {
-        console.error("apiToken is null or undefined");
-        return;
-      }
+      setCanLoad(false);
+      setLoading(true);
   
       const nameToSearch = searchText.trim() ? searchText.trim() : 'all';
 
@@ -151,20 +143,39 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         setHasMore(false);
       }
       setSearchPage(response.page);
+    } catch (error: any) {
+      if(error.response.status === 401 || error.response.data.detail.includes("401")){
+        try{
+          alert("Token expired, please wait a moment and try again.");
+          const refreshToken = await AsyncStorage.getItem("refreshToken");
+          const response = await setNewTokens(refreshToken);
+          setApiToken(response.api_token);
+        } catch (error) {
+          alert("Please login again.");
+          removeCredentials();
+          navigation.navigate("LoginPage", { refresh: true });
+        }
+      }
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
     }
   };
 
   useEffect(() => {
-    setSearchPage(1);
-    
-    hasMoreData();
     if (searchText.trim() !== '') {
-      fetchSearchData();
+      if(apiToken && userId){
+        setSearchData([]);
+        setSearchPage(1);
+        fetchSearchData();
+      }
+    } else {
+      if(page && priority){
+        setHasMore(true);
+      } else {
+        setHasMore(false);
+      }
     }
-  }, [apiToken, searchText]);
+  }, [searchText]);
 
   const onChangeSearch = (query: string) => {
     setSearchText(query);
