@@ -30,7 +30,7 @@ const RecommendEventCard = ({ navigation, event }: EventCardType) => {
         <Text style={styles.cardTitle}>{event.ActivityName}</Text>
         <Text style={styles.cardHourTotal}>ชั่วโมงกิจกรรม: {event.HourTotal} ชั่วโมง</Text>
         <Text style={styles.cardHourTotal}>จำนวนวัน: {event.DayTotal} วัน</Text>
-        <Text style={styles.cardDate}>วันที่จัด: {new Date(event.OpenDate).toLocaleDateString()}</Text>
+        <Text style={styles.cardDate}>สมัครได้ถึง: {new Date(event.OpenDate).toLocaleDateString()}</Text>
       </View>
     </TouchableOpacity>
   );
