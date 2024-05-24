@@ -7,7 +7,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { refreshApiToken } from "../utils/credentialUtils";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
-import { setExpiredTokens } from "../utils/setExpiredTokens";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
@@ -137,7 +136,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
           <Text style={styles.detailBody}>{activityDescription + '\n'}</Text>
           <Text style={styles.detailBody}>{"ชั่วโมงกิจกรรม : " + HourTotal + " ชั่วโมง"}</Text>
           <Text style={styles.detailBody}>{"จำนวนวัน : " + DayTotal + "วัน"}</Text>
-          <Text style={styles.detailBody}>{"วันที่จัด : " + new Date(OpenDate).toLocaleDateString()}</Text>
+          <Text style={styles.detailBody}>{"สมัครได้ถึง : " + new Date(OpenDate).toLocaleDateString()}</Text>
           <Text style={styles.detailBody}>{"ปีการศึกษา : " + AcademicYear}</Text>
         </View>
 
