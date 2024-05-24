@@ -7,7 +7,8 @@ import os
 from ..utils.activity_util import (
     extract_activity_data, 
     get_total_activities_by_name, 
-    get_total_recommend_activities, 
+    get_total_recommend_activities_v1,
+    get_total_recommend_activities_v2, 
     get_total_activities_class
 )
 
@@ -18,7 +19,7 @@ activityRouter = APIRouter(
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
     
-@activityRouter.get("/recommend/user/{user_id}")
+@activityRouter.get("/v1/recommend/user/{user_id}")
 @requires_auth
 async def recommend_activities(
     request: Request,
@@ -43,7 +44,7 @@ async def recommend_activities(
             raise HTTPException(status_code=404, detail="Priority out of range.")
 
         # Get total activities
-        total_activities = await get_total_recommend_activities(user_id,priority)
+        total_activities = await get_total_recommend_activities_v1(user_id,priority)
         if total_activities == 0:
             raise HTTPException(status_code=404, detail="No activity found.")
 
@@ -79,6 +80,43 @@ async def recommend_activities(
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@activityRouter.get("/v2/recommend/user/{user_id}")
+@requires_auth
+async def recommend_activities(
+    request: Request,
+    user_id: int = Path(...,description="The ID of the user to retrieve"),
+    page_number: int = Query(1, description="Page number, starting from 1"),
+    results_size: int = Query(6, description="Number of items per page"),
+    database: Database = Depends(get_database)
+):
+    try:
+        # Validate the scope of the request
+        validate_scope(token_scp,request)
+
+        # Calculate SKIP and LIMIT values for pagination
+        skip = (page_number - 1) * results_size
+
+        # Get total activities
+        total_activities = await get_total_recommend_activities_v2(user_id)
+        if total_activities == 0:
+            raise HTTPException(status_code=404, detail="No activity found.")
+        if total_activities < skip:
+            raise HTTPException(status_code=404, detail="Page number out of range.")
+
+        # Query to recommend activities with pagination
+        recommend_query = f"""MATCH (userNode:User)-[r:RECOMMENDED]->(activityNode:Activity) WHERE userNode.UserID = $user_id 
+        RETURN activityNode ORDER BY r.interest_distance SKIP $skip LIMIT $limit"""
+        recommend_params = {"user_id": user_id, "skip": skip, "limit": results_size}
+        results = await database.query(recommend_query, recommend_params, fetch_all=True)
+        activities_data = extract_activity_data(results)
+
+        next_page = page_number + 1 if total_activities > skip + len(activities_data) else None
+        return {"activities": activities_data, "next_page": next_page}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @activityRouter.get("/{activity_name}")
 @requires_auth
@@ -109,11 +147,10 @@ async def activities_search(
         CONTAINS $activity_name OR activityNode.ActivityNameENG CONTAINS $activity_name 
         RETURN activityNode SKIP $skip LIMIT $limit"""
         results = await database.query(activity_query, activity_params, fetch_all=True)
-        activity_data = extract_activity_data(results)
+        activities_data = extract_activity_data(results)
 
-        has_next_page = True if total_activities > skip + len(activity_data) else False
-        next_page = page_number + 1 if has_next_page else None
-        return {"activities": activity_data, "next_page": next_page}
+        next_page = page_number + 1 if total_activities > skip + len(activities_data) else None
+        return {"activities": activities_data, "next_page": next_page}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:

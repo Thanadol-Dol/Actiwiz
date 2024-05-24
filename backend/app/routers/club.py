@@ -2,7 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, 
 from typing import List, Union
 from ..models.club_model import ClubDetail
 from ..utils.database import Database, get_database
-from ..utils.club_util import extract_club_data, get_total_clubs_by_name, get_total_recommend_clubs, get_total_clubs_class
+from ..utils.club_util import (
+    extract_club_data, 
+    get_total_clubs_by_name, 
+    get_total_recommend_clubs_v1,
+    get_total_recommend_clubs_v2,
+    get_total_clubs_class
+)
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os
 
@@ -13,7 +19,7 @@ clubRouter = APIRouter(
 
 token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
-@clubRouter.get("/recommend/user/{user_id}")
+@clubRouter.get("/v1/recommend/user/{user_id}")
 @requires_auth
 async def recommend_clubs(
     request: Request,
@@ -38,7 +44,7 @@ async def recommend_clubs(
             raise HTTPException(status_code=404, detail="Priority out of range.")
 
         # Get total clubs
-        total_clubs = await get_total_recommend_clubs(user_id,priority)
+        total_clubs = await get_total_recommend_clubs_v1(user_id,priority)
         if total_clubs == 0:
             raise HTTPException(status_code=404, detail="No club found.")
 
@@ -71,6 +77,44 @@ async def recommend_clubs(
                 next_priority = None
 
         return {"clubs": clubs_data, "next_page": next_page, "next_priority": next_priority}
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@clubRouter.get("/v2/recommend/user/{user_id}")
+@requires_auth
+async def recommend_clubs(
+    request: Request,
+    user_id: int = Path(...,description="The ID of the user to retrieve"),
+    page_number: int = Query(1, description="Page number, starting from 1"),
+    results_size: int = Query(6, description="Number of items per page"),
+    database: Database = Depends(get_database)
+):
+    # Implement your Database query to retrieve data based on the club_name
+    try:
+        # Validate the scope of the request
+        validate_scope(token_scp,request)
+
+        # Calculate SKIP and LIMIT values for pagination
+        skip = (page_number - 1) * results_size
+
+        # Get total clubs
+        total_clubs = await get_total_recommend_clubs_v2(user_id)
+        if total_clubs == 0:
+            raise HTTPException(status_code=404, detail="No club found.")
+        if total_clubs < skip:
+            raise HTTPException(status_code=404, detail="Page number out of range.")
+        
+        # Query to recommend clubs with pagination
+        recommend_query = f"""MATCH (userNode:User)-[r:RECOMMENDED_THIS_CLUB]->(clubNode:Club) WHERE userNode.UserID = $user_id 
+        RETURN clubNode ORDER BY r.index SKIP $skip LIMIT $limit"""
+        recommend_params = {"user_id": user_id, "skip": skip, "limit": results_size}
+        results = await database.query(recommend_query, recommend_params, fetch_all=True)
+        clubs_data = extract_club_data(results)
+
+        next_page = page_number + 1 if total_clubs > skip + len(clubs_data) else None
+        return {"clubs": clubs_data, "next_page": next_page}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:

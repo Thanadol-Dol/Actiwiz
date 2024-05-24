@@ -23,13 +23,22 @@ async def get_total_activities_by_name(activity_name: str):
     total_activities = count_result['total_activities'] if count_result else 0
     return total_activities
 
-async def get_total_recommend_activities(user_id: int, priority: int):
+async def get_total_recommend_activities_v1(user_id: int, priority: int):
     database = get_database()
     recommend_query = f"""MATCH (activityNode:Activity)-[:DESCRIPT_BY_PRINCIPLE_AS]->(activityClassNode:No_Group_Principle_Cluster)
         <-[interest:INTEREST_IN]-(userNode:User) 
         WHERE userNode.UserID = $user_id AND interest.Priority = $priority
         RETURN COUNT(activityNode) AS total_activities"""
     recommend_params = {"user_id": user_id, "priority": priority}
+    count_result = await database.query(recommend_query, recommend_params)
+    total_activities = count_result['total_activities'] if count_result else 0
+    return total_activities
+
+async def get_total_recommend_activities_v2(user_id: int):
+    database = get_database()
+    recommend_query = f"""MATCH (userNode:User)-[r:RECOMMENDED]->(activityNode:Activity) WHERE userNode.UserID = $user_id 
+        RETURN COUNT(activityNode) AS total_activities"""
+    recommend_params = {"user_id": user_id}
     count_result = await database.query(recommend_query, recommend_params)
     total_activities = count_result['total_activities'] if count_result else 0
     return total_activities
