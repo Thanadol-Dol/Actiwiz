@@ -6,7 +6,7 @@ import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setNewTokens } from "../utils/credentialUtils";
+import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
   const [webviewVisible, setWebviewVisible] = useState(false);
@@ -72,9 +72,7 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
   };
 
   const setLogin = async () => {
-    await AsyncStorage.removeItem("apiToken");
-    await AsyncStorage.removeItem("graphToken");
-    await AsyncStorage.removeItem("refreshToken");
+    removeCredentials();
     fetchLoginUrl();
     setLoginFlag(true);
   }
