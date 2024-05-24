@@ -21,7 +21,6 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   const [canLoad, setCanLoad] = useState(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState<number | null>(1);
-  const [priority, setPriority] = useState<number | null>(1);
   const [searchPage, setSearchPage] = useState<number | null>(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -66,20 +65,18 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
       setCanLoad(false);
       setLoading(true);
 
-      const response = await getRecommendClubs(page, priority);
-      if (page === 1 && priority === 1) {
+      const response = await getRecommendClubs(page);
+      if (page === 1) {
         setRecommendations(response.clubs);
       } else {
         setRecommendations(prevRecommendations => [...prevRecommendations, ...response.clubs]);
       }
 
-      if(response.page === null && response.priority === null){
+      if(response.page === null){
         setHasMore(false);
       } 
       setPage(response.page);
-      setPriority(response.priority);
     } catch (error: any) {
-      console.log("Page:", page, "Priority:", priority);
       if(error.response.status === 401 || error.response.data.detail.includes("401")){
         try{
             const refreshToken = await AsyncStorage.getItem("refreshToken");
@@ -101,7 +98,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   );
 
   const loadMoreRecommend = () => {
-    if(page && priority) {
+    if(page) {
       console.log("Recommendations:", recommendations.length)
       fetchRecommendations();
     }
@@ -151,7 +148,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
         fetchSearchData();
       }
     } else {
-      if(page && priority){
+      if(page){
         setHasMore(true);
       } else {
         setHasMore(false);

@@ -7,7 +7,7 @@ import { TouchableWithoutFeedback, Keyboard, BackHandler } from 'react-native';
 import Navbar from "../components/NavBar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { ActivityDetail, RecommendActivityResponse } from "../interface/Activity";
+import { ActivityDetail } from "../interface/Activity";
 import RecommendEventCard  from "../components/RecommendEventCard";
 import SearchEventCard from "../components/SearchEventCard";
 import { getRecommendActivities, getSearchActivities } from "../utils/activityUtils";
@@ -23,7 +23,6 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   const [canLoad, setCanLoad] = useState(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState<number | null>(1);
-  const [priority, setPriority] = useState<number | null>(1);
   const [searchPage, setSearchPage] = useState<number | null>(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -82,20 +81,18 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
       setCanLoad(false);
       setLoading(true);
 
-      const response = await getRecommendActivities(page, priority);
-      if (page === 1 && priority === 1) {
+      const response = await getRecommendActivities(page);
+      if (page === 1) {
         setRecommendations(response.activities);
       } else {
         setRecommendations(prevRecommendations => [...prevRecommendations, ...response.activities]);
       }
 
-      if(response.page === null && response.priority === null){
+      if(response.page === null){
         setHasMore(false);
       }
       setPage(response.page);
-      setPriority(response.priority);
     } catch (error: any) {
-      console.log("Page:", page, "Priority:", priority);
       if(error.response.status === 401 || error.response.data.detail.includes("401")){
         try{
             const refreshToken = await AsyncStorage.getItem("refreshToken");
@@ -118,7 +115,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   );
 
   const loadMoreRecommend = () => {
-    if(page && priority) {
+    if(page) {
       console.log("Recommendations:", recommendations.length)
       fetchRecommendations();
     }
@@ -169,7 +166,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         fetchSearchData();
       }
     } else {
-      if(page && priority){
+      if(page){
         setHasMore(true);
       } else {
         setHasMore(false);
