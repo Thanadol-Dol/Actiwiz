@@ -9,16 +9,16 @@ import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
+
 const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   const clubID = route.params.ClubID;
   const clubName = route.params.ClubName;
-  const [apiToken, setApiToken] = useState<string | null>(null);
-  const [graphToken, setGraphToken] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
 
+  const [apiToken, setApiToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
   const [joinedClub, setJoinedClub] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
-
+  
   const openGroupContainer = useCallback(() => {
     setGroupContainerVisible(true);
   }, []);
@@ -34,7 +34,9 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
   useEffect(() => {
     const setCredentials = async () => {
       const api_token = await AsyncStorage.getItem("apiToken");
-      if (api_token) {
+      const user_id = await AsyncStorage.getItem("userId").then((value) => parseInt(value as string));
+      if (api_token && user_id) {
+        setUserId(user_id);
         setApiToken(api_token);
       } else {
         removeCredentials();
@@ -56,9 +58,22 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
               user_id: parseInt(userId as string, 10),
             }
         });
-      } catch (error) {
-        console.error("Error fetching data from API:", error);
-      }
+      } catch (error: any) {
+        if(error.response.status === 401 || error.response.data.detail.includes("401")){
+          try{
+              alert("Token expired, please wait a moment and try again.")
+              const refreshToken = await AsyncStorage.getItem("refreshToken");
+              const response = await setNewTokens(refreshToken);
+              setApiToken(response.api_token);
+          } catch (error) {
+              alert("Please login again")
+              removeCredentials();
+              navigation.navigate("LoginPage", { refresh: true });
+            }
+        } else {
+          console.error("Error fetching recommendations:", error);
+          }
+        } 
     }
 
     const checkJoinedClub = async () => {
@@ -75,14 +90,27 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
         })
         console.log(response.data);
         setJoinedClub(response.data.joined);
-      } catch (error) {
-        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
-      }
+      } catch (error: any) {
+          if(error.response.status === 401 || error.response.data.detail.includes("401")){
+            try{
+                alert("Token expired, please wait a moment and try again.")
+                const refreshToken = await AsyncStorage.getItem("refreshToken");
+                const response = await setNewTokens(refreshToken);
+                setApiToken(response.api_token);
+            } catch (error) {
+                alert("Please login again")
+                removeCredentials();
+                navigation.navigate("LoginPage", { refresh: true });
+            }
+          } else{
+            console.error("Error fetching data from API:", error);
+          }
+        }
     };
-    
+
     readDetail();
     checkJoinedClub();
-  }, []);
+  }, [apiToken]);
 
   return (
     <>

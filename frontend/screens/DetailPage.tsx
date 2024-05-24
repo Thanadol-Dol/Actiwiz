@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { refreshApiToken } from "../utils/credentialUtils";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
+import { setExpiredTokens } from "../utils/setExpiredTokens";
 
 const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
@@ -46,114 +47,70 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   
     setCredentials();
 
-    const readDetail = async () => {
-      try {
-        let apiToken = await AsyncStorage.getItem("apiToken");
-        const userId = await AsyncStorage.getItem('userId');
-        const activityid = parseInt(activityID as string, 10);
-        let response;
-  
+      const readDetail = async () => {
         try {
-          response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityid}`, null, {
-            headers: {
-              'Authorization': `Bearer ${apiToken}`
-            },
-            params: {
-              user_id: parseInt(userId as string, 10),
-            }
-          });
-        } catch (error) {
-          if ((error as any).response) {
-            console.log("API token might be expired, refreshing token...");
-            const refreshToken = await AsyncStorage.getItem("refreshToken");
-            if (refreshToken) {
-              try {
-                await refreshApiToken(refreshToken);
-                apiToken = await AsyncStorage.getItem("apiToken");
-                response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityid}`, null, {
-                  headers: {
-                    'Authorization': `Bearer ${apiToken}`
-                  },
-                  params: {
-                    user_id: parseInt(userId as string, 10),
-                  }
-                });
-              } catch (refreshError) {
-                console.error("Error refreshing token:", refreshError);
-                navigation.navigate("LoginPage", { refresh: true });
-                return;
+          const apiToken = await AsyncStorage.getItem("apiToken");
+          const userId = await AsyncStorage.getItem('userId');
+          const activityid = parseInt(activityID as string, 10);
+          const response = await axios.post(`https://actiwizcpe.galapfa.ro/activities/read/${activityid}`, null, {
+              headers: {
+                'Authorization': `Bearer ${apiToken}`
+              },
+              params: {
+                user_id: parseInt(userId as string, 10),
+              }
+            });
+          } catch (error: any) {
+            if(error.response.status === 401 || error.response.data.detail.includes("401")){
+              try{
+                  const refreshToken = await AsyncStorage.getItem("refreshToken");
+                  const response = await setNewTokens(refreshToken);
+                  setApiToken(response.api_token);
+              } catch (error) {
+                  removeCredentials();
+                  navigation.navigate("LoginPage", { refresh: true });
+                }
+            } else {
+              console.error("Error fetching recommendations:", error);
+              }
+            } 
+        }
+    
+      const checkJoinedEvent = async () => {
+        try {
+          const apiToken = await AsyncStorage.getItem("apiToken");
+          const userId = await AsyncStorage.getItem('userId');
+          const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
+              headers: {
+                'Authorization': `Bearer ${apiToken}`
+              },
+              params: {
+                user_id: parseInt(userId as string, 10)
+              }
+            });
+            console.log(response.data);
+            setJoinedEvent(response.data.joined);
+          }catch (error: any) {
+            if(error.response.status === 401 || error.response.data.detail.includes("401")){
+              try{
+                  alert("Token expired, please wait a moment and try again.")
+                  const refreshToken = await AsyncStorage.getItem("refreshToken");
+                  const response = await setNewTokens(refreshToken);
+                  setApiToken(response.api_token);
+              } catch (error) {
+                  alert("Please login again")
+                  removeCredentials();
+                  navigation.navigate("LoginPage", { refresh: true });
               }
             } else {
-              console.error("Refresh token not found");
-              navigation.navigate("LoginPage", { refresh: true });
-              return;
+              console.error("Error fetching recommendations:", error);
             }
-          } else {
-            throw error;
           }
-        }
-  
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching data from API:", error);
-      }
-    };
-  
-    const checkJoinedEvent = async () => {
-      try {
-        let apiToken = await AsyncStorage.getItem("apiToken");
-        const userId = await AsyncStorage.getItem('userId');
-        let response;
-  
-        try {
-          response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
-            headers: {
-              'Authorization': `Bearer ${apiToken}`
-            },
-            params: {
-              user_id: parseInt(userId as string, 10)
-            }
-          });
-        } catch (error) {
-          if ((error as any).response) {
-            console.log("API token might be expired, refreshing token...");
-            const refreshToken = await AsyncStorage.getItem("refreshToken");
-            if (refreshToken) {
-              try {
-                await refreshApiToken(refreshToken);
-                apiToken = await AsyncStorage.getItem("apiToken");
-                response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/check/joined/${activityID}`, {
-                  headers: {
-                    'Authorization': `Bearer ${apiToken}`
-                  },
-                  params: {
-                    user_id: parseInt(userId as string, 10)
-                  }
-                });
-              } catch (refreshError) {
-                console.error("Error refreshing token:", refreshError);
-                navigation.navigate("LoginPage", { refresh: true });
-                return;
-              }
-            } else {
-              console.error("Refresh token not found");
-              navigation.navigate("LoginPage", { refresh: true });
-              return;
-            }
-          } else {
-            throw error;
-          }
-        }
-  
-        setJoinedEvent(response.data.joined);
-      } catch (error) {
-        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
-      }
-    };
-  
-    readDetail();
-    checkJoinedEvent();
-  }, [activityID, apiToken]);
+      };
+
+      readDetail();
+      checkJoinedEvent();
+    }, [activityID, apiToken]);
 
   return (
     <>
@@ -177,7 +134,6 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         />
         <View style={styles.detailContainer}>
           <Text style={styles.detailHeader}>{activityName + '\n'}</Text>
-          {/* <Text style={styles.detailHeader}>{ActivityNameENG + '\n'}</Text> */}
           <Text style={styles.detailBody}>{activityDescription + '\n'}</Text>
           <Text style={styles.detailBody}>{"ชั่วโมงกิจกรรม : " + HourTotal + " ชั่วโมง"}</Text>
           <Text style={styles.detailBody}>{"จำนวนวัน : " + DayTotal + "วัน"}</Text>

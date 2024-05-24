@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
+import { setExpiredTokens } from "../utils/setExpiredTokens";
 
 export type profileToBeShown = {
   Name: string;
@@ -55,7 +56,6 @@ const EditProfile = ({navigation}: {navigation: any}) => {
     };
   
     setCredentials();
-
     const getUserProfile = async () => {
       try {
         const apiToken = await AsyncStorage.getItem("apiToken");
@@ -76,10 +76,22 @@ const EditProfile = ({navigation}: {navigation: any}) => {
         setShownProfile(shownProfile);
         setIsLoading(false);
         console.log(shownProfile);
-      } catch (error) {
-        console.error("Error fetching apiToken or userID from AsyncStorage:", error);
-        setIsLoading(false);
-      }
+      } catch (error: any) {
+        if(error.response.status === 401 || error.response.data.detail.includes("401")){
+          try{
+              alert("Token expired, please wait a moment and try again.");
+              const refreshToken = await AsyncStorage.getItem("refreshToken");
+              const response = await setNewTokens(refreshToken);
+              setApiToken(response.api_token);
+          } catch (error) {
+              alert("Please login again.");
+              removeCredentials();
+              navigation.navigate("LoginPage", { refresh: true });
+            }
+        } else {
+          console.error("Error fetching recommendations:", error);
+          }
+        } 
     };
 
     getUserProfile();

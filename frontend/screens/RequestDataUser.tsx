@@ -6,7 +6,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Color } from "../GlobalStyles";
 import { StatusBar } from "expo-status-bar";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
-import { setExpiredTokens } from "../utils/testUtils";
 
 const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }) => {
   const { student_name, academic_email } = route.params;
