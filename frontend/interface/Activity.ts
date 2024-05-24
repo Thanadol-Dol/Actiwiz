@@ -12,13 +12,9 @@ export interface ActivityDetail {
     AcademicYear: number;
 }
 
-export interface SearchActivityResponse {
+export interface ActivityResponse {
     activities: ActivityDetail[];
     page: number | null;
-}
-
-export interface RecommendActivityResponse extends SearchActivityResponse {
-    priority: number | null;
 }
 
 export type EventCardType = {

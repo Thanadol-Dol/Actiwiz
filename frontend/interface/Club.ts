@@ -4,13 +4,9 @@ export interface ClubDetail{
     "ClubNameENG" : string | null,
 }
 
-export interface SearchClubResponse {
+export interface ClubResponse {
     clubs: ClubDetail[];
     page: number | null;
-}
-
-export interface RecommendClubResponse extends SearchClubResponse {
-    priority: number | null;
 }
 
 export type ClubCardType = {

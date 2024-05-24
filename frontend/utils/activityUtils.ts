@@ -1,29 +1,28 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { ActivityDetail, RecommendActivityResponse, SearchActivityResponse } from "../interface/Activity";
+import { ActivityDetail, ActivityResponse } from "../interface/Activity";
 
-const getRecommendActivities = async (page : number | null, priority: number | null) : Promise<RecommendActivityResponse> => {
+const getRecommendActivities = async (page : number | null) : Promise<ActivityResponse> => {
     const apiToken = await AsyncStorage.getItem("apiToken");
     const userId = await AsyncStorage.getItem("userId");
     try{
-        const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/recommend/user/${userId}`,{
+        const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/v2/recommend/user/${userId}`,{
                 headers: {
                     'Authorization': `Bearer ${apiToken}`
                 },
                 params: {
                     page_number: page,
                     results_size: 6,
-                    priority: priority
                 }
             }
         )
-        return { "activities" : response.data.activities, "page" : response.data.next_page, "priority" : response.data.next_priority };
+        return { "activities" : response.data.activities, "page" : response.data.next_page };
     } catch (error) {
         throw error;
     }
 }
 
-const getSearchActivities = async (page : number | null, nameToSearch: string) : Promise<SearchActivityResponse> => {
+const getSearchActivities = async (page : number | null, nameToSearch: string) : Promise<ActivityResponse> => {
     const apiToken = await AsyncStorage.getItem("apiToken");
     try{
         const response = await axios.get(`https://actiwizcpe.galapfa.ro/activities/${nameToSearch}`,{
