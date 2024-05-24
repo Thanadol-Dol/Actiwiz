@@ -19,13 +19,22 @@ async def get_total_clubs_by_name(club_name: str):
     total_clubs = count_result['total_clubs'] if count_result else 0
     return total_clubs
 
-async def get_total_recommend_clubs(user_id: int, priority: int):
+async def get_total_recommend_clubs_v1(user_id: int, priority: int):
     database = get_database()
     recommend_query = f"""MATCH (clubNode:Club)-[:DESCRIPT_BY_CLUP_ACTIVITY_NAME_AS]->(clubClassNode:Bert_Name)
         <-[interest:INTEREST_IN]-(userNode:User)
         WHERE userNode.UserID = $user_id AND interest.Priority = $priority
         RETURN COUNT(clubNode) AS total_clubs"""
     recommend_params = {"user_id": user_id, "priority": priority}
+    count_result = await database.query(recommend_query, recommend_params)
+    total_clubs = count_result['total_clubs'] if count_result else 0
+    return total_clubs
+
+async def get_total_recommend_clubs_v2(user_id: int):
+    database = get_database()
+    recommend_query = f"""MATCH (userNode:User)-[r:RECOMMENDED_THIS_CLUB]->(clubNode:Club) WHERE userNode.UserID = $user_id 
+        RETURN COUNT(clubNode) AS total_clubs"""
+    recommend_params = {"user_id": user_id}
     count_result = await database.query(recommend_query, recommend_params)
     total_clubs = count_result['total_clubs'] if count_result else 0
     return total_clubs
