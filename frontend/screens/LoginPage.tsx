@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { ActivityIndicator, StyleSheet, View, Text, Pressable} from "react-native";
-import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
+import { FontFamily, FontSize, Color, Border } from "../utils/GlobalStyles";
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -89,9 +89,9 @@ const LoginPage = ({navigation, route}: {navigation: any, route:any}) => {
       if(checkData.login_success){
         const userId = checkData.user_id;
         await AsyncStorage.setItem("userId", userId.toString(10));
-        navigation.navigate('SetNotification');
+        navigation.navigate('SetNotificationPage');
       } else {
-        navigation.navigate('RequestDataUser', {
+        navigation.navigate('RequestDataPage', {
             "student_name": checkData.student_name, 
             "academic_email": checkData.academic_email
         });
@@ -160,7 +160,7 @@ return (
               <Image
                 style={styles.appBanner}
                 contentFit="cover"
-                source={require("../assets/ActiwizPic.png")}
+                source={require("../assets/app-banner.png")}
               />
             </View>
           {

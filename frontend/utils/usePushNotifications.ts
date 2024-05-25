@@ -91,7 +91,7 @@ export const usePushNotifications = (): PushNotificationState => {
         const ClubID = response.notification.request.content.data.ClubID;
         if(ActivityID){
           getActivityByID(ActivityID).then((activity) => {
-              navigation.navigate('DetailPage', { 
+              navigation.navigate('EventDetailPage', { 
                 "ActivityID": activity.ActivityID ,
                 "ActivityName": activity.ActivityName,
                 "ActivityNameENG": activity.ActivityNameENG, 
@@ -110,7 +110,7 @@ export const usePushNotifications = (): PushNotificationState => {
           });
         } else if(ClubID){
           getClubByID(ClubID).then((club) => {
-              navigation.navigate('ClubPage', {"ClubID": club.ClubID ,"ClubName": club.ClubName});
+              navigation.navigate('ClubDetailPage', {"ClubID": club.ClubID ,"ClubName": club.ClubName});
             }
           ).catch((error) => {
             throw error;

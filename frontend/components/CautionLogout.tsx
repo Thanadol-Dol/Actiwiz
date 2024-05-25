@@ -1,6 +1,6 @@
 import * as React from "react";
 import { View, StyleSheet, Text, Pressable } from "react-native";
-import { Border, Color, FontSize, FontFamily } from "../GlobalStyles";
+import { Border, Color, FontSize, FontFamily } from "../utils/GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 

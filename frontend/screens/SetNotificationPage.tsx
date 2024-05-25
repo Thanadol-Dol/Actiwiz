@@ -4,9 +4,9 @@ import { usePushNotifications } from "../utils/usePushNotifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
-import { Color } from "../GlobalStyles";
+import { Color } from "../utils/GlobalStyles";
 
-const SetNotification = ({navigation}: {navigation: any}) => {
+const SetNotificationPage = ({navigation}: {navigation: any}) => {
     const { expoPushToken } = usePushNotifications();
     const [apiToken, setApiToken] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
@@ -39,7 +39,7 @@ const SetNotification = ({navigation}: {navigation: any}) => {
                                 'Notification': pushToken
                             }
                         });
-                        navigation.navigate("FeedPageEvent");
+                        navigation.navigate("EventFeedPage");
                     } catch (error: any) {
                         if(error.response.status === 401 || error.response.data.detail.includes("401")){
                             try{
@@ -55,7 +55,7 @@ const SetNotification = ({navigation}: {navigation: any}) => {
                 };
                 registerPushToken();
             } else {
-                navigation.navigate("FeedPageEvent");
+                navigation.navigate("EventFeedPage");
             }
         }
     }, [apiToken]);
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SetNotification;
+export default SetNotificationPage;

@@ -4,7 +4,7 @@ import { ActivityDetail } from "../interface/Activity";
 export type RootStackParamList = {
   Notification: undefined;
   LoginPage: { refresh: boolean }
-  SetNotification: undefined;
-  DetailPage: ActivityDetail;
-  ClubPage: { ClubID: string; ClubName: string };
+  SetNotificationPage: undefined;
+  EventDetailPage: ActivityDetail;
+  ClubDetailPage: { ClubID: string; ClubName: string };
 };

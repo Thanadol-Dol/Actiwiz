@@ -1,15 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, View, Text, Modal, Pressable, ActivityIndicator } from "react-native";
-import EditProfilePopup from "../components/EditProfilePopup";
-import DetailContainer from "../components/DetailContainer";
 import CautionLogOut from "../components/CautionLogout";
-import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
+import { Color, FontFamily, FontSize, Border } from "../utils/GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
-import { setExpiredTokens } from "../utils/setExpiredTokens";
 
 export type profileToBeShown = {
   Name: string;
@@ -18,7 +15,7 @@ export type profileToBeShown = {
   Department: string;
 }
 
-const EditProfile = ({navigation}: {navigation: any}) => {
+const ProfilePage = ({navigation}: {navigation: any}) => {
   const [shownProfile, setShownProfile] = useState<profileToBeShown | null>(null);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,13 +106,13 @@ const EditProfile = ({navigation}: {navigation: any}) => {
             <Image
               style={[styles.icon1, styles.iconLayout]}
               contentFit="scale-down"
-              source={require("../assets/arrow-back-ios1.png")}
+              source={require("../assets/back-arrow.png")}
             />
           </Pressable>
           <Image
             style={styles.editProfileChild}
             contentFit="fill"
-            source={require("../assets/login-photo.png")}
+            source={require("../assets/profile-image.png")}
           />
         </View>
         <View style={styles.lowerPart}>
@@ -270,4 +267,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProfile;
+export default ProfilePage;

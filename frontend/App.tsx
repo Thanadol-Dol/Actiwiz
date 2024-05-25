@@ -1,20 +1,16 @@
 import React from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import LoginPage from "./screens/LoginPage";
-import FeedPageEvent from "./screens/FeedPageEvent";
-import FeedPageClub from "./screens/FeedPageClub";
-import DetailPage from "./screens/DetailPage";
-import NotificationPage from "./screens/NotificationPage";
-import EditProfile from "./screens/EditProfile";
-import NotificationJoinedPage from "./screens/NotificationJoinedPage";
-import EvaluatePage from "./screens/EvaluatePage";
-import ToSinfoPage from "./screens/ToSinfoPage";
-import ClubPage from "./screens/ClubPage";
-import SetNotification from "./screens/SetNotification";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import RequestDataUser from "./screens/RequestDataUser";
-import { Color } from './GlobalStyles';
+import { Color } from './utils/GlobalStyles';
+import LoginPage from "./screens/LoginPage";
+import EventFeedPage from "./screens/EventFeedPage";
+import ClubFeedPage from "./screens/ClubFeedPage";
+import EventDetailPage from "./screens/EventDetailPage";
+import ProfilePage from "./screens/ProfilePage";
+import ClubDetailPage from "./screens/ClubDetailPage";
+import SetNotificationPage from "./screens/SetNotificationPage";
+import RequestDataPage from "./screens/RequestDataPage";
 
 const Stack = createNativeStackNavigator();
 
@@ -47,48 +43,32 @@ const App = () => {
               initialParams={{ refresh: true }}
             />
             <Stack.Screen
-              name="RequestDataUser"
-              component={RequestDataUser}
+              name="RequestDataPage"
+              component={RequestDataPage}
             />
             <Stack.Screen
-              name="SetNotification"
-              component={SetNotification}
+              name="SetNotificationPage"
+              component={SetNotificationPage}
             />
             <Stack.Screen
-              name="FeedPageEvent"
-              component={FeedPageEvent}
+              name="EventFeedPage"
+              component={EventFeedPage}
             />
             <Stack.Screen
-              name="FeedPageClub"
-              component={FeedPageClub}
+              name="ClubFeedPage"
+              component={ClubFeedPage}
             />
             <Stack.Screen
-              name="DetailPage"
-              component={DetailPage}
+              name="EventDetailPage"
+              component={EventDetailPage}
             />
             <Stack.Screen
-              name="NotificationPage"
-              component={NotificationPage}
+              name="ClubDetailPage"
+              component={ClubDetailPage}
             />
             <Stack.Screen
-              name="EditProfile"
-              component={EditProfile}
-            />
-            <Stack.Screen
-              name="NotificationJoinedPage"
-              component={NotificationJoinedPage}
-            />
-            <Stack.Screen
-              name="EvaluatePage"
-              component={EvaluatePage}
-            />
-            <Stack.Screen
-              name="ToSinfoPage"
-              component={ToSinfoPage}
-            />
-            <Stack.Screen
-              name="ClubPage"
-              component={ClubPage}
+              name="ProfilePage"
+              component={ProfilePage}
             />
           </Stack.Navigator>
       </NavigationContainer>

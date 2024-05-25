@@ -3,11 +3,11 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import RNPickerSelect from 'react-native-picker-select';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Color } from "../GlobalStyles";
+import { Color } from "../utils/GlobalStyles";
 import { StatusBar } from "expo-status-bar";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
-const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }) => {
+const RequestDataPage = ({ route, navigation }: { route: any, navigation : any }) => {
   const { student_name, academic_email } = route.params;
   const [valueDegree, setValueDegree] = useState<string | null>(null);
   const [valueFaculty, setValueFaculty] = useState<string | null>(null);
@@ -154,7 +154,7 @@ const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }
       const userId = response.data.user_id;
       await AsyncStorage.setItem("userId", userId.toString(10))
       console.log('User ID stored successfully:', userId);
-      navigation.navigate('FeedPageEvent');
+      navigation.navigate('EventFeedPage');
     } catch (error: any) {
         if(error.response.status === 401 || error.response.data.detail.includes("401")){
           try{
@@ -177,7 +177,7 @@ const RequestDataUser = ({ route, navigation }: { route: any, navigation : any }
     <View style={styles.container}>
       <Image
         style={styles.headerImage}
-        source={require("../assets/Header_Actiwiz.png")}
+        source={require("../assets/app-header.png")}
       />
       <RNPickerSelect
         placeholder={{
@@ -310,4 +310,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RequestDataUser;
+export default RequestDataPage;
