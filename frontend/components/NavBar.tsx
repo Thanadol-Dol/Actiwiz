@@ -2,8 +2,8 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 
 interface NavbarProps {
-  activePage: 'FeedPageEvent' | 'FeedPageClub';
-  setActivePage: (page: 'FeedPageEvent' | 'FeedPageClub') => void;
+  activePage: 'EventFeedPage' | 'ClubFeedPage';
+  setActivePage: (page: 'EventFeedPage' | 'ClubFeedPage') => void;
   zIndex: number;
 }
 
@@ -11,16 +11,16 @@ const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage, zIndex }) =>
   return (
     <View style={[styles.navbar, zIndex !== undefined && { zIndex }]}>
       <TouchableOpacity
-        style={[styles.navButton, activePage === 'FeedPageEvent' && styles.activeNavButton]}
-        onPress={() => setActivePage('FeedPageEvent')}
+        style={[styles.navButton, activePage === 'EventFeedPage' && styles.activeNavButton]}
+        onPress={() => setActivePage('EventFeedPage')}
       >
-        <Text style={[styles.navText, activePage === 'FeedPageEvent' && styles.activeNavText]}>Event</Text>
+        <Text style={[styles.navText, activePage === 'EventFeedPage' && styles.activeNavText]}>Event</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.navButton, activePage === 'FeedPageClub' && styles.activeNavButton]}
-        onPress={() => setActivePage('FeedPageClub')}
+        style={[styles.navButton, activePage === 'ClubFeedPage' && styles.activeNavButton]}
+        onPress={() => setActivePage('ClubFeedPage')}
       >
-        <Text style={[styles.navText, activePage === 'FeedPageClub' && styles.activeNavText]}>Club</Text>
+        <Text style={[styles.navText, activePage === 'ClubFeedPage' && styles.activeNavText]}>Club</Text>
       </TouchableOpacity>
     </View>
   );

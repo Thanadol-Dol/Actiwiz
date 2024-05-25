@@ -3,14 +3,14 @@ import { Text, StyleSheet, View, ScrollView, Pressable, Modal, ImageStyle} from 
 import { Image } from "expo-image";
 import CautionJoinClub from "../components/CautionJoinClub";
 import CautionLeaveClub from "../components/CautionLeavClub";
-import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
+import { Color, FontFamily, FontSize, Border } from "../utils/GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
 
-const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
+const ClubDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const clubID = route.params.ClubID;
   const clubName = route.params.ClubName;
 
@@ -123,7 +123,7 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
         <Image
           style={[styles.icon, styles.iconLayout]}
           contentFit="cover"
-          source={require("../assets/arrow-back-ios1.png")}
+          source={require("../assets/back-arrow.png")}
         />
         </Pressable>
       </View>
@@ -131,7 +131,7 @@ const ClubPage = ({navigation, route}: {navigation: any, route:any}) => {
         <Image
           style={styles.image4IconPosition}
           contentFit="cover"
-          source={require("../assets/rectangle-40.png")}
+          source={require("../assets/club-image.png")}
         />
         <View style={styles.detailContainer}>
           <Text style={styles.detailHeader}>{clubName}</Text>
@@ -270,4 +270,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ClubPage;
+export default ClubDetailPage;

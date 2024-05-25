@@ -2,13 +2,13 @@ import React, { useState, useCallback, useEffect } from "react";
 import {StyleSheet, View, ScrollView, Pressable, Text, Linking, Modal, ImageStyle} from "react-native";
 import { Image } from "expo-image";
 import CautionJoinEvent from "../components/CautionJoinEvent";
-import { Color, FontSize, FontFamily, Border } from "../GlobalStyles";
+import { Color, FontSize, FontFamily, Border } from "../utils/GlobalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { refreshApiToken } from "../utils/credentialUtils";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
-const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
+const EventDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const activityID = route.params.ActivityID;
   const activityName = route.params.ActivityName;
   const activityDescription = route.params.Description;
@@ -121,7 +121,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         <Image
           style={[styles.icon, styles.iconLayout]}
           contentFit="cover"
-          source={require("../assets/arrow-back-ios1.png")}
+          source={require("../assets/back-arrow.png")}
         />
         </Pressable>
       </View>
@@ -129,13 +129,13 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         <Image
           style={styles.image4IconPosition}
           contentFit="cover"
-          source={require("../assets/image-41.png")}
+          source={require("../assets/event-image.png")}
         />
         <View style={styles.detailContainer}>
           <Text style={styles.detailHeader}>{activityName + '\n'}</Text>
           <Text style={styles.detailBody}>{activityDescription + '\n'}</Text>
           <Text style={styles.detailBody}>{"ชั่วโมงกิจกรรม : " + HourTotal + " ชั่วโมง"}</Text>
-          <Text style={styles.detailBody}>{"จำนวนวัน : " + DayTotal + "วัน"}</Text>
+          <Text style={styles.detailBody}>{"จำนวนวัน : " + DayTotal + " วัน"}</Text>
           <Text style={styles.detailBody}>{"สมัครได้ถึง : " + new Date(OpenDate).toLocaleDateString()}</Text>
           <Text style={styles.detailBody}>{"ปีการศึกษา : " + AcademicYear}</Text>
         </View>
@@ -148,7 +148,7 @@ const DetailPage = ({navigation, route}: {navigation: any, route:any}) => {
             >
               <Image
                 style={styles.checkRingRoundIcon as ImageStyle}
-                source={require("../assets/check-ring-round.png")}
+                source={require("../assets/joined-icon.png")}
               />
               <Text style={styles.join}>Joined</Text>
             </View>
@@ -273,4 +273,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default DetailPage;
+export default EventDetailPage;

@@ -8,11 +8,11 @@ const RecommendClubCard = ({ navigation, club }: ClubCardType) => {
     <TouchableOpacity
       key={club.ClubID}
       style={styles.cardContainer}
-      onPress={() => navigation.navigate('ClubPage', {"ClubID": club.ClubID ,"ClubName": club.ClubName})}
+      onPress={() => navigation.navigate('ClubDetailPage', {"ClubID": club.ClubID ,"ClubName": club.ClubName})}
     >
       <Image
         style={styles.cardImagerec}
-        source={require("../assets/image-41.png")}
+        source={require("../assets/club-image.png")}
         resizeMode="cover"
       />
       <View style={styles.cardDetails}>

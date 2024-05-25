@@ -9,7 +9,7 @@ const SearchEventCard = ({ navigation, event }: EventCardType) => {
     <TouchableOpacity
       key={event.ActivityID}
       style={styles.cardContainer}
-      onPress={() => navigation.navigate('DetailPage', { 
+      onPress={() => navigation.navigate('EventDetailPage', { 
         "ActivityID": event.ActivityID ,
         "ActivityName": event.ActivityName,
         "ActivityNameENG": event.ActivityNameENG, 
@@ -25,7 +25,7 @@ const SearchEventCard = ({ navigation, event }: EventCardType) => {
     >
       <Image
         style={styles.cardImagesearch}
-        source={require("../assets/image-41.png")}
+        source={require("../assets/event-image.png")}
       />
       <View style={styles.cardDetails}>
       <Text style={{ fontWeight: 'bold' }}>{event.ActivityName}</Text>

@@ -11,10 +11,10 @@ import { ActivityDetail } from "../interface/Activity";
 import RecommendEventCard  from "../components/RecommendEventCard";
 import SearchEventCard from "../components/SearchEventCard";
 import { getRecommendActivities, getSearchActivities } from "../utils/activityUtils";
-import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
+import { FontFamily, FontSize, Color, Border } from "../utils/GlobalStyles";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
-const FeedPageEvent = ({navigation}: {navigation: any}) => {
+const EventFeedPage = ({navigation}: {navigation: any}) => {
   const [searchData, setSearchData] = useState<ActivityDetail[]>([]);
   const [searchText, setSearchText] = useState('');
   const [userId, setUserId] = useState<number | null>(null);
@@ -56,7 +56,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
   }, []);
 
   const handleProfilePress = () => {
-    navigation.navigate('EditProfile');
+    navigation.navigate('ProfilePage');
   };
   
   const checkLoading = () => {
@@ -197,7 +197,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileIconContainer}>
           <Image
             style={styles.profileIcon}
-            source={require("../assets/login-photo.png")}
+            source={require("../assets/profile-image.png")}
           />
         </TouchableOpacity>
         
@@ -230,7 +230,7 @@ const FeedPageEvent = ({navigation}: {navigation: any}) => {
         />
 
         <Navbar 
-          activePage={'FeedPageEvent'} 
+          activePage={'EventFeedPage'} 
           setActivePage={(page) => navigation.navigate(page)} 
           zIndex={2}
         />
@@ -294,4 +294,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedPageEvent;
+export default EventFeedPage;

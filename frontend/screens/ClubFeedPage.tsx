@@ -4,7 +4,7 @@ import { Searchbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "../components/NavBar";
-import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
+import { FontFamily, FontSize, Color, Border } from "../utils/GlobalStyles";
 import { StatusBar } from "expo-status-bar";
 import RecommendClubCard from "../components/RecommendClubCard";
 import SearchClubCard from "../components/SearchClubCard";
@@ -12,7 +12,7 @@ import { ClubDetail } from "../interface/Club";
 import { getRecommendClubs, getSearchClubs } from "../utils/clubUtils";
 import { setNewTokens, removeCredentials } from "../utils/credentialUtils";
 
-const FeedPageClub = ({navigation}: {navigation: any}) => {
+const ClubFeedPage = ({navigation}: {navigation: any}) => {
   const [searchData, setSearchData] = useState<ClubDetail[]>([]);
   const [searchText, setSearchText] = useState('');
   const [userId, setUserId] = useState<number | null>(null);
@@ -40,7 +40,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
   }, []);
 
   const handleProfilePress = () => {
-    navigation.navigate('EditProfile');
+    navigation.navigate('ProfilePage');
   };
 
   const checkLoading = () => {
@@ -179,7 +179,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileIconContainer}>
           <Image
             style={styles.profileIcon}
-            source={require("../assets/login-photo.png")}
+            source={require("../assets/profile-image.png")}
           />
         </TouchableOpacity>
         
@@ -212,7 +212,7 @@ const FeedPageClub = ({navigation}: {navigation: any}) => {
         />
 
         <Navbar
-          activePage={'FeedPageClub'} 
+          activePage={'ClubFeedPage'} 
           setActivePage={(page) => navigation.navigate(page)} 
           zIndex={2}
         />
@@ -276,4 +276,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedPageClub;
+export default ClubFeedPage;

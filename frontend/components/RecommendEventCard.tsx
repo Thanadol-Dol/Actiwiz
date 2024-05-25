@@ -8,7 +8,7 @@ const RecommendEventCard = ({ navigation, event }: EventCardType) => {
     <TouchableOpacity
       key={event.ActivityID}
       style={styles.cardContainer}
-      onPress={() => navigation.navigate('DetailPage', { 
+      onPress={() => navigation.navigate('EventDetailPage', { 
         "ActivityID": event.ActivityID ,
         "ActivityName": event.ActivityName,
         "ActivityNameENG": event.ActivityNameENG, 
@@ -24,7 +24,7 @@ const RecommendEventCard = ({ navigation, event }: EventCardType) => {
     >
       <Image
         style={styles.cardImagerec}
-        source={require("../assets/image-41.png")}
+        source={require("../assets/event-image.png")}
       />
       <View style={styles.cardDetails}>
         <Text style={styles.cardTitle}>{event.ActivityName}</Text>
@@ -38,7 +38,7 @@ const RecommendEventCard = ({ navigation, event }: EventCardType) => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    padding: 20,
+    padding: 18,
     margin: 5,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
