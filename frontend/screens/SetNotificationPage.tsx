@@ -32,8 +32,8 @@ const SetNotificationPage = ({navigation}: {navigation: any}) => {
             if (pushToken) {
                 const registerPushToken = async () => {
                     try{
-                        const url = (userId : number) => `https://actiwizcpe.galapfa.ro/users/register/tokens/${userId}`;
-                        await axios.post(url(userId), null, {
+                        const url = `https://actiwizcpe.galapfa.ro/users/register/tokens/${userId}`;
+                        await axios.post(url, null, {
                             headers: {
                                 'Authorization': `Bearer ${apiToken}`,
                                 'Notification': pushToken
