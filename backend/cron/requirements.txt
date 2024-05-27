@@ -1,2 +1,0 @@
-neo4j
-exponent_server_sdk
