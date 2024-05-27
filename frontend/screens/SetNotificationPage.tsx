@@ -54,11 +54,10 @@ const SetNotificationPage = ({navigation}: {navigation: any}) => {
                     }
                 };
                 registerPushToken();
-            } else {
-                navigation.navigate("EventFeedPage");
             }
+            navigation.navigate("EventFeedPage");
         }
-    }, [apiToken]);
+    }, [apiToken, expoPushToken?.data]);
 
     return (
         <View style={styles.container}>
