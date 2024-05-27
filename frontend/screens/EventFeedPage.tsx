@@ -101,9 +101,8 @@ const EventFeedPage = ({navigation}: {navigation: any}) => {
         } catch (error) {
             removeCredentials();
             navigation.navigate("LoginPage", { refresh: true });
+            alert("Token Expired. Please login again.");
         }
-      } else {
-        console.error("Error fetching recommendations:", error);
       }
     } finally {
       setLoading(false);

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import {StyleSheet, View, ScrollView, Pressable, Text, Linking, Modal, ImageStyle} from "react-native";
+import {StyleSheet, View, ScrollView, Pressable, Text, Linking, Modal, ImageStyle, ActivityIndicator} from "react-native";
 import { Image } from "expo-image";
 import CautionJoinEvent from "../components/CautionJoinEvent";
 import { Color, FontSize, FontFamily, Border } from "../utils/GlobalStyles";
@@ -20,6 +20,7 @@ const EventDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const [apiToken, setApiToken] = useState<string | null>(null);
   const [joinedEvent, setJoinedEvent] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const openGroupContainer = useCallback(() => {
     setGroupContainerVisible(true);
@@ -72,7 +73,9 @@ const EventDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
             } else {
               console.error("Error fetching recommendations:", error);
               }
-            } 
+            } finally{
+              setLoading(false);
+            }
         }
     
       const checkJoinedEvent = async () => {
@@ -104,6 +107,8 @@ const EventDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
             } else {
               console.error("Error fetching recommendations:", error);
             }
+          } finally{
+            setLoading(false);
           }
       };
 
@@ -125,6 +130,11 @@ const EventDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         />
         </Pressable>
       </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#fd7401" />
+        </View>
+      ) : (
       <ScrollView>
         <Image
           style={styles.image4IconPosition}
@@ -174,6 +184,7 @@ const EventDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         }
         
       </ScrollView>
+      )}
     </>
   );
 };
@@ -270,7 +281,12 @@ const styles = StyleSheet.create({
   checkRingRoundIcon: {
     width: 39,
     height: 39,
-  }
+  },
+  loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+  },
 });
 
 export default EventDetailPage;

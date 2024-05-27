@@ -126,6 +126,7 @@ const ClubFeedPage = ({navigation}: {navigation: any}) => {
     } catch (error: any) {
       if(error.response.status === 401 || error.response.data.detail.includes("401")){
         try{
+          alert("Token expired, please wait a moment and try again.");
           const refreshToken = await AsyncStorage.getItem("refreshToken");
           const response = await setNewTokens(refreshToken);
           setApiToken(response.api_token);

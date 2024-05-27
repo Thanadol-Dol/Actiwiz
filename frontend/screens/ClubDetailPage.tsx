@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Text, StyleSheet, View, ScrollView, Pressable, Modal, ImageStyle} from "react-native";
+import { Text, StyleSheet, View, ScrollView, Pressable, Modal, ImageStyle, ActivityIndicator} from "react-native";
 import { Image } from "expo-image";
 import CautionJoinClub from "../components/CautionJoinClub";
 import CautionLeaveClub from "../components/CautionLeavClub";
@@ -18,6 +18,7 @@ const ClubDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
   const [userId, setUserId] = useState<number | null>(null);
   const [joinedClub, setJoinedClub] = useState(false);
   const [groupContainerVisible, setGroupContainerVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   const openGroupContainer = useCallback(() => {
     setGroupContainerVisible(true);
@@ -73,7 +74,9 @@ const ClubDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         } else {
           console.error("Error fetching recommendations:", error);
           }
-        } 
+        } finally{
+          setLoading(false);
+        }
     }
 
     const checkJoinedClub = async () => {
@@ -105,6 +108,8 @@ const ClubDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
           } else{
             console.error("Error fetching data from API:", error);
           }
+        } finally{
+          setLoading(false);
         }
     };
 
@@ -127,6 +132,11 @@ const ClubDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
         />
         </Pressable>
       </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#fd7401" />
+        </View>
+      ) : (
       <ScrollView>
         <Image
           style={styles.image4IconPosition}
@@ -167,6 +177,7 @@ const ClubDetailPage = ({navigation, route}: {navigation: any, route:any}) => {
             </View>
           </Modal>
       </ScrollView>
+      )}
     </>
   );
 };
@@ -267,7 +278,12 @@ const styles = StyleSheet.create({
   bottomPart:{
     flex: 1,
     justifyContent: "center",
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+},
 });
 
 export default ClubDetailPage;
