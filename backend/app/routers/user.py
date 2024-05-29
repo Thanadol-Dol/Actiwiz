@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException, Depends, Path, Security
+from fastapi import APIRouter, Request, HTTPException, Depends, Path, Security, Query
 from ..models.user_model import (
     AuthUrlResponse,
     AuthGetTokensResponse,
@@ -45,7 +45,7 @@ async def auth_callback(request: Request, code: str):
 @userRouter.get("/auth/get/tokens", response_model=AuthGetTokensResponse)
 async def auth_callback(
     request: Request, 
-    code: str = Path(...,description="The code from the callback URL", example="0.AQABAAAAAAAm-06blBE1TpVMil8KPQ41KzZ2X6j9n1k3...")
+    code: str = Query(...,description="The code from the callback URL", example="0.AQABAAAAAAAm-06blBE1TpVMil8KPQ41KzZ2X6j9n1k3...")
 ):
     result_api = auth_app.acquire_token_by_authorization_code(
         code,
