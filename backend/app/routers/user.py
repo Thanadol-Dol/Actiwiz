@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException, Depends, Path, Security
+from fastapi.security.api_key import APIKeyHeader
 from ..models.user_model import (
     AuthUrlResponse,
     AuthGetTokensResponse,
@@ -14,21 +15,31 @@ from ..utils.database import Database, get_database
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os, requests
 from ..utils.user_util import extract_user_data, get_user_next_id
+from msal import ConfidentialClientApplication
 from ..config.auth import (
-    auth_app, 
-    api_scopes, 
-    graph_scopes, 
-    token_scp, 
     api_token_header, 
     graph_token_header, 
     refresh_token_header,
     notification_token_header
 )
+import os
+
 
 userRouter = APIRouter(
     prefix="/users",
     tags=["users"],
 )
+
+auth_app = ConfidentialClientApplication(
+    client_id=os.environ.get('AZURE_AD_CLIENT_ID'),
+    client_credential=os.environ.get('AZURE_AD_CREDENTIAL'),
+    authority=os.environ.get('AZURE_AD_AUTHORITY'),
+)
+
+api_scopes = []
+api_scopes.append(os.environ.get('AZURE_AD_SCOPES'))
+graph_scopes = ["User.Read","User.ReadBasic.All"]
+token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
 @userRouter.get("/auth/url", response_model=AuthUrlResponse)
 async def user_login(request: Request):

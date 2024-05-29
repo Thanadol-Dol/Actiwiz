@@ -20,12 +20,15 @@ from ..utils.club_util import (
     get_total_clubs_class
 )
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
-from ..config.auth import token_scp, api_token_header
+from ..config.auth import api_token_header
+import os
 
 clubRouter = APIRouter(
     prefix="/clubs",
     tags=["clubs"],
 )
+
+token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
 
 @clubRouter.get("/v1/recommend/user/{user_id}", response_model=RecommendClubsV1)
 @requires_auth

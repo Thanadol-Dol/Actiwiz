@@ -18,12 +18,15 @@ from ..utils.activity_util import (
     get_total_recommend_activities_v2, 
     get_total_activities_class
 )
-from ..config.auth import token_scp, api_token_header
+from ..config.auth import api_token_header
+import os
 
 activityRouter = APIRouter(
     prefix="/activities",
     tags=["activities"]
 )
+
+token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
     
 @activityRouter.get("/v1/recommend/user/{user_id}", response_model=RecommendActivitiesV1)
 @requires_auth
