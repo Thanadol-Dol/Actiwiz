@@ -1,6 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, Query, Security
 from typing import List, Union
-from ..models.club_model import ClubDetail
+from ..models.club_model import (
+    ClubDetail,
+    BaseClubsResponse,
+    RecommendClubsV1,
+    RecommendClubsV2,
+    SearchClubs,
+    CheckJoinClubStatus,
+    ReadClubStatus,
+    JoinClubStatus,
+    LeaveClubStatus
+)
 from ..utils.database import Database, get_database
 from ..utils.club_util import (
     extract_club_data, 
@@ -10,16 +20,14 @@ from ..utils.club_util import (
     get_total_clubs_class
 )
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
-import os
+from ..config.auth import token_scp, api_token_header
 
 clubRouter = APIRouter(
     prefix="/clubs",
     tags=["clubs"],
 )
 
-token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
-
-@clubRouter.get("/v1/recommend/user/{user_id}")
+@clubRouter.get("/v1/recommend/user/{user_id}", response_model=RecommendClubsV1)
 @requires_auth
 async def recommend_clubs(
     request: Request,
@@ -27,7 +35,8 @@ async def recommend_clubs(
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(6, description="Number of items per page"),
     priority: int = Query(1, description="Priority of the recommendation"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         # Validate the scope of the request
@@ -82,14 +91,15 @@ async def recommend_clubs(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.get("/v2/recommend/user/{user_id}")
+@clubRouter.get("/v2/recommend/user/{user_id}", response_model=RecommendClubsV2)
 @requires_auth
 async def recommend_clubs(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(6, description="Number of items per page"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     # Implement your Database query to retrieve data based on the club_name
     try:
@@ -120,14 +130,15 @@ async def recommend_clubs(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.get("/{club_name}")
+@clubRouter.get("/{club_name}", response_model=SearchClubs)
 @requires_auth
 async def club_search(
     request: Request,
     club_name: str = Path(...,description="The name of the club"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(6, description="Number of items per page"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     # Implement your Database query to retrieve data based on the club_name
     try:
@@ -160,12 +171,13 @@ async def club_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.get("/id/{club_id}")
+@clubRouter.get("/id/{club_id}", response_model=ClubDetail)
 @requires_auth
 async def get_club_by_id(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to join"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -182,13 +194,14 @@ async def get_club_by_id(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.get("/check/joined/{club_id}")
+@clubRouter.get("/check/joined/{club_id}", response_model=CheckJoinClubStatus)
 @requires_auth
 async def join_club(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to join"),
     user_id: int = Query(...,description="The ID of the user joining the club"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -205,13 +218,14 @@ async def join_club(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.post("/read/{club_id}")
+@clubRouter.post("/read/{club_id}", response_model=ReadClubStatus)
 @requires_auth
 async def read_club(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to join"),
     user_id: int = Query(...,description="The ID of the user joining the club"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -228,13 +242,14 @@ async def read_club(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.post("/join/{club_id}")
+@clubRouter.post("/join/{club_id}", response_model=JoinClubStatus)
 @requires_auth
 async def join_club(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to join"),
     user_id: int = Query(...,description="The ID of the user joining the club"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -249,13 +264,14 @@ async def join_club(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@clubRouter.delete("/leave/{club_id}")
+@clubRouter.delete("/leave/{club_id}", response_model=LeaveClubStatus)
 @requires_auth
 async def leave_club(
     request: Request,
     club_id: str = Path(...,description="The ID of the club to leave"),
     user_id: int = Query(...,description="The ID of the user leaving the club"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)

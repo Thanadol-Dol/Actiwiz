@@ -1,9 +1,16 @@
-from fastapi import APIRouter, Depends, Path, Query, HTTPException, Request
+from fastapi import APIRouter, Depends, Path, Query, HTTPException, Request, Security
 from typing import List, Union
 from ..utils.database import Database, get_database
-from ..models.activity_model import ActivityDetail
+from ..models.activity_model import (
+    RecommendActivitiesV1, 
+    RecommendActivitiesV2, 
+    SearchActivities, 
+    ActivityDetail,
+    CheckJoinActivityStatus,
+    ReadActivityStatus,
+    JoinActivityStatus 
+)
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
-import os
 from ..utils.activity_util import (
     extract_activity_data, 
     get_total_activities_by_name, 
@@ -11,15 +18,14 @@ from ..utils.activity_util import (
     get_total_recommend_activities_v2, 
     get_total_activities_class
 )
+from ..config.auth import token_scp, api_token_header
 
 activityRouter = APIRouter(
     prefix="/activities",
     tags=["activities"]
 )
-
-token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
     
-@activityRouter.get("/v1/recommend/user/{user_id}")
+@activityRouter.get("/v1/recommend/user/{user_id}", response_model=RecommendActivitiesV1)
 @requires_auth
 async def recommend_activities(
     request: Request,
@@ -27,7 +33,8 @@ async def recommend_activities(
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(6, description="Number of items per page"),
     priority: int = Query(1, description="Priority of the recommendation"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         # Validate the scope of the request
@@ -81,14 +88,15 @@ async def recommend_activities(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@activityRouter.get("/v2/recommend/user/{user_id}")
+@activityRouter.get("/v2/recommend/user/{user_id}", response_model=RecommendActivitiesV2)
 @requires_auth
 async def recommend_activities(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(6, description="Number of items per page"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         # Validate the scope of the request
@@ -118,14 +126,15 @@ async def recommend_activities(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@activityRouter.get("/{activity_name}")
+@activityRouter.get("/{activity_name}", response_model=SearchActivities)
 @requires_auth
 async def activities_search(
     request: Request,
     activity_name: str = Path(...,description= "The name of the activity"),
     page_number: int = Query(1, description="Page number, starting from 1"),
     results_size: int = Query(6, description="Number of items per page"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         # Validate the scope of the request
@@ -156,12 +165,13 @@ async def activities_search(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@activityRouter.get("/id/{activity_id}")
+@activityRouter.get("/id/{activity_id}", response_model=ActivityDetail)
 @requires_auth
 async def get_activity_by_id(
     request: Request,
     activity_id: int = Path(...,description="The ID of the activity to join"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -177,13 +187,14 @@ async def get_activity_by_id(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@activityRouter.get("/check/joined/{activity_id}")
+@activityRouter.get("/check/joined/{activity_id}", response_model=CheckJoinActivityStatus)
 @requires_auth
 async def check_joined_activity(
     request: Request,
     activity_id: int = Path(...,description="The ID of the activity to join"),
     user_id: int = Query(...,description="The ID of the user joining the activity"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -200,13 +211,14 @@ async def check_joined_activity(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@activityRouter.post("/read/{activity_id}")
+@activityRouter.post("/read/{activity_id}", response_model=ReadActivityStatus)
 @requires_auth
 async def read_activity(
     request: Request,
     activity_id: int = Path(...,description="The ID of the activity to join"),
     user_id: int = Query(...,description="The ID of the user joining the activity"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -217,19 +229,20 @@ async def read_activity(
         ON MATCH SET r.count = r.count + 1"""
         params = {"user_id": user_id, "activity_id": activity_id}
         await database.run(merge_query, params)
-        return {"message": "User joined the activity successfully."}
+        return {"message": "User have read the activity."}
     except AuthError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@activityRouter.post("/join/{activity_id}")
+@activityRouter.post("/join/{activity_id}", response_model=JoinActivityStatus)
 @requires_auth
 async def join_activity(
     request: Request,
     activity_id: int = Path(...,description="The ID of the activity to join"),
     user_id: int = Query(...,description="The ID of the user joining the activity"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
