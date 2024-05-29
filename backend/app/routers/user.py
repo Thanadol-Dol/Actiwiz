@@ -1,28 +1,36 @@
-from fastapi import APIRouter, Request, HTTPException, Depends, Path
-from ..models.user_model import UserDetail
-from msal import ConfidentialClientApplication
+from fastapi import APIRouter, Request, HTTPException, Depends, Path, Security
+from ..models.user_model import (
+    AuthUrlResponse,
+    AuthGetTokensResponse,
+    RefreshAPITokenResponse,
+    RefreshGraphTokenResponse,
+    LoginResponse,
+    LogoutResponse,
+    UserDetail,
+    CreateUserResponse,
+    RegisterTokenResponse
+)
 from ..utils.database import Database, get_database
 from fastapi_microsoft_identity import requires_auth, AuthError, validate_scope
 import os, requests
 from ..utils.user_util import extract_user_data, get_user_next_id
+from ..config.auth import (
+    auth_app, 
+    api_scopes, 
+    graph_scopes, 
+    token_scp, 
+    api_token_header, 
+    graph_token_header, 
+    refresh_token_header,
+    notification_token_header
+)
 
 userRouter = APIRouter(
     prefix="/users",
     tags=["users"],
 )
 
-auth_app = ConfidentialClientApplication(
-    client_id=os.environ.get('AZURE_AD_CLIENT_ID'),
-    client_credential=os.environ.get('AZURE_AD_CREDENTIAL'),
-    authority=os.environ.get('AZURE_AD_AUTHORITY'),
-)
-
-api_scopes = []
-api_scopes.append(os.environ.get('AZURE_AD_SCOPES'))
-graph_scopes = ["User.Read","User.ReadBasic.All"]
-token_scp = os.environ.get('AZURE_AD_ACCESS_TOKEN_SCP')
-
-@userRouter.get("/auth/url")
+@userRouter.get("/auth/url", response_model=AuthUrlResponse)
 async def user_login(request: Request):
     auth_url = auth_app.get_authorization_request_url(
         scopes=api_scopes + graph_scopes,
@@ -30,12 +38,15 @@ async def user_login(request: Request):
     )
     return {"auth_url": auth_url}
 
-@userRouter.get("/auth/callback")
+@userRouter.get("/auth/callback", include_in_schema=False)
 async def auth_callback(request: Request, code: str):
     return {"code": code}
 
-@userRouter.get("/auth/get/tokens")
-async def auth_callback(request: Request, code: str):
+@userRouter.get("/auth/get/tokens", response_model=AuthGetTokensResponse)
+async def auth_callback(
+    request: Request, 
+    code: str = Path(...,description="The code from the callback URL", example="0.AQABAAAAAAAm-06blBE1TpVMil8KPQ41KzZ2X6j9n1k3...")
+):
     result_api = auth_app.acquire_token_by_authorization_code(
         code,
         scopes=api_scopes,
@@ -56,8 +67,11 @@ async def auth_callback(request: Request, code: str):
     refresh_token = result_graph["refresh_token"]
     return {"api_token": api_token, "graph_token": graph_token, "refresh_token": refresh_token}
 
-@userRouter.get("/auth/refresh/api_token")
-async def refresh_graph_token(request: Request):
+@userRouter.get("/auth/refresh/api_token", response_model=RefreshAPITokenResponse)
+async def refresh_graph_token(
+    request: Request, 
+    refresh_token = Security(refresh_token_header)
+):
     try:
         result = auth_app.acquire_token_by_refresh_token(
             request.headers.get('Refresh'),
@@ -72,8 +86,11 @@ async def refresh_graph_token(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@userRouter.get("/auth/refresh/graph_token")
-async def refresh_api_token(request: Request):
+@userRouter.get("/auth/refresh/graph_token", response_model=RefreshGraphTokenResponse)
+async def refresh_api_token(
+    request: Request, 
+    refresh_token = Security(refresh_token_header)
+):
     try:
         result = auth_app.acquire_token_by_refresh_token(
             request.headers.get('Refresh'),
@@ -88,11 +105,13 @@ async def refresh_api_token(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@userRouter.get("/login")
+@userRouter.get("/login", response_model=LoginResponse)
 @requires_auth
 async def user_login(
     request: Request,
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header),
+    graph_token = Security(graph_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -119,12 +138,13 @@ async def user_login(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@userRouter.get("/logout/{user_id}")
+@userRouter.get("/logout/{user_id}", response_model=LogoutResponse)
 @requires_auth
 async def user_logout(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -138,12 +158,13 @@ async def user_logout(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@userRouter.post("/create")
+@userRouter.post("/create", response_model=CreateUserResponse)
 @requires_auth
 async def create_user(
     request: Request,
     user: UserDetail,
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -173,12 +194,14 @@ async def create_user(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@userRouter.post("/register/tokens/{user_id}")
+@userRouter.post("/register/tokens/{user_id}", response_model=RegisterTokenResponse)
 @requires_auth
 async def register_tokens(
     request: Request,
-    user_id: int = Path(...,description="The ID of the user to retrieve"),
-    database: Database = Depends(get_database)
+    user_id: int = Path(...,description="The user's ID", example=1234),
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header),
+    notification_token = Security(notification_token_header)
 ):
     try:
         validate_scope(token_scp,request)
@@ -206,7 +229,8 @@ async def register_tokens(
 async def get_user(
     request: Request,
     user_id: int = Path(...,description="The ID of the user to retrieve"),
-    database: Database = Depends(get_database)
+    database: Database = Depends(get_database),
+    api_token = Security(api_token_header)
 ):
     try:
         validate_scope(token_scp,request)

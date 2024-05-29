@@ -1,15 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
 
 class DegreeDetail(BaseModel):
-    DegreeName: str
+    DegreeName: str = Field(..., description="The name of the degree", example="ปริญญาตรี")
 
 class FacultyDetail(BaseModel):
-    FacultyName: str
+    FacultyName: str = Field(..., description="The name of the faculty", example="คณะวิศวกรรมศาสตร์")
 
 class DepartmentDetail(BaseModel):
-    DepartmentName: str
+    DepartmentName: str = Field(..., description="The name of the department", example="วิศวกรรมคอมพิวเตอร์")
 
 class DegreeEnum(Enum):
     Bachelor = 10
