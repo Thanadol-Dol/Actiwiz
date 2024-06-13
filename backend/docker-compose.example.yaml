@@ -16,3 +16,10 @@ services:
       - AZURE_AD_ACCESS_TOKEN_SCP=data.read
     ports:
       - 8000:8000
+  backend-cron:
+    build: ./cron
+    image: nad0l/actiwiz-cron
+    environment:
+      - NEO4J_URI=neo4j+s://example.io
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=neo4j_password
