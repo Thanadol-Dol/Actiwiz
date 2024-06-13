@@ -1,0 +1,3 @@
+from cron_utils import keep_db_alive
+
+keep_db_alive()
